@@ -29,51 +29,32 @@ Horas totales de cada miembro
 
 
 Usuario(
-
 Id Long,
-
 Nombres String,
-
 Apellidos String,
-
 Email String,
-
 Contraseña String,
-
 Rol (roles: Supervisor, Director, Empleado) ENUM,
-
 (Opcional: Grupos),
-
 TiempoEnProyecto DateTime)
 
 
 
 Proyectos(
-
 Id Long,
-
 Nombre String,
-
 descripción String,
-
 estado(Rol: Completado,En producción,Suspendido) ENUM,
-
 Usuarios(List <Usuarios>));
 
 
 
 Tareas(
-
 Id Long,
-
 nombre String,
-
 descripción String,
-
 estado(Rol: Completado,Pendiente, Suspendido) ENUM,
-
 fechaCreada DateTime,
-
 CreadoPor(Directo o supervisor quien lo crea) Usuario);
 
 
