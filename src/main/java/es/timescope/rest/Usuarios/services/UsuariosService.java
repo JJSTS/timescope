@@ -1,0 +1,28 @@
+package es.timescope.rest.Usuarios.services;
+
+import es.timescope.rest.Usuarios.dto.UsuarioCreateDto;
+import es.timescope.rest.Usuarios.dto.UsuarioInfoResponse;
+import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
+import es.timescope.rest.Usuarios.models.Usuario;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface UsuariosService {
+    Page<UsuarioResponseDto> findAll(Optional<String> username, Optional<String> email, Optional<Boolean> isDeleted, Pageable pageable);
+
+    UsuarioInfoResponse findById(Long id);
+
+    UsuarioResponseDto save(UsuarioCreateDto userRequest);
+
+    UsuarioResponseDto update(Long id, UsuarioCreateDto userRequest);
+
+    void deleteById(Long id);
+
+    List<Usuario> findAllActiveUsuarios();
+
+    Optional<Usuario> findByUsuarioname(String username);
+    void save(Usuario user);
+}

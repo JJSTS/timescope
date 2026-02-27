@@ -44,7 +44,7 @@ Proyectos(
 Id Long,
 Nombre String,
 descripción String,
-estado(Rol: Completado,En producción,Suspendido) ENUM,
+estado(Rol: Completado,Activo,Suspendido) ENUM,
 Usuarios(List <Usuarios>));
 
 
