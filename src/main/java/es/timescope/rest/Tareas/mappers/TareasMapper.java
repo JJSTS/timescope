@@ -17,6 +17,7 @@ public class TareasMapper {
                 .nombre(tareaCreateDto.getNombre())
                 .descripcion(tareaCreateDto.getDescripcion())
                 .fechaCreacion(LocalDateTime.now())
+                .usuario(usuario)
                 .build();
 
     }

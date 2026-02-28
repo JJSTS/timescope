@@ -25,6 +25,7 @@ public class Proyecto {
     @Column(nullable = false,  length = 300)
     private String descripcion;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Estado estado;
 
