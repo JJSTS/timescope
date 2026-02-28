@@ -7,17 +7,13 @@ import org.springframework.data.domain.Pageable;
 import java.util.Optional;
 
 public interface ProyectoServices {
-    Page<Proyecto> findAll(Optional<String> nombre, Optional<Boolean> isDeleted, Pageable pageable);
-
-    Proyecto findByNombre(String nombre);
-
-    Proyecto findById(Long id);
+    Page<ProyectoResponseDto> findAll(Optional<Long> id, Optional<String> nombre, Optional<Boolean> isDeleted, Pageable pageable);
 
     Proyecto findByEstado(Estado estado);
 
-    Proyecto save(ProyectoCreateDto ProyectoCreateDto);
+    ProyectoResponseDto save(ProyectoCreateDto proyectoCreateDto);
 
-//    Proyecto update(Long id, ProyectoUpdateDto ProyectolUpdateDto);
+//    Proyecto update(Long id, ProyectoUpdateDto proyectoUpdateDto);
 
     void deleteById(Long id);
 }
