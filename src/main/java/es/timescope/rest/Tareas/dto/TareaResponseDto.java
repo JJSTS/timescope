@@ -16,6 +16,6 @@ public class TareaResponseDto {
     private String descripcion;
     private Estado estado;
     private LocalDateTime fechaCreacion;
-    private String titular;
+    private String usuario;
 
 }

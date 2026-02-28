@@ -1,6 +1,5 @@
 package es.timescope.rest.Usuarios.services;
 
-import es.timescope.rest.Tareas.repositories.TareasRepository;
 import es.timescope.rest.Usuarios.dto.UsuarioCreateDto;
 import es.timescope.rest.Usuarios.dto.UsuarioInfoResponse;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
@@ -9,6 +8,7 @@ import es.timescope.rest.Usuarios.exceptions.UsuarioNotFound;
 import es.timescope.rest.Usuarios.mappers.UsuariosMapper;
 import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;
@@ -84,7 +84,6 @@ public class UsuarioServiceImpl implements UsuariosService {
     public UsuarioResponseDto update(Long id, UsuarioCreateDto userRequest) {
         log.info("Buscando el usuario con id: {}", id);
         usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
-        // No debe existir otro con el mismo username o email, y si existe soy yo mismo
         usuariosRepository.findByUsernameEqualsIgnoreCaseOrEmailEqualsIgnoreCase(userRequest.getUsername(), userRequest.getEmail())
                 .ifPresent(u -> {
                     if (!u.getId().equals(id)) {
@@ -96,22 +95,32 @@ public class UsuarioServiceImpl implements UsuariosService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) {
-
+        log.info("Borrando usuario por id: {}", id);
+        Usuario user = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
+        if (usuariosRepository.existsProyectosByUsuarioId(id) && usuariosRepository.existsTareasByUsuarioId(id)) {
+            log.info("Borrado lógico de usuario por id: {}", id);
+            usuariosRepository.updateIsDeletedToTrueById(id);
+        } else {
+            log.info("Borrado físico de usuario por id: {}", id);
+            usuariosRepository.delete(user);
+        }
     }
 
     @Override
     public List<Usuario> findAllActiveUsuarios() {
-        return List.of();
+        log.info("Buscando todos los usuarios activos");
+        return usuariosRepository.findAllByIsDeletedFalse();
     }
 
     @Override
     public Optional<Usuario> findByUsuarioname(String username) {
-        return Optional.empty();
+        return usuariosRepository.findByUsername(username);
     }
 
     @Override
     public void save(Usuario user) {
-
+        usuariosRepository.save(user);
     }
 }

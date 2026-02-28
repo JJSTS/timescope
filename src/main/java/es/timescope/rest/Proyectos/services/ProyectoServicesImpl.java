@@ -38,7 +38,7 @@ public class ProyectoServicesImpl implements ProyectoServices {
 
         // Búsqueda por ID (número del proyecto)
         Specification<Proyecto> specIdProyecto = (root, query, criteriaBuilder) ->
-                id.map(i -> criteriaBuilder.like(criteriaBuilder.lower(root.get("numero")), "%" + i + "%"))
+                id.map(i -> criteriaBuilder.equal(root.get("id"),1))
                         .orElseGet(() -> criteriaBuilder.isTrue(criteriaBuilder.literal(true)));
 
         // Búsqueda por nombre del proyecto
@@ -57,8 +57,16 @@ public class ProyectoServicesImpl implements ProyectoServices {
     }
 
     @Override
-    public Proyecto findByEstado(Estado estado) {
-        return null;
+    public Page<Proyecto> findByEstado(Estado estado, Pageable pageable) {
+        log.info("Buscando proyectos por estado: {}", estado);
+        return proyectosRepository.findByEstado(estado, pageable);
+    }
+
+    @Override
+    public Page<ProyectoResponseDto> findByUsuarioId(Long usuarioId, Pageable pageable) {
+        log.info("Obteniendo proyectos del usuario con id: {}", usuarioId);
+        return proyectosRepository.findByUsuarioId(usuarioId, pageable)
+                .map(proyectoMapper::toProyectoResponseDto);
     }
 
     @Override

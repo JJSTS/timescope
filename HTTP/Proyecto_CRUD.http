@@ -1,0 +1,42 @@
+### =============================================
+### PROYECTOS - CRUD
+### Base URL: http://localhost:8080/api/v1/proyectos
+### =============================================
+
+### GET ALL - Obtener todos los proyectos (paginado)
+### Requiere rol: director Y supervisor
+GET http://localhost:8080/api/v1/proyectos
+    ?page=0
+    &size=10
+    &sortBy=id
+    &direction=asc
+Authorization: Basic cgarcia hashed_pass_1
+
+###
+
+### GET ALL - Filtrar por nombre
+GET http://localhost:8080/api/v1/proyectos
+    ?nombre=TimeScope
+    &page=0
+    &size=10
+    &sortBy=id
+    &direction=asc
+Authorization: Basic cgarcia hashed_pass_1
+
+###
+
+### GET ALL - Filtrar por estado isDeleted
+GET http://localhost:8080/api/v1/proyectos
+    ?isDeleted=false
+    &page=0
+    &size=10
+Authorization: Basic cgarcia hashed_pass_1
+
+###
+
+### GET ALL - Filtrar por id
+GET http://localhost:8080/api/v1/proyectos
+    ?id=1
+Authorization: Basic cgarcia hashed_pass_1
+
+###
