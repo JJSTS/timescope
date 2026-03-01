@@ -1,7 +1,8 @@
 package es.timescope.rest.Usuarios.models;
 
 public enum Roles {
-    supervisor,
-    director,
-    empleado
+    SUPERVISOR,
+    DIRECTOR,
+    EMPLEADO,
+    LIDER
 }

@@ -17,7 +17,7 @@ create table USUARIOS (
 
 create table USUARIO_ROLES (
                                user_id bigint not null,
-                               roles varchar (20) check ( roles in ('supervisor','director','empleado')),
+                               roles varchar (20) check ( roles in ('SUPERVISOR','DIRECTOR','EMPLEADO')),
                                FOREIGN KEY (user_id) REFERENCES USUARIOS(id) ON DELETE cascade
 );
 

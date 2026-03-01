@@ -1,8 +1,3 @@
-### =============================================
-### TAREAS - CRUD
-### Base URL: http://localhost:8080/api/v1/tareas
-### =============================================
-
 ### GET ALL - Obtener todas las tareas (paginado)
 GET http://localhost:8080/api/v1/tareas
     ?page=0
@@ -10,22 +5,18 @@ GET http://localhost:8080/api/v1/tareas
     &sortBy=id
     &direction=asc
 
-###
 
 ### GET ALL - Filtrar por usuario
 GET http://localhost:8080/api/v1/tareas
     ?usuario=cgarcia
     &page=0
     &size=10
-###
 
 ### GET ALL - Filtrar por estado
 GET http://localhost:8080/api/v1/tareas
     ?estado=ACTIVO
     &page=0
     &size=10
-
-###
 
 ### GET ALL - Filtrar por usuario y estado
 GET http://localhost:8080/api/v1/tareas
@@ -34,12 +25,8 @@ GET http://localhost:8080/api/v1/tareas
     &page=0
     &size=10
 
-###
-
 ### GET BY ID - Obtener tarea por ID
 GET http://localhost:8080/api/v1/tareas/1
-
-###
 
 ### GET BY ID - Tarea con ID 3
 GET http://localhost:8080/api/v1/tareas/3
