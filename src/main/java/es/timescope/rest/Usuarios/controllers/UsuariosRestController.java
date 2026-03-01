@@ -25,7 +25,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("api/${api.version}/usuarios")
-//@PreAuthorize("hasRole('empleado')")
+//@PreAuthorize("hasRole('EMPLEADO')")
 public class UsuariosRestController {
     private final UsuariosService usuariosService;
     private final PaginationLinksUtils paginationLinksUtils;
@@ -33,7 +33,7 @@ public class UsuariosRestController {
     private final TareasServices tareasServices;
     
     @GetMapping
-//    @PreAuthorize("hasRole('director')")
+//    @PreAuthorize("hasRole('DIRECTOR')")
     public ResponseEntity<PageResponse<UsuarioResponseDto>> findAll(
             @RequestParam(required = false)Optional<String> username,
             @RequestParam(required = false)Optional<String> email,
@@ -43,7 +43,7 @@ public class UsuariosRestController {
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String direction,
             HttpServletRequest request
-            ){
+            ) {
         log.info("findAll: username: {}, email: {}, isDeleted: {}, page: {}, size: {}, sortBy: {}, direction: {}",
                 username, email, isDeleted, page, size, sortBy, direction);
         Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
@@ -53,5 +53,4 @@ public class UsuariosRestController {
                 .header("link", paginationLinksUtils.createLinkHeader(pageResult, uriBuilder))
                 .body(PageResponse.of(pageResult, sortBy, direction));
     }
-
 }

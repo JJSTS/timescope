@@ -5,16 +5,22 @@
 * Asigna roles a los usuarios
 * Puede ver todos los proyectos y sus estados
 * Puede ver el rendimiento de todos los desarrolladores.
+* Tiene todas la funciones
 
 ## Coordinador:
 * Puede ver todos los proyectos y su información.
-* Puede crear proyectos, añadirle usuarios y asignar lider de proyectos o cambiar los existentes.
+* Puede crear proyectos, añadirle usuarios y asignar líder de proyectos.
+* Cambiar líderes de proyectos
 * Cambia el estado de proyectos.
 * Visualiza las tareas y tiempos de los desarrolladores.
 
 ## Líder de proyecto:
-* Crea, edita y asigna tarea a los empleados.
-* Crea y gestiona usuarios (desarrollador) - eliminar o añadir.
+* Solo uno por proyecto
+* Crea, edita y asigna tarea a los desarrolladores.
+* Crea y gestiona desarrolladores 
+  * Eliminar del proyecto
+  * Añadir al proyecto.
+* Cambia el estado de su proyecto
 * Visualiza el progreso de su equipo
 * Visualiza el tiempo trabajado por sus desarrolladores.
 

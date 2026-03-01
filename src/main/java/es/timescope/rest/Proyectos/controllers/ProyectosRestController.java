@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,7 +29,7 @@ public class ProyectosRestController {
     private final PaginationLinksUtils paginationLinksUtils;
 
     @GetMapping
-//    @PreAuthorize("hasRole('director') and hasRole('supervisor')")
+//    @PreAuthorize("hasAnyRole('DIRECTOR', 'COORDINADOR')")
     public ResponseEntity<PageResponse<ProyectoResponseDto>> findAll(
             @RequestParam(required = false) Optional<Long> id,
             @RequestParam(required = false)Optional<String> nombre,
