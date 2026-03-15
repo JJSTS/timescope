@@ -15,6 +15,8 @@ public interface ProyectoServices {
 
     ProyectoResponseDto save(ProyectoCreateDto proyectoCreateDto);
 
+    ProyectoResponseDto addUsuario(Long id, String username);
+
 //    Proyecto update(Long id, ProyectoUpdateDto proyectoUpdateDto);
 
     void deleteById(Long id);

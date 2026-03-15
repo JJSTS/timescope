@@ -12,10 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Optional;
@@ -49,5 +46,15 @@ public class ProyectosRestController {
         return ResponseEntity.ok()
                 .header("link", paginationLinksUtils.createLinkHeader(pageResult, uriBuilder))
                 .body(PageResponse.of(pageResult, sortBy, direction));
+    }
+
+    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
+    @PostMapping("/{id}/usuarios")
+    public ResponseEntity<ProyectoResponseDto> addUsuario(
+            @PathVariable Long id,
+            @RequestParam String username
+    ){
+        log.info("Añadiendo usuario {} al proyecto {}", id, username);
+        return ResponseEntity.ok(proyectoServices.addUsuario(id, username));
     }
 }

@@ -31,7 +31,7 @@ public class UsuarioCreateDto {
     private String password;
 
     @Builder.Default
-    private Set<Roles> roles = Set.of(Roles.empleado);
+    private Set<Roles> roles = Set.of(Roles.DESARROLLADOR);
 
     @Builder.Default
     private Boolean isDeleted = false;

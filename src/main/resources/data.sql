@@ -12,11 +12,10 @@ INSERT INTO USUARIOS (nombres, apellidos, username, email, password, tiempo_proy
 -- USUARIO_ROLES
 -- =====================
 INSERT INTO USUARIO_ROLES (user_id, roles) VALUES
-(1, 'DIRECTOR'),
-(2, 'SUPERVISOR'),
-(3, 'EMPLEADO'),
-(4, 'EMPLEADO'),
-(5, 'SUPERVISOR');
+(1, 'DESARROLLADOR'),
+(2, 'COORDINADOR'),
+(3, 'LIDER'),
+(4, 'DIRECTOR');
 
 -- =====================
 -- PROYECTOS

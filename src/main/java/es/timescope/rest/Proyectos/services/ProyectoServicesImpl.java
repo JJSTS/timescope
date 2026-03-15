@@ -78,6 +78,21 @@ public class ProyectoServicesImpl implements ProyectoServices {
     }
 
     @Override
+    public ProyectoResponseDto addUsuario(Long id, String username) {
+        log.info("Añadiendo usuario {} al proyecto {}", username, id);
+        Proyecto proyecto = proyectosRepository.findById(id)
+                .orElseThrow(() -> new ProyectoNotFoundException(id));
+        Usuario usuario = usuariosRepository.findByUsername(username)
+                .orElseThrow(() -> new ProyectoBadRequestException("Usuario con username: " + username + " no encontrado"));
+        if (proyecto.getUsuarios().contains(usuario)) {
+            throw new ProyectoBadRequestException("El usuario ya pertenece a este proyecto");
+        }
+
+        proyecto.getUsuarios().add(usuario);
+        return proyectoMapper.toProyectoResponseDto(proyectosRepository.save(proyecto));
+    }
+
+    @Override
     public void deleteById(Long id) {
         // Si no existe lanza excepción
         Proyecto proyectoDeleted = proyectosRepository.findById(id).orElseThrow(()-> new ProyectoNotFoundException(id));
@@ -89,7 +104,7 @@ public class ProyectoServicesImpl implements ProyectoServices {
         List<Usuario> usuarios = List.of();
         for (Long id : usuariosIds) {
             var usuario = usuariosRepository.findById(id).orElse(null);
-            if (usuariosRepository.existsById(id) || Objects.requireNonNull(usuario).getIsDeleted()) {
+            if (usuariosRepository.existsById(id) || usuario.getIsDeleted()) {
                 throw new ProyectoBadRequestException("El usuario con id: " + id + " no existe o está borrado");
             }
             usuarios.add(usuario);
