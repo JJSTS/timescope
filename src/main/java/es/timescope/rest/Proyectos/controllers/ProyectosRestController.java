@@ -49,7 +49,7 @@ public class ProyectosRestController {
     }
 
     @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
-    @PostMapping("/{id}/usuarios")
+    @PostMapping("/{id}/usuario")
     public ResponseEntity<ProyectoResponseDto> addUsuario(
             @PathVariable Long id,
             @RequestParam String username

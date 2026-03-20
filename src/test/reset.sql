@@ -11,7 +11,7 @@ create table USUARIOS (
                           username   varchar(255)                        not null unique,
                           email      varchar(255)                        not null unique,
                           password   varchar(255)                        not null,
-                          tiempo_proyecto bigint                         not null,
+                          tiempo_proyecto bigint                         default 0,
                           is_deleted boolean default false
 );
 

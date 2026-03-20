@@ -27,3 +27,14 @@ Authorization: Basic cgarcia hashed_pass_1
 GET http://localhost:8080/api/v1/proyectos
     ?id=1
 Authorization: Basic cgarcia hashed_pass_1
+
+### GET ALL - Filtrar por id
+POST http://localhost:8080/api/v1/proyectos/1/usuarios
+Content-Type: application/json
+
+{
+  "nombre": "Proyect 1",
+  "descripcion": "proyecto de pruebas",
+  "estado": "SUSPENDIDO",
+  "usuarios": "Martin"
+}

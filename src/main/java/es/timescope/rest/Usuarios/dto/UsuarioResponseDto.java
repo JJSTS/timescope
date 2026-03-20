@@ -18,7 +18,6 @@ public class UsuarioResponseDto {
     private String nombres;
     private String apellidos;
     private String email;
-    private Long tiempoProyecto;
     private String username;
 
     @Builder.Default

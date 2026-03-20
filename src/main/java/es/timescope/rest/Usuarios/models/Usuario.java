@@ -43,9 +43,6 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private Long tiempoProyecto;
-
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     @CollectionTable(
@@ -79,7 +76,7 @@ public class Usuario implements UserDetails {
 //    Spring Security
     @Override
     public String getUsername() {
-        return "";
+        return username;
     }
 
     @Override
