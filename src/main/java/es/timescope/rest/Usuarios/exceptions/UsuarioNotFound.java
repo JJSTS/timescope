@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class UsuarioNotFound extends RuntimeException {
+public class UsuarioNotFound extends UsuarioException {
     public UsuarioNotFound(String message) {
         super(message);
     }

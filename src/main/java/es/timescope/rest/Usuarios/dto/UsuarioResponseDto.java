@@ -21,7 +21,7 @@ public class UsuarioResponseDto {
     private String username;
 
     @Builder.Default
-    private Set<Roles> rol = Set.of(Roles.DESARROLLADOR);
+    private Set<Roles> roles = Set.of(Roles.DESARROLLADOR);
 
     @Builder.Default
     private Boolean isDeleted = false;

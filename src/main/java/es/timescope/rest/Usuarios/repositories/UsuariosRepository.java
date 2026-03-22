@@ -27,12 +27,12 @@ public interface UsuariosRepository extends JpaRepository<Usuario, Long>, JpaSpe
     @Query("SELECT t FROM Tarea t WHERE t.usuario.id = :usuarioId")
     List<Tarea> findTareaByUsuarioId(Long usuarioId);
 
-    @Query("SELECT p FROM Proyecto p JOIN Usuario u WHERE u.id = :id")
+    @Query("SELECT p FROM Proyecto p JOIN p.usuarios u WHERE u.id = :id")
     List<Proyecto> findProyectoByUsuarioId(Long id);
 
     @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM Tarea t WHERE t.usuario.id = :id")
     Boolean existsTareasByUsuarioId(Long id);
 
-    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Proyecto p JOIN Usuario u WHERE u.id = :id")
+    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Proyecto p JOIN p.usuarios u WHERE u.id = :id")
     Boolean existsProyectosByUsuarioId(Long id);
 }

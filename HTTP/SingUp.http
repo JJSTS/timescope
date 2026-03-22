@@ -1,0 +1,12 @@
+### Proceso de Registro
+POST http://localhost:8080/api/v1/auth/signup
+Content-Type: application/json
+
+{
+  "nombre": "Jose María",
+  "apellidos":"Osorio Orihuela",
+  "username": "jmoo13",
+  "email": "josemaria13@gmail.com",
+  "password": "ContraseñaDePrueba12@@@@",
+  "passwordComprobacion": "ContraseñaDePrueba12@@@@"
+}

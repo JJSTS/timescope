@@ -42,7 +42,7 @@ public class UsuariosMapper {
                 .apellidos(usuario.getApellidos())
                 .username(usuario.getUsername())
                 .email(usuario.getEmail())
-                .rol(usuario.getRoles())
+                .roles(usuario.getRoles())
                 .isDeleted(usuario.getIsDeleted())
                 .build();
     }
