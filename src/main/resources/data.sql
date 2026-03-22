@@ -16,7 +16,8 @@ INSERT INTO USUARIO_ROLES (user_id, roles) VALUES
 (1, 'DESARROLLADOR'),
 (2, 'COORDINADOR'),
 (3, 'LIDER'),
-(4, 'DIRECTOR');
+(4, 'DIRECTOR'),
+(5, 'DESARROLLADOR');
 
 -- PROYECTOS
 INSERT INTO PROYECTOS (nombre, descripcion, estado, is_deleted) VALUES

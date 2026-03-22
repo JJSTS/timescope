@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -30,7 +31,7 @@ public class UsuariosRestController {
     private final TareasServices tareasServices;
     
     @GetMapping
-//    @PreAuthorize("hasRole('DIRECTOR')")
+    @PreAuthorize("hasAnyRole('DIRECTOR','DESARROLLADOR')")
     public ResponseEntity<PageResponse<UsuarioResponseDto>> findAll(
             @RequestParam(required = false)Optional<String> username,
             @RequestParam(required = false)Optional<String> email,
