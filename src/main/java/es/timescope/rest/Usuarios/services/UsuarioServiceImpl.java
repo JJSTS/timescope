@@ -6,8 +6,10 @@ import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 import es.timescope.rest.Usuarios.exceptions.UsuarioNombreOrEmailExists;
 import es.timescope.rest.Usuarios.exceptions.UsuarioNotFound;
 import es.timescope.rest.Usuarios.mappers.UsuariosMapper;
+import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
+import jakarta.transaction.TransactionScoped;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -92,6 +94,16 @@ public class UsuarioServiceImpl implements UsuariosService {
                     }
                 });
         return usuarioMapper.toUsuarioResponseDto(usuariosRepository.save(usuarioMapper.toUsuario(userRequest, id)));
+    }
+
+    @Override
+    @Transactional
+    public void asignarRol(Long id, Roles role) {
+        log.info("Asignando un rol al usuario con id: {}", id);
+        Usuario usuario = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
+        usuario.getRoles().clear();
+        usuario.getRoles().add(role);
+        usuariosRepository.save(usuario);
     }
 
     @Override

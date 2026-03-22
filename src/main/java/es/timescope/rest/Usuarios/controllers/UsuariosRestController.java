@@ -3,6 +3,7 @@ package es.timescope.rest.Usuarios.controllers;
 import es.timescope.rest.Proyectos.services.ProyectoServices;
 import es.timescope.rest.Tareas.services.TareasServices;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
+import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.services.UsuariosService;
 import es.timescope.utils.pagination.PageResponse;
 import es.timescope.utils.pagination.PaginationLinksUtils;
@@ -52,8 +53,12 @@ public class UsuariosRestController {
                 .body(PageResponse.of(pageResult, sortBy, direction));
     }
 
-//    @PostMapping
-//    public ResponseEntity<UsuarioResponseDto> addUsuario(){
-//
-//    }
+
+    @PatchMapping("/{id}/asingRol")
+    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
+    public ResponseEntity<?> assingRol(@PathVariable Long id, @RequestParam Roles role) {
+        log.info("Asignado un Rol al usuario {}", id);
+        usuariosService.asignarRol(id, role);
+        return ResponseEntity.ok("Rol Asignado");
+    }
 }
