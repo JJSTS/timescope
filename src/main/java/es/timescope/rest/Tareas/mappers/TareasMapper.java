@@ -52,7 +52,7 @@ public class TareasMapper {
                 .descripcion(tarea.getDescripcion())
                 .estado(tarea.getEstado())
                 .fechaCreacion(tarea.getFechaCreacion())
-                .usuario(tarea.getUsuario().getNombres())
+                .usuario(tarea.getUsuario() != null ? tarea.getUsuario().getNombres() : null)
                 .build();
     }
 
