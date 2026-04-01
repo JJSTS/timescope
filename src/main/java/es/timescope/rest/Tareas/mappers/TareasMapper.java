@@ -26,6 +26,16 @@ public class TareasMapper {
 
     }
 
+    public Tarea toTarea(TareaCreateDto tareaCreateDto) {
+        return Tarea.builder()
+                .id(null)
+                .nombre(tareaCreateDto.getNombre())
+                .descripcion(tareaCreateDto.getDescripcion())
+                .fechaCreacion(LocalDateTime.now())
+                .build();
+
+    }
+
     public Tarea toTarea(TareaUpdateDto tareaUpdateDto, Tarea tarea) {
         return Tarea.builder()
                 .id(tarea.getId())

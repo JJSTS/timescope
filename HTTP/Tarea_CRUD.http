@@ -37,3 +37,12 @@ Authorization: Bearer {{auth_token}}
 GET http://localhost:8080/api/v1/tareas/3
 Authorization: Bearer {{auth_token}}
 
+### POST
+POST http://localhost:8080/api/v1/tareas
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "nombre": "Pruebas",
+  "descripcion": "Tarea de pruebas"
+}

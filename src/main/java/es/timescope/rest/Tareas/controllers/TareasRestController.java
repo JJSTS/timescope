@@ -1,11 +1,13 @@
 package es.timescope.rest.Tareas.controllers;
 
+import es.timescope.rest.Tareas.dto.TareaCreateDto;
 import es.timescope.rest.Tareas.dto.TareaResponseDto;
 import es.timescope.rest.Tareas.models.Tarea;
 import es.timescope.rest.Tareas.services.TareasServices;
 import es.timescope.utils.pagination.PageResponse;
 import es.timescope.utils.pagination.PaginationLinksUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -58,6 +60,13 @@ public class TareasRestController {
     public ResponseEntity<TareaResponseDto> getById(@PathVariable Long id) {
         log.info("Buscando el id de tarea con id: {}", id);
         return ResponseEntity.ok(tareasServices.findById(id));
+    }
+
+    @PostMapping()
+    public ResponseEntity<TareaResponseDto> createTarea(
+            @Valid @RequestBody TareaCreateDto tareaCreateDto){
+        log.info("Creando tarea: {}", tareaCreateDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(tareasServices.createTarea(tareaCreateDto));
     }
 
 

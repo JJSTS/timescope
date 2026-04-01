@@ -1,6 +1,7 @@
 package es.timescope.rest.Tareas.services;
 
 import es.timescope.rest.Proyectos.repositories.ProyectosRepository;
+import es.timescope.rest.Tareas.dto.TareaCreateDto;
 import es.timescope.rest.Tareas.dto.TareaResponseDto;
 import es.timescope.rest.Tareas.mappers.TareasMapper;
 import es.timescope.rest.Tareas.models.Tarea;
@@ -65,6 +66,13 @@ public class TareasServicesImpl implements TareasServices {
     @Override
     public List<Tarea> findByUsuarioId(Long usuarioId){
         return tareasRepository.findByUsuarioId(usuarioId);
+    }
+
+    @Override
+    public TareaResponseDto createTarea(TareaCreateDto tareaCreateDto){
+        log.info("Creando tarea: {}", tareaCreateDto);
+        Tarea tarea = tareasRepository.save(tareasMapper.toTarea(tareaCreateDto));
+        return tareasMapper.toTareaResponseDto(tarea);
     }
 
 }
