@@ -2,6 +2,7 @@ package es.timescope.rest.Tareas.controllers;
 
 import es.timescope.rest.Tareas.dto.TareaCreateDto;
 import es.timescope.rest.Tareas.dto.TareaResponseDto;
+import es.timescope.rest.Tareas.dto.TareaUpdateDto;
 import es.timescope.rest.Tareas.models.Tarea;
 import es.timescope.rest.Tareas.services.TareasServices;
 import es.timescope.utils.pagination.PageResponse;
@@ -69,6 +70,11 @@ public class TareasRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(tareasServices.createTarea(tareaCreateDto));
     }
 
+    @PutMapping("/update/{id}")
+    public ResponseEntity<TareaResponseDto> updateTarea(@PathVariable Long id, @Valid @RequestBody TareaUpdateDto tareaUpdateDto) {
+        log.info("Actualizando tarea con id: {}, datos: {}", id, tareaUpdateDto);
+        return ResponseEntity.ok(tareasServices.updateTarea(id, tareaUpdateDto));
+    }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)

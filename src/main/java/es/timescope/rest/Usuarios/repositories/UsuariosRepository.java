@@ -41,4 +41,6 @@ public interface UsuariosRepository extends JpaRepository<Usuario, Long>, JpaSpe
     @Query("UPDATE Usuario u SET u.roles = :rol WHERE u.id = :id")
     @Modifying
     void asingRolUsuario(Long id, Roles rol);
+
+    Usuario findByNombres(String nombres);
 }
