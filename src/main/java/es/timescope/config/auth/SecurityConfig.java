@@ -6,6 +6,7 @@ import org.springframework.boot.security.autoconfigure.web.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -56,6 +57,7 @@ public class SecurityConfig {
             .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
             .authorizeHttpRequests(request -> request
                     .requestMatchers("/api/" + apiVersion + "/auth/**").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/" + apiVersion + "/usuarios").permitAll()
                     .anyRequest().authenticated())
             .authenticationProvider(authenticationProvider()).addFilterBefore(
                     jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

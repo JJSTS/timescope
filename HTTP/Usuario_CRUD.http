@@ -44,4 +44,14 @@ Authorization: Bearer {{auth_token}}
 PATCH http://localhost:8080/api/v1/usuarios/1/asingRol?role=COORDINADOR
 Authorization: Bearer {{auth_token}}
 
+### POST - Crear Usuarios
+POST http://localhost:8080/api/v1/usuarios
+Content-Type: application/json
 
+{
+ "nombres": "Juan Jesus Sebastian",
+ "apellidos": "Trejo Salinas",
+ "email": "juanjesustrejosalinas06@gmail.com",
+ "username": "jjsts06",
+  "password": "kknero"
+}
