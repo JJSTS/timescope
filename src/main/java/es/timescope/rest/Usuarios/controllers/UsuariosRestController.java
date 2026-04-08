@@ -2,17 +2,20 @@ package es.timescope.rest.Usuarios.controllers;
 
 import es.timescope.rest.Proyectos.services.ProyectoServices;
 import es.timescope.rest.Tareas.services.TareasServices;
+import es.timescope.rest.Usuarios.dto.UsuarioCreateDto;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.services.UsuariosService;
 import es.timescope.utils.pagination.PageResponse;
 import es.timescope.utils.pagination.PaginationLinksUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -28,8 +31,6 @@ import java.util.Optional;
 public class UsuariosRestController {
     private final UsuariosService usuariosService;
     private final PaginationLinksUtils paginationLinksUtils;
-    private final ProyectoServices proyectoServices;
-    private final TareasServices tareasServices;
     
     @GetMapping
     @PreAuthorize("hasAnyRole('DIRECTOR','DESARROLLADOR')")
@@ -53,6 +54,11 @@ public class UsuariosRestController {
                 .body(PageResponse.of(pageResult, sortBy, direction));
     }
 
+    @PostMapping
+    public ResponseEntity<UsuarioResponseDto> createUsuario(@Valid @RequestBody UsuarioCreateDto usuarioCreateDto) {
+        log.info("save: userRequest: {}", usuarioCreateDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuariosService.save(usuarioCreateDto));
+    }
 
     @PatchMapping("/{id}/asingRol")
     @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")

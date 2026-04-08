@@ -1,5 +1,7 @@
 package es.timescope.rest.Usuarios.services;
 
+import es.timescope.rest.Emails.Impl.UsuarioEmailServiceImpl;
+import es.timescope.rest.Emails.services.UsuarioEmailService;
 import es.timescope.rest.Usuarios.dto.UsuarioCreateDto;
 import es.timescope.rest.Usuarios.dto.UsuarioInfoResponse;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
@@ -9,7 +11,6 @@ import es.timescope.rest.Usuarios.mappers.UsuariosMapper;
 import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
-import jakarta.transaction.TransactionScoped;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,13 +24,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Slf4j
 @CacheConfig(cacheNames = {"usuarios"})
 @RequiredArgsConstructor
 public class UsuarioServiceImpl implements UsuariosService {
-    
+    private final UsuarioEmailService usuarioEmailService;
     private final UsuariosRepository usuariosRepository;
     private final UsuariosMapper usuarioMapper;
 
@@ -73,13 +75,16 @@ public class UsuarioServiceImpl implements UsuariosService {
     @CachePut(key = "#result.id")
     public UsuarioResponseDto save(UsuarioCreateDto usuarioCreateDto) {
         log.info("Guardando usuario: {}", usuarioCreateDto);
+        Usuario usuario = usuarioMapper.toUsuario(usuarioCreateDto);
+        usuario.setRoles(Set.of(Roles.DESARROLLADOR));
+        usuario.setIsDeleted(false);
 
         usuariosRepository.findByUsernameEqualsIgnoreCaseOrEmailEqualsIgnoreCase(usuarioCreateDto.getUsername(), usuarioCreateDto.getEmail())
                 .ifPresent(u -> {
                     throw new UsuarioNombreOrEmailExists("Ya existe un usuario con ese username o email");
                 });
-
-        return usuarioMapper.toUsuarioResponseDto(usuariosRepository.save(usuarioMapper.toUsuario(usuarioCreateDto)));
+        usuarioEmailService.enviarConfirmacionCreacion(usuario);
+        return usuarioMapper.toUsuarioResponseDto(usuariosRepository.save(usuario));
     }
 
     @Override
