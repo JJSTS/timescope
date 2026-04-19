@@ -1,6 +1,6 @@
 package es.timescope.rest.Proyectos.controllers;
 
-import es.timescope.rest.Proyectos.dto.ProyectoResponseDto;
+import es.timescope.rest.Proyectos.dto.*;
 import es.timescope.rest.Proyectos.models.Estado;
 import es.timescope.rest.Proyectos.services.ProyectoServices;
 import es.timescope.utils.pagination.PageResponse;
@@ -75,6 +75,14 @@ public class ProyectosRestController {
         return ResponseEntity.ok()
                 .header("link", paginationLinksUtils.createLinkHeader(pageResult, uriBuilder))
                 .body(PageResponse.of(pageResult, sortBy, direction));
+    }
+
+    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
+    @PostMapping
+    public ResponseEntity<ProyectoResponseDto> createProyecto(@RequestBody ProyectoCreateDto proyectoCreateDto) {
+        log.info("Recibiendo solicitud para crear proyecto: {}", proyectoCreateDto);
+        ProyectoResponseDto proyecto = proyectoServices.save(proyectoCreateDto);
+        return ResponseEntity.ok(proyecto);
     }
 
     @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
