@@ -3,6 +3,7 @@ package es.timescope.rest.Usuarios.mappers;
 import es.timescope.rest.Usuarios.dto.UsuarioCreateDto;
 import es.timescope.rest.Usuarios.dto.UsuarioInfoResponse;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
+import es.timescope.rest.Usuarios.dto.UsuarioUpdateDto;
 import es.timescope.rest.Usuarios.models.Usuario;
 import org.springframework.stereotype.Component;
 
@@ -59,5 +60,23 @@ public class UsuariosMapper {
                 .tareas(tareas)
                 .proyectos(proyectos)
                 .build();
+    }
+
+    public void updateUsuarioFromDto(UsuarioUpdateDto dto, Usuario usuario) {
+        if (dto.getNombres() != null && !dto.getNombres().isBlank()) {
+            usuario.setNombres(dto.getNombres());
+        }
+        if (dto.getApellidos() != null && !dto.getApellidos().isBlank()) {
+            usuario.setApellidos(dto.getApellidos());
+        }
+        if (dto.getEmail() != null && !dto.getEmail().isBlank()) {
+            usuario.setEmail(dto.getEmail());
+        }
+        if (dto.getUsername() != null && !dto.getUsername().isBlank()) {
+            usuario.setUsername(dto.getUsername());
+        }
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            usuario.setPassword(dto.getPassword());
+        }
     }
 }

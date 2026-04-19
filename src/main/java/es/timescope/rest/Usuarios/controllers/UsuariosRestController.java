@@ -3,6 +3,7 @@ package es.timescope.rest.Usuarios.controllers;
 import es.timescope.rest.Proyectos.services.ProyectoServices;
 import es.timescope.rest.Tareas.services.TareasServices;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
+import es.timescope.rest.Usuarios.dto.UsuarioUpdateDto;
 import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.services.UsuariosService;
 import es.timescope.utils.pagination.PageResponse;
@@ -32,7 +33,7 @@ public class UsuariosRestController {
     private final TareasServices tareasServices;
     
     @GetMapping
-    @PreAuthorize("hasAnyRole('DIRECTOR','DESARROLLADOR')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PageResponse<UsuarioResponseDto>> findAll(
             @RequestParam(required = false)Optional<String> username,
             @RequestParam(required = false)Optional<String> email,
@@ -60,5 +61,13 @@ public class UsuariosRestController {
         log.info("Asignado un Rol al usuario {}", id);
         usuariosService.asignarRol(id, role);
         return ResponseEntity.ok("Rol Asignado");
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR','DESARROLLADOR')")
+    public ResponseEntity<UsuarioResponseDto> updatePartial(@PathVariable Long id, @RequestBody UsuarioUpdateDto usuarioUpdateDto) {
+        log.info("Actualizando parcialmente usuario con id: {}", id);
+        UsuarioResponseDto usuarioActualizado = usuariosService.updatePartial(id, usuarioUpdateDto);
+        return ResponseEntity.ok(usuarioActualizado);
     }
 }
