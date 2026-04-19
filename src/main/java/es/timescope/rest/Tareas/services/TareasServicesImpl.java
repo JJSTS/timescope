@@ -1,7 +1,9 @@
 package es.timescope.rest.Tareas.services;
 
 import es.timescope.rest.Proyectos.repositories.ProyectosRepository;
+import es.timescope.rest.Tareas.dto.TareaCreateDto;
 import es.timescope.rest.Tareas.dto.TareaResponseDto;
+import es.timescope.rest.Tareas.dto.TareaUpdateDto;
 import es.timescope.rest.Tareas.mappers.TareasMapper;
 import es.timescope.rest.Tareas.models.Tarea;
 import es.timescope.rest.Tareas.repositories.TareasRepository;
@@ -67,4 +69,20 @@ public class TareasServicesImpl implements TareasServices {
         return tareasRepository.findByUsuarioId(usuarioId);
     }
 
+    @Override
+    public TareaResponseDto createTarea(TareaCreateDto tareaCreateDto){
+        log.info("Creando tarea: {}", tareaCreateDto);
+        Tarea tarea = tareasRepository.save(tareasMapper.toTarea(tareaCreateDto));
+        return tareasMapper.toTareaResponseDto(tarea);
+    }
+
+    @Override
+    public TareaResponseDto updateTarea(Long id, TareaUpdateDto tareaUpdateDto) {
+        log.info("Actualizando tarea con id: {}", id);
+        Tarea tareaOpt = tareasRepository.findById(id).orElseThrow(() -> new RuntimeException("Tarea no encontrada con id: " + id));
+        Usuario usuario = usuariosRepository.findByNombres(tareaUpdateDto.getUsuario());
+        log.info("Usuario asociado a la tarea: {}", usuario);
+        Tarea tarea = tareasRepository.save(tareasMapper.toTarea(tareaUpdateDto, tareaOpt, usuario));
+        return tareasMapper.toTareaResponseDto(tarea);
+    }
 }
