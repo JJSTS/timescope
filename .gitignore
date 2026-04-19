@@ -31,3 +31,21 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Node & npm ###
+node_modules/
+frontend/node_modules/
+package-lock.json
+frontend/package-lock.json
+
+### Documentation (generated files) ###
+BIENVENIDA_FRONTEND.md
+CHECKLIST_TROUBLESHOOTING.md
+GUIA_FRONTEND.md
+INICIAR_BACKEND.bat
+INSTRUCCIONES_FINALES.md
+NOTAS_DESARROLLO.md
+RESUMEN_FINAL.md
+STATUS.md
+frontend/INICIAR_FRONTEND.bat
+frontend/README.md

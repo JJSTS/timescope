@@ -5,6 +5,7 @@ import es.timescope.rest.Emails.services.UsuarioEmailService;
 import es.timescope.rest.Usuarios.dto.UsuarioCreateDto;
 import es.timescope.rest.Usuarios.dto.UsuarioInfoResponse;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
+import es.timescope.rest.Usuarios.dto.UsuarioUpdateDto;
 import es.timescope.rest.Usuarios.exceptions.UsuarioNombreOrEmailExists;
 import es.timescope.rest.Usuarios.exceptions.UsuarioNotFound;
 import es.timescope.rest.Usuarios.mappers.UsuariosMapper;
@@ -99,6 +100,30 @@ public class UsuarioServiceImpl implements UsuariosService {
                     }
                 });
         return usuarioMapper.toUsuarioResponseDto(usuariosRepository.save(usuarioMapper.toUsuario(userRequest, id)));
+    }
+
+    @Override
+    @CachePut(key = "#id")
+    public UsuarioResponseDto updatePartial(Long id, UsuarioUpdateDto userRequest) {
+        log.info("Actualizando parcialmente el usuario con id: {}", id);
+        Usuario usuario = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
+
+        // Validar que username o email no existan (si se están actualizando)
+        if ((userRequest.getUsername() != null && !userRequest.getUsername().isBlank()) ||
+            (userRequest.getEmail() != null && !userRequest.getEmail().isBlank())) {
+            usuariosRepository.findByUsernameEqualsIgnoreCaseOrEmailEqualsIgnoreCase(
+                    userRequest.getUsername() != null ? userRequest.getUsername() : usuario.getUsername(),
+                    userRequest.getEmail() != null ? userRequest.getEmail() : usuario.getEmail())
+                    .ifPresent(u -> {
+                        if (!u.getId().equals(id)) {
+                            throw new UsuarioNombreOrEmailExists("Ya existe un usuario con ese username o email");
+                        }
+                    });
+        }
+
+        // Actualizar solo los campos que no sean null
+        usuarioMapper.updateUsuarioFromDto(userRequest, usuario);
+        return usuarioMapper.toUsuarioResponseDto(usuariosRepository.save(usuario));
     }
 
     @Override
