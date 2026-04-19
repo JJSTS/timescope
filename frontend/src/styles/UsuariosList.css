@@ -1,0 +1,149 @@
+/* Usuarios Container */
+.usuarios-container {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.usuarios-container h2 {
+  margin-bottom: 1.5rem;
+  color: #333;
+  font-size: 1.8rem;
+}
+
+/* Table */
+.usuarios-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.usuarios-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.usuarios-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #ddd;
+}
+
+.usuarios-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.usuarios-table tbody tr:hover {
+  background: #f9f9f9;
+  transition: background 0.2s ease;
+}
+
+.usuarios-table tbody tr:nth-child(even) {
+  background: #f0f0f0;
+}
+
+/* Buttons */
+.btn-edit,
+.btn-save,
+.btn-cancel {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-edit {
+  background: #667eea;
+  color: white;
+}
+
+.btn-edit:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+}
+
+.btn-save {
+  background: #4caf50;
+  color: white;
+}
+
+.btn-save:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+}
+
+.btn-cancel {
+  background: #ff6b6b;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background: #ee5a52;
+  transform: translateY(-2px);
+}
+
+/* Input Fields in Table */
+.usuarios-table input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #667eea;
+  border-radius: 3px;
+  font-size: 0.95rem;
+}
+
+.usuarios-table input:focus {
+  outline: none;
+  border-color: #764ba2;
+  box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+}
+
+/* Loading & Error */
+.loading,
+.error-message {
+  padding: 2rem;
+  text-align: center;
+  font-size: 1.1rem;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.error-message {
+  background: #fee;
+  color: #c33;
+  border-left: 4px solid #c33;
+}
+
+.loading {
+  color: #667eea;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .usuarios-container {
+    padding: 1rem;
+  }
+
+  .usuarios-table {
+    font-size: 0.9rem;
+  }
+
+  .usuarios-table th,
+  .usuarios-table td {
+    padding: 0.7rem 0.5rem;
+  }
+
+  .btn-edit,
+  .btn-save,
+  .btn-cancel {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+}
+
