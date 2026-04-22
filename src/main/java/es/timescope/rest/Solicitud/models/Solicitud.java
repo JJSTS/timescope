@@ -20,15 +20,15 @@ public class Solicitud {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id")
+    @JoinColumn(name = "emisor_id")
     private Usuario emisor;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id")
+    @JoinColumn(name = "receptor_id")
     private Usuario receptor;
 
-    @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, name = "estado")
     private Estado estado = Estado.PENDIENTE;
 
     @Column(nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")

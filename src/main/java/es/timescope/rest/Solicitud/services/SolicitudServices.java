@@ -12,7 +12,7 @@ public interface SolicitudServices {
 
     SolicitudResponseDto rechazarSolicitud(Long id, Long receptorId);
 
-    void cancelarSolicitud(Long solicitudId, Long emisorId);
+    void cancelarSolicitud(Long id);
 
     List<SolicitudResponseDto> solicitudesPendientes(Long receptorId);
 }

@@ -2,6 +2,7 @@ package es.timescope.rest.Usuarios.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import es.timescope.rest.Proyectos.models.Proyecto;
+import es.timescope.rest.Solicitud.models.Solicitud;
 import es.timescope.rest.Tareas.models.Tarea;
 import jakarta.persistence.*;
 import lombok.*;
@@ -72,7 +73,12 @@ public class Usuario implements UserDetails {
     @ToString.Exclude
     private List<Proyecto> proyectos;
 
-//    Spring Security
+    @OneToMany(mappedBy = "receptor")
+    @JsonIgnoreProperties("receptor")
+    @ToString.Exclude
+    private List<Solicitud> solicitudes;
+
+//   Spring Security
     @Override
     public String getUsername() {
         return username;
