@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface SolicitudServices {
 
-    SolicitudResponseDto enviarSolicitud(Long emisorId, Long receptorId);
+    SolicitudResponseDto enviarSolicitud(String username);
 
     SolicitudResponseDto aceptarSolicitud(Long id, Long receptorId);
 
@@ -14,5 +14,5 @@ public interface SolicitudServices {
 
     void cancelarSolicitud(Long solicitudId, Long emisorId);
 
-    List<SolicitudResponseDto> verSolicitudesPendientes(Long receptorId);
+    List<SolicitudResponseDto> solicitudesPendientes(Long receptorId);
 }

@@ -29,9 +29,10 @@ public class SolicitudServicesImpl implements SolicitudServices {
     private final SolicitudMapper solicitudMapper;
 
     @Override
-    public SolicitudResponseDto enviarSolicitud(Long emisorId, Long receptorId) {
-        log.info("Solicitud enviada de {} a {}", emisorId, receptorId);
-        if(emisorId.equals(receptorId)) {throw new EmisorAndReceptorEquals();}
+    public SolicitudResponseDto enviarSolicitud(String username) {
+        log.info("Solicitud enviada a {}", username );
+        Usuario emisor = usuariosRepository.findByUsername(username).orElseThrow(() -> new EmisorOrReceptorNotFound(username));
+        if(emisor.getUsername().equals()) {throw new EmisorAndReceptorEquals();}
 
         if (solicitudRepository.existsByEmisorIdAndReceptorIdAndEstado(emisorId, receptorId, Estado.PENDIENTE)) {throw new SolicitudExist();}
 
@@ -60,17 +61,26 @@ public class SolicitudServicesImpl implements SolicitudServices {
 
     @Override
     public SolicitudResponseDto rechazarSolicitud(Long id, Long receptorId) {
-        return null;
+        log.info("Solicitud rechazada");
+        Solicitud solicitud = validarSolicitud(id, receptorId);
+        solicitud.setEstado(Estado.RECHAZADA);
+        solicitudRepository.save(solicitud);
+        return solicitudMapper.toResponseDto(solicitud);
     }
 
     @Override
-    public void cancelarSolicitud(Long solicitudId, Long emisorId) {
-
+    public void cancelarSolicitud(Long id, Long emisorId) {
+        Solicitud solicitud = solicitudRepository.findById(id).orElseThrow(() -> new SolicitudNotFound());
+        validarSolicitud(emisorId, emisorId);
+        solicitudRepository.delete(solicitud);
+        log.info("Solicitud cancelada");
     }
 
     @Override
-    public List<SolicitudResponseDto> verSolicitudesPendientes(Long receptorId) {
-        return List.of();
+    public List<SolicitudResponseDto> solicitudesPendientes(Long receptorId) {
+        return solicitudMapper.toResponseDtoList(
+                solicitudRepository.findByReceptorIdAndEstado(receptorId, Estado.PENDIENTE)
+        );
     }
 
     public Solicitud validarSolicitud(Long id, Long receptorId) {

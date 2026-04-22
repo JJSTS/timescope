@@ -1,6 +1,7 @@
 package es.timescope.rest.Solicitud.dto;
 
 import es.timescope.rest.Solicitud.models.Estado;
+import es.timescope.rest.Usuarios.models.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
