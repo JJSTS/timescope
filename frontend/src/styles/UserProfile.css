@@ -1,0 +1,518 @@
+/* ============================================
+   USER PROFILE STYLES
+   ============================================ */
+
+.profile-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  padding: 2rem;
+  font-family: 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* SECCIÓN DE BIENVENIDA */
+.welcome-section {
+  margin-bottom: 2rem;
+}
+
+.welcome-card {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 10px 13px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(106, 90, 205, 0.1);
+}
+
+.welcome-content {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6A5ACD 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+  box-shadow: 0 4px 12px rgba(106, 90, 205, 0.3);
+}
+
+.welcome-info {
+  flex: 1;
+}
+
+.welcome-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.user-email {
+  font-size: 1rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.user-role-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #6A5ACD 0%, #764ba2 100%);
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(106, 90, 205, 0.2);
+}
+
+/* SECCIÓN DE MÉTRICAS */
+.metrics-section {
+  margin-bottom: 2rem;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.metric-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(106, 90, 205, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+  box-shadow: 0 8px 16px rgba(106, 90, 205, 0.15);
+  transform: translateY(-2px);
+  border-color: rgba(106, 90, 205, 0.3);
+}
+
+.metric-icon {
+  font-size: 2rem;
+  min-width: 50px;
+  text-align: center;
+}
+
+.metric-content {
+  flex: 1;
+}
+
+.metric-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+.metric-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #6A5ACD;
+}
+
+/* LAYOUT PRINCIPAL */
+.profile-main-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 2rem;
+}
+
+/* SECCIÓN DE TAREAS */
+.tasks-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(106, 90, 205, 0.1);
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tasks-container {
+  overflow-x: auto;
+}
+
+.tasks-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tasks-table thead {
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.tasks-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #6b7280;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tasks-table tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background-color 0.2s ease;
+}
+
+.tasks-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.task-row {
+  cursor: pointer;
+}
+
+.task-name {
+  padding: 1.25rem 1rem;
+}
+
+.task-title {
+  font-weight: 600;
+  color: #1f2937;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.task-description {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.task-project {
+  padding: 1.25rem 1rem;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.task-status {
+  padding: 1.25rem 1rem;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.status-activo {
+  background: #dbeafe;
+  color: #0369a1;
+}
+
+.status-badge.status-completado {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-badge.status-suspendido {
+  background: #fef08a;
+  color: #854d0e;
+}
+
+.task-date {
+  padding: 1.25rem 1rem;
+  color: #9ca3af;
+  font-size: 0.95rem;
+}
+
+.no-tasks {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #9ca3af;
+}
+
+.no-tasks p {
+  margin: 0;
+}
+
+/* SIDEBAR: DETALLES DE LA CUENTA */
+.account-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.account-card,
+.quick-stats {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(106, 90, 205, 0.1);
+}
+
+.sidebar-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+}
+
+.account-details {
+  margin-bottom: 1.5rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.25rem;
+}
+
+.detail-item:last-child {
+  margin-bottom: 0;
+}
+
+.detail-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+
+.detail-value {
+  font-size: 0.95rem;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.detail-value.badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #6A5ACD 0%, #764ba2 100%);
+  color: white;
+  padding: 0.3rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  width: fit-content;
+}
+
+.sidebar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.btn-secondary,
+.btn-outline {
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #6A5ACD 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-secondary:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(106, 90, 205, 0.3);
+}
+
+.btn-outline {
+  background: transparent;
+  color: #6A5ACD;
+  border: 2px solid #6A5ACD;
+}
+
+.btn-outline:hover {
+  background: #6A5ACD;
+  color: white;
+}
+
+/* ESTADÍSTICAS RÁPIDAS */
+.stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.stat-item:last-child {
+  border-bottom: none;
+}
+
+.stat-item span {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.stat-item strong {
+  font-size: 1.25rem;
+  color: #6A5ACD;
+  font-weight: 700;
+}
+
+/* LOADING & ERROR STATES */
+.loading,
+.error-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-size: 1.1rem;
+  color: #6b7280;
+  padding: 2rem;
+  text-align: center;
+}
+
+.error-message {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 2px solid #fecaca;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 600px;
+  margin: auto;
+}
+
+.error-message h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #7f1d1d;
+}
+
+.error-message p {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0.5rem 0;
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 1024px) {
+  .profile-main-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .account-sidebar {
+    flex-direction: row;
+  }
+
+  .account-card,
+  .quick-stats {
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 1rem;
+  }
+
+  .welcome-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .welcome-title {
+    font-size: 1.5rem;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .tasks-section {
+    padding: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+  }
+
+  .tasks-table {
+    font-size: 0.875rem;
+  }
+
+  .tasks-table th,
+  .tasks-table td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .account-sidebar {
+    flex-direction: column;
+  }
+
+  .account-card,
+  .quick-stats {
+    width: 100%;
+  }
+
+  .task-description {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-title {
+    font-size: 1.25rem;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .tasks-table th:not(:first-child),
+  .tasks-table td:not(:first-child) {
+    display: none;
+  }
+
+  .task-name {
+    width: 100%;
+  }
+}
+
