@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authService } from '../services/authService';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   logout: () => void;
   username?: string;
   setIsAuthenticated: (value: boolean) => void;
+  setUsername: (value: string | undefined) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -14,24 +14,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState<string>();
 
+  // Al cargar el componente, verificar si hay sesión guardada
   useEffect(() => {
-    // Verificar si hay token guardado al cargar
     const token = localStorage.getItem('token');
     const storedUsername = localStorage.getItem('username');
+    console.log('🔐 AuthProvider inicializado. Token:', !!token, 'Username:', storedUsername);
+
     if (token && storedUsername) {
       setIsAuthenticated(true);
       setUsername(storedUsername);
+      console.log('✅ Sesión restaurada desde localStorage:', storedUsername);
     }
   }, []);
 
-  // Escuchar cambios en localStorage desde otras pestañas/ventanas
+  // Monitorear cambios en localStorage (cuando otro tab hace cambios)
   useEffect(() => {
-    const handleStorageChange = () => {
+    const handleStorageChange = (e: StorageEvent) => {
+      console.log('🔄 Storage cambió. Event:', e.key);
       const token = localStorage.getItem('token');
       const storedUsername = localStorage.getItem('username');
+
       if (token && storedUsername) {
         setIsAuthenticated(true);
         setUsername(storedUsername);
+        console.log('✅ Usuario actualizado desde storage:', storedUsername);
       } else {
         setIsAuthenticated(false);
         setUsername(undefined);
@@ -42,15 +48,41 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
+  // Monitorear cambios manuales en localStorage desde la misma ventana
+  // Esto se llama cuando LoginForm guarda el username
+  useEffect(() => {
+    const checkLocalStorage = () => {
+      const token = localStorage.getItem('token');
+      const storedUsername = localStorage.getItem('username');
+
+      if (token && storedUsername && storedUsername !== username) {
+        console.log('🔄 Username cambió en localStorage:', storedUsername);
+        setIsAuthenticated(true);
+        setUsername(storedUsername);
+        console.log('✅ Username actualizado en AuthContext:', storedUsername);
+      }
+    };
+
+    // Verificar inmediatamente
+    checkLocalStorage();
+
+    // Y también crear un intervalo de chequeo frecuente (para la misma ventana)
+    const interval = setInterval(checkLocalStorage, 100);
+    return () => clearInterval(interval);
+  }, [username]);
+
   const logout = () => {
+    console.log('🚪 Logout ejecutado');
     localStorage.removeItem('token');
     localStorage.removeItem('username');
     setIsAuthenticated(false);
     setUsername(undefined);
   };
 
+  console.log('📊 AuthContext render. Username:', username, 'IsAuth:', isAuthenticated);
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, logout, username, setIsAuthenticated }}>
+    <AuthContext.Provider value={{ isAuthenticated, logout, username, setUsername, setIsAuthenticated }}>
       {children}
     </AuthContext.Provider>
   );

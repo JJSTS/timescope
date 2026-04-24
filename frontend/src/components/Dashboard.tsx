@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import LoginForm from './LoginForm';
+import UserProfile from './UserProfile';
 import UsuariosList from './UsuariosList';
 import TareasList from './TareasList';
 import ProyectosList from './ProyectosList';
@@ -8,10 +9,10 @@ import '../styles/Dashboard.css';
 
 const Dashboard: React.FC = () => {
   const { isAuthenticated, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'usuarios' | 'tareas' | 'proyectos'>('usuarios');
+  const [activeTab, setActiveTab] = useState<'perfil' | 'usuarios' | 'tareas' | 'proyectos'>('perfil');
 
   if (!isAuthenticated) {
-    return <LoginForm onLoginSuccess={() => setActiveTab('usuarios')} />;
+    return <LoginForm onLoginSuccess={() => setActiveTab('perfil')} />;
   }
 
   return (
@@ -21,6 +22,12 @@ const Dashboard: React.FC = () => {
           <h1>⏱️ TimeScope</h1>
         </div>
         <div className="navbar-menu">
+          <button
+            className={`nav-btn ${activeTab === 'perfil' ? 'active' : ''}`}
+            onClick={() => setActiveTab('perfil')}
+          >
+            👤 Mi Perfil
+          </button>
           <button
             className={`nav-btn ${activeTab === 'usuarios' ? 'active' : ''}`}
             onClick={() => setActiveTab('usuarios')}
@@ -46,6 +53,7 @@ const Dashboard: React.FC = () => {
       </nav>
 
       <main className="dashboard-content">
+        {activeTab === 'perfil' && <UserProfile />}
         {activeTab === 'usuarios' && <UsuariosList />}
         {activeTab === 'tareas' && <TareasList />}
         {activeTab === 'proyectos' && <ProyectosList />}
