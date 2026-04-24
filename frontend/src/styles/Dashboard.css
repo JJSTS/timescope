@@ -73,21 +73,141 @@
   padding: 0;
 }
 
+/* Hamburger Button y Notification */
+.navbar-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.notification-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: white;
+  padding: 10px 12px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.notification-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.notification-btn::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 8px;
+  height: 8px;
+  background: #ff6b6b;
+  border-radius: 50%;
+  display: none;
+}
+
+.notification-btn.has-notifications::after {
+  display: block;
+}
+
+.hamburger-btn {
+  display: block;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: white;
+  padding: 10px 12px;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.hamburger-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+/* Menu desplegable */
+.navbar-menu {
+  display: none;
+  position: absolute;
+  top: 70px;
+  right: 20px;
+  flex-direction: column;
+  background-color: #2c3e50;
+  width: 220px;
+  padding: 10px 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  border-radius: 5px;
+}
+
+.navbar-menu.open {
+  display: flex;
+}
+
+.nav-btn {
+  width: 100%;
+  text-align: left;
+  padding: 12px 20px;
+  border: none;
+  background: none;
+  color: white;
+  border-radius: 0;
+  transition: background-color 0.3s;
+  font-size: 0.95rem;
+}
+
+.nav-btn:first-child {
+  border-radius: 5px 5px 0 0;
+}
+
+.nav-btn:hover {
+  background-color: #34495e;
+}
+
+.nav-btn.active {
+  background-color: #667eea;
+  color: white;
+  font-weight: bold;
+}
+
+.logout-btn {
+  width: 100%;
+  text-align: left;
+  padding: 12px 20px;
+  border-radius: 0 0 5px 5px;
+  border: none;
+  background: #ff6b6b;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+  background: #ee5a52;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .navbar {
-    flex-direction: column;
-    gap: 1rem;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 1rem;
   }
 
-  .navbar-menu {
-    flex-wrap: wrap;
-    justify-content: center;
+  .navbar-brand {
+    flex: 1;
   }
 
-  .nav-btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
+  .navbar-brand h1 {
+    font-size: 1.5rem;
   }
 
   .dashboard-content {

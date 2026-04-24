@@ -10,6 +10,17 @@ import '../styles/Dashboard.css';
 const Dashboard: React.FC = () => {
   const { isAuthenticated, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<'perfil' | 'usuarios' | 'tareas' | 'proyectos'>('perfil');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const handleTabClick = (tab: 'perfil' | 'usuarios' | 'tareas' | 'proyectos') => {
+    setActiveTab(tab);
+    setIsMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setIsMenuOpen(false);
+  };
 
   if (!isAuthenticated) {
     return <LoginForm onLoginSuccess={() => setActiveTab('perfil')} />;
@@ -21,32 +32,40 @@ const Dashboard: React.FC = () => {
         <div className="navbar-brand">
           <h1>⏱️ TimeScope</h1>
         </div>
-        <div className="navbar-menu">
+        <div className="navbar-controls">
+          <button className="notification-btn" title="Notificaciones">
+            🔔
+          </button>
+          <button className="hamburger-btn" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            ☰
+          </button>
+        </div>
+        <div className={`navbar-menu ${isMenuOpen ? 'open' : ''}`}>
           <button
             className={`nav-btn ${activeTab === 'perfil' ? 'active' : ''}`}
-            onClick={() => setActiveTab('perfil')}
+            onClick={() => handleTabClick('perfil')}
           >
             👤 Mi Perfil
           </button>
           <button
             className={`nav-btn ${activeTab === 'usuarios' ? 'active' : ''}`}
-            onClick={() => setActiveTab('usuarios')}
+            onClick={() => handleTabClick('usuarios')}
           >
             👥 Usuarios
           </button>
           <button
             className={`nav-btn ${activeTab === 'tareas' ? 'active' : ''}`}
-            onClick={() => setActiveTab('tareas')}
+            onClick={() => handleTabClick('tareas')}
           >
             ✓ Tareas
           </button>
           <button
             className={`nav-btn ${activeTab === 'proyectos' ? 'active' : ''}`}
-            onClick={() => setActiveTab('proyectos')}
+            onClick={() => handleTabClick('proyectos')}
           >
             📋 Proyectos
           </button>
-          <button className="logout-btn" onClick={logout}>
+          <button className="logout-btn" onClick={handleLogout}>
             🚪 Cerrar Sesión
           </button>
         </div>

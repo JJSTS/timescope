@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+    import TaskCalendar from './TaskCalendar';
 import '../styles/UserProfile.css';
 
 interface Task {
@@ -213,44 +214,9 @@ const UserProfile: React.FC = () => {
 
       {/* Layout principal: Contenido + Sidebar */}
       <div className="profile-main-layout">
-        {/* Mis Tareas de Hoy */}
-        <section className="tasks-section">
-          <h2 className="section-title">Mis Tareas Próximas</h2>
-          <div className="tasks-container">
-            {tasks.length > 0 ? (
-              <table className="tasks-table">
-                <thead>
-                  <tr>
-                    <th>Tarea</th>
-                    <th>Proyecto</th>
-                    <th>Estado</th>
-                    <th>Fecha Límite</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tasks.map((task) => (
-                    <tr key={task.id} className={`task-row task-${task.estado.toLowerCase()}`}>
-                      <td className="task-name">
-                        <span className="task-title">{task.nombre}</span>
-                        <p className="task-description">{task.descripcion}</p>
-                      </td>
-                      <td className="task-project">{task.proyecto || '-'}</td>
-                      <td className="task-status">
-                        <span className={`status-badge status-${task.estado.toLowerCase()}`}>
-                          {task.estado}
-                        </span>
-                      </td>
-                      <td className="task-date">{task.fechaLimite || '-'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <div className="no-tasks">
-                <p>No tienes tareas asignadas en este momento.</p>
-              </div>
-            )}
-          </div>
+        {/* Calendario de Tareas */}
+        <section className="calendar-section">
+          <TaskCalendar tasks={tasks} />
         </section>
 
         {/* Sidebar: Detalles de la Cuenta */}
