@@ -11,7 +11,6 @@ import es.timescope.rest.Solicitud.models.Solicitud;
 import es.timescope.rest.Solicitud.repositories.SolicitudRepository;
 import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
-import es.timescope.config.auth.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;
@@ -28,21 +27,23 @@ public class SolicitudServicesImpl implements SolicitudServices {
     private final SolicitudRepository solicitudRepository;
     private final UsuariosRepository usuariosRepository;
     private final SolicitudMapper solicitudMapper;
-    private final AuthUtils authUtils;
 
     @Override
     public SolicitudResponseDto enviarSolicitud(String username) {
         log.info("Solicitud enviada a {}", username );
+        Usuario emisor = usuariosRepository.findByUsername(username).orElseThrow(() -> new EmisorOrReceptorNotFound(username));
+        if(emisor.getUsername().equals(username)) {throw new EmisorAndReceptorEquals();}
 
-        Usuario emisor = authUtils.getUsuarioAuthentication(usuariosRepository);
-        Usuario receptor = usuariosRepository.findByUsername(username)
-                .orElseThrow(() -> new EmisorOrReceptorNotFound("Receptor no encontrado"));
+        if (solicitudRepository.existsByEmisorIdAndReceptorIdAndEstado(emisor.getId(), emisor.getId(), Estado.PENDIENTE)) {throw new SolicitudExist();}
 
-        if(emisor.getUsername().equals(username)) throw new EmisorAndReceptorEquals();
+        Usuario receptor = usuariosRepository.findById(emisor.getId()).orElseThrow(() -> new EmisorOrReceptorNotFound("Emisor no encontrado"));
 
-        if (solicitudRepository.existsByEmisorIdAndReceptorIdAndEstado(emisor.getId(), receptor.getId(), Estado.PENDIENTE)) throw new SolicitudExist();
+        Usuario emisors = usuariosRepository.findById(receptor.getId()).orElseThrow(() -> new EmisorOrReceptorNotFound("Receptor no encontrado"));
+        Solicitud solicitud = Solicitud.builder()
+                .emisor(emisor)
+                .receptor(receptor)
+                .build();
 
-        Solicitud solicitud = solicitudMapper.toSolicitud(emisor, receptor);
         solicitudRepository.save(solicitud);
         return solicitudMapper.toResponseDto(solicitud);
     }
@@ -68,13 +69,11 @@ public class SolicitudServicesImpl implements SolicitudServices {
     }
 
     @Override
-    public void cancelarSolicitud(Long id) {
-        Usuario emisor = authUtils.getUsuarioAuthentication(usuariosRepository);
-        Solicitud solicitud = solicitudRepository.findById(id)
-                .orElseThrow(() -> new SolicitudNotFound());
-
-        log.info("Solicitud cancelada");
+    public void cancelarSolicitud(Long id, Long emisorId) {
+        Solicitud solicitud = solicitudRepository.findById(id).orElseThrow(() -> new SolicitudNotFound());
+        validarSolicitud(emisorId, emisorId);
         solicitudRepository.delete(solicitud);
+        log.info("Solicitud cancelada");
     }
 
     @Override
@@ -91,5 +90,6 @@ public class SolicitudServicesImpl implements SolicitudServices {
         if (solicitud.getEstado() != Estado.PENDIENTE) throw new SolicitudExist();
 
         return solicitud;
+
     }
 }
