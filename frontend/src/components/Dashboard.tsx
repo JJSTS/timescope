@@ -28,49 +28,65 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard-container">
-      <nav className="navbar">
-        <div className="navbar-brand">
-          <h1>⏱️ TimeScope</h1>
+      {/* Header */}
+      <header className="dashboard-header">
+        <div className="header-left">
+          <h1 className="logo">⏱️ TimeScope</h1>
         </div>
-        <div className="navbar-controls">
-          <button className="notification-btn" title="Notificaciones">
+
+        <div className="header-right">
+          <button className="search-btn" title="Buscar" aria-label="Buscar">
+            🔍
+          </button>
+          <button className="notification-btn" title="Notificaciones" aria-label="Notificaciones">
             🔔
           </button>
-          <button className="hamburger-btn" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <button
+            className="menu-btn"
+            title="Menú"
+            aria-label="Menú"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
             ☰
           </button>
         </div>
-        <div className={`navbar-menu ${isMenuOpen ? 'open' : ''}`}>
-          <button
-            className={`nav-btn ${activeTab === 'perfil' ? 'active' : ''}`}
-            onClick={() => handleTabClick('perfil')}
-          >
-            👤 Mi Perfil
-          </button>
-          <button
-            className={`nav-btn ${activeTab === 'usuarios' ? 'active' : ''}`}
-            onClick={() => handleTabClick('usuarios')}
-          >
-            👥 Usuarios
-          </button>
-          <button
-            className={`nav-btn ${activeTab === 'tareas' ? 'active' : ''}`}
-            onClick={() => handleTabClick('tareas')}
-          >
-            ✓ Tareas
-          </button>
-          <button
-            className={`nav-btn ${activeTab === 'proyectos' ? 'active' : ''}`}
-            onClick={() => handleTabClick('proyectos')}
-          >
-            📋 Proyectos
-          </button>
-          <button className="logout-btn" onClick={handleLogout}>
-            🚪 Cerrar Sesión
-          </button>
-        </div>
-      </nav>
 
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <nav className="mobile-menu">
+            <button
+              className={`mobile-menu-item ${activeTab === 'perfil' ? 'active' : ''}`}
+              onClick={() => handleTabClick('perfil')}
+            >
+              <span>👤</span> Mi Perfil
+            </button>
+            <button
+              className={`mobile-menu-item ${activeTab === 'usuarios' ? 'active' : ''}`}
+              onClick={() => handleTabClick('usuarios')}
+            >
+              <span>👥</span> Usuarios
+            </button>
+            <button
+              className={`mobile-menu-item ${activeTab === 'tareas' ? 'active' : ''}`}
+              onClick={() => handleTabClick('tareas')}
+            >
+              <span>✓</span> Tareas
+            </button>
+            <button
+              className={`mobile-menu-item ${activeTab === 'proyectos' ? 'active' : ''}`}
+              onClick={() => handleTabClick('proyectos')}
+            >
+              <span>📋</span> Proyectos
+            </button>
+            <hr />
+            <button className="mobile-menu-item logout" onClick={handleLogout}>
+              <span>🚪</span> Cerrar Sesión
+            </button>
+          </nav>
+        )}
+      </header>
+
+      {/* Main Content */}
       <main className="dashboard-content">
         {activeTab === 'perfil' && <UserProfile />}
         {activeTab === 'usuarios' && <UsuariosList />}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-    import TaskCalendar from './TaskCalendar';
+import TaskCalendar from './TaskCalendar';
 import '../styles/UserProfile.css';
 
 interface Task {
@@ -29,34 +29,17 @@ const UserProfile: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('🔍 UserProfile mounted. Username:', username);
-    console.log('🔍 Token en localStorage:', !!localStorage.getItem('token'));
-
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem('token');
 
-        console.log('📡 Iniciando fetchUserData...');
-        console.log('Username:', username);
-        console.log('Token:', token ? 'Existe' : 'NO EXISTE');
-
-        if (!token) {
-          setError('❌ No hay token en localStorage. Debes hacer login primero.');
+        if (!token || !username) {
+          setError('Sesión expirada. Por favor, inicia sesión nuevamente.');
           setLoading(false);
           return;
         }
 
-        if (!username) {
-          setError('❌ No hay username en el contexto. Contacta al soporte.');
-          setLoading(false);
-          return;
-        }
-
-        console.log('📡 Obteniendo datos del usuario:', username);
-
-        // Obtener datos del usuario - usando el endpoint que existe: GET /api/v1/usuarios?username={username}
         const userUrl = `http://localhost:8080/api/v1/usuarios?username=${username}`;
-        console.log('🔗 URL:', userUrl);
 
         const userResponse = await fetch(userUrl, {
           headers: {
@@ -65,31 +48,22 @@ const UserProfile: React.FC = () => {
           },
         });
 
-        console.log('📊 Response de usuario:', userResponse.status, userResponse.statusText);
-
         if (!userResponse.ok) {
-          const errorData = await userResponse.text();
-          console.error('❌ Error response body:', errorData);
-          throw new Error(`Error ${userResponse.status}: ${userResponse.statusText}. ${errorData}`);
+          throw new Error('No fue posible cargar el perfil de usuario');
         }
 
         const userPageResponse = await userResponse.json();
-        console.log('✅ User Page Response:', userPageResponse);
 
-        // El endpoint devuelve un PageResponse, necesitamos extraer el usuario del array
         let userData = null;
         if (userPageResponse.content && userPageResponse.content.length > 0) {
           userData = userPageResponse.content[0];
-          console.log('✅ Datos del usuario obtenidos:', userData);
           setUser(userData);
         } else {
-          throw new Error('Usuario no encontrado en la respuesta');
+          throw new Error('Usuario no encontrado');
         }
 
-        // Obtener tareas del usuario (URL ABSOLUTA)
-        console.log('📡 Obteniendo tareas...');
+        // Obtener tareas
         const tasksUrl = `http://localhost:8080/api/v1/tareas`;
-        console.log('🔗 URL:', tasksUrl);
 
         const tasksResponse = await fetch(tasksUrl, {
           headers: {
@@ -98,27 +72,18 @@ const UserProfile: React.FC = () => {
           },
         });
 
-        console.log('📊 Response de tareas:', tasksResponse.status, tasksResponse.statusText);
-
         if (tasksResponse.ok) {
           const tasksPageResponse = await tasksResponse.json();
-          console.log('✅ Tasks Page Response:', tasksPageResponse);
 
-          // El endpoint devuelve un PageResponse, extraer el array de content
           if (tasksPageResponse.content && Array.isArray(tasksPageResponse.content)) {
-            const tasksArray = tasksPageResponse.content.slice(0, 5); // Limitar a 5 tareas
-            console.log('✅ Tareas obtenidas (primeras 5):', tasksArray);
+            const tasksArray = tasksPageResponse.content.slice(0, 5);
             setTasks(tasksArray);
           } else {
-            console.warn('⚠️ No hay tareas en la respuesta o formato incorrecto');
             setTasks([]);
           }
-        } else {
-          console.warn('⚠️ No se pudieron obtener tareas:', tasksResponse.status);
         }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
-        console.error('🔴 Error en fetchUserData:', errorMessage);
         setError(errorMessage);
       } finally {
         setLoading(false);
@@ -126,11 +91,9 @@ const UserProfile: React.FC = () => {
     };
 
     if (username) {
-      console.log('✅ Username existe, iniciando fetch...');
       fetchUserData();
     } else {
-      console.warn('⚠️ Username es undefined o vacío');
-      setError('❌ No se pudo obtener el nombre de usuario. Intenta hacer login nuevamente.');
+      setError('No se pudo identificar el usuario. Por favor, inicia sesión.');
       setLoading(false);
     }
   }, [username]);
@@ -138,7 +101,9 @@ const UserProfile: React.FC = () => {
   if (loading) {
     return (
       <div className="profile-container">
-        <div className="loading">Cargando perfil...</div>
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+        </div>
       </div>
     );
   }
@@ -146,128 +111,135 @@ const UserProfile: React.FC = () => {
   if (error) {
     return (
       <div className="profile-container">
-        <div className="error-message">
-          <h2>❌ Error al cargar perfil</h2>
-          <p><strong>Detalles:</strong> {error}</p>
-          <p style={{fontSize: '0.9rem', marginTop: '1rem', color: '#666'}}>
-            Abre DevTools (F12) y revisa la Console para más información.
-          </p>
+        <div className="error-state">
+          <h2>Error</h2>
+          <p>{error}</p>
         </div>
       </div>
     );
   }
 
+  const pendingTasks = tasks.filter(t => t.estado === 'ACTIVO');
+  const completedTasks = tasks.filter(t => t.estado === 'COMPLETADO');
+
   return (
     <div className="profile-container">
-      {/* Sección de Bienvenida */}
-      <section className="welcome-section">
-        <div className="welcome-card">
-          <div className="welcome-content">
-            <div className="avatar">
-              <span>{user?.nombres?.charAt(0)}{user?.apellidos?.charAt(0)}</span>
-            </div>
-            <div className="welcome-info">
-              <h1 className="welcome-title">¡Hola de nuevo, {user?.nombres}!</h1>
-              <p className="user-email">📧 {user?.email}</p>
-              <div className="user-role-badge">{user?.rol || 'DESARROLLADOR'}</div>
-            </div>
+      {/* Header Section */}
+      <div className="profile-header">
+        <div className="user-intro">
+          <div className="user-avatar-small">
+            {user?.nombres?.charAt(0)}{user?.apellidos?.charAt(0)}
+          </div>
+          <div className="user-info">
+            <h1 className="user-name">{user?.nombres} {user?.apellidos}</h1>
+            <p className="user-meta">{user?.rol || 'Miembro del equipo'}</p>
+            <p className="user-email">{user?.email}</p>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Tarjetas de Métricas Rápidas */}
-      <section className="metrics-section">
-        <div className="metrics-grid">
-          <div className="metric-card">
-            <div className="metric-icon">✓</div>
-            <div className="metric-content">
-              <h3 className="metric-label">Tareas Pendientes</h3>
-              <p className="metric-value">{tasks.filter(t => t.estado === 'ACTIVO').length}</p>
-            </div>
-          </div>
-
-          <div className="metric-card">
-            <div className="metric-icon">📋</div>
-            <div className="metric-content">
-              <h3 className="metric-label">Proyectos Activos</h3>
-              <p className="metric-value">3</p>
-            </div>
-          </div>
-
-          <div className="metric-card">
-            <div className="metric-icon">⏱️</div>
-            <div className="metric-content">
-              <h3 className="metric-label">Horas Esta Semana</h3>
-              <p className="metric-value">24.5</p>
-            </div>
-          </div>
-
-          <div className="metric-card">
-            <div className="metric-icon">✅</div>
-            <div className="metric-content">
-              <h3 className="metric-label">Completadas</h3>
-              <p className="metric-value">{tasks.filter(t => t.estado === 'COMPLETADO').length}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Layout principal: Contenido + Sidebar */}
+      {/* Main Layout: 70/30 */}
       <div className="profile-main-layout">
-        {/* Calendario de Tareas */}
-        <section className="calendar-section">
-          <TaskCalendar tasks={tasks} />
-        </section>
 
-        {/* Sidebar: Detalles de la Cuenta */}
-        <aside className="account-sidebar">
-          <div className="account-card">
-            <h3 className="sidebar-title">Detalles de la Cuenta</h3>
-            <div className="account-details">
-              <div className="detail-item">
-                <span className="detail-label">ID de Empleado</span>
-                <span className="detail-value">{user?.id}</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-label">Usuario</span>
-                <span className="detail-value">@{user?.username}</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-label">Nombre Completo</span>
-                <span className="detail-value">{user?.nombres} {user?.apellidos}</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-label">Correo</span>
-                <span className="detail-value">{user?.email}</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-label">Rol</span>
-                <span className="detail-value badge">{user?.rol || 'DESARROLLADOR'}</span>
-              </div>
+        {/* Left Column - Main Content (70%) */}
+        <div className="profile-main-content">
+
+          {/* Active Tasks Section */}
+          <section className="content-section">
+            <div className="section-header">
+              <h2>Tareas pendientes</h2>
+              <span className="count-badge">{pendingTasks.length}</span>
             </div>
 
-            <div className="sidebar-actions">
-              <button className="btn-secondary">Editar Perfil</button>
-              <button className="btn-outline">Cambiar Contraseña</button>
+            {pendingTasks.length > 0 ? (
+              <div className="tasks-grid">
+                {pendingTasks.map((task) => (
+                  <div key={task.id} className="task-card">
+                    <div className="task-card-header">
+                      <h3>{task.nombre}</h3>
+                      {task.proyecto && <span className="project-tag">{task.proyecto}</span>}
+                    </div>
+                    <p className="task-description">{task.descripcion}</p>
+                    {task.fechaLimite && (
+                      <div className="task-meta">
+                        <span className="meta-label">Vencimiento:</span>
+                        <span className="meta-value">
+                          {new Date(task.fechaLimite).toLocaleDateString('es-ES', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-placeholder">
+                <p>No hay tareas pendientes en este momento.</p>
+              </div>
+            )}
+          </section>
+
+          {/* Calendar Section */}
+          <section className="content-section calendar-section-wrapper">
+            <div className="section-header">
+              <h2>Calendario</h2>
+            </div>
+            <TaskCalendar tasks={tasks} />
+          </section>
+        </div>
+
+        {/* Right Column - Sidebar (30%) */}
+        <aside className="profile-sidebar">
+
+          {/* User Details Card */}
+          <div className="sidebar-card">
+            <h3 className="sidebar-card-title">Información del perfil</h3>
+            <div className="detail-row">
+              <span className="detail-label">ID de empleado</span>
+              <span className="detail-value">{user?.id}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Usuario</span>
+              <span className="detail-value">@{user?.username}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Correo</span>
+              <span className="detail-value">{user?.email}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Rol</span>
+              <span className="detail-value">{user?.rol || 'Miembro'}</span>
             </div>
           </div>
 
-          <div className="quick-stats">
-            <h3 className="sidebar-title">Estadísticas Rápidas</h3>
-            <div className="stats-list">
-              <div className="stat-item">
-                <span>Total de Tareas</span>
-                <strong>{tasks.length}</strong>
-              </div>
-              <div className="stat-item">
-                <span>En Progreso</span>
-                <strong>{tasks.filter(t => t.estado === 'ACTIVO').length}</strong>
-              </div>
-              <div className="stat-item">
-                <span>Completadas</span>
-                <strong>{tasks.filter(t => t.estado === 'COMPLETADO').length}</strong>
-              </div>
+          {/* Activity Metrics Card */}
+          <div className="sidebar-card">
+            <h3 className="sidebar-card-title">Actividad</h3>
+            <div className="metric-row">
+              <span className="metric-label">Tareas completadas</span>
+              <span className="metric-number">{completedTasks.length}</span>
             </div>
+            <div className="metric-row">
+              <span className="metric-label">Tareas en progreso</span>
+              <span className="metric-number">{pendingTasks.length}</span>
+            </div>
+            {tasks.length > 0 && (
+              <div className="metric-row">
+                <span className="metric-label">Tasa de completación</span>
+                <span className="metric-number">
+                  {Math.round((completedTasks.length / tasks.length) * 100)}%
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Actions Card */}
+          <div className="sidebar-card actions-card">
+            <button className="action-btn primary">Editar perfil</button>
+            <button className="action-btn secondary">Cambiar contraseña</button>
           </div>
         </aside>
       </div>
