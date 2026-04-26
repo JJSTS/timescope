@@ -39,12 +39,14 @@ public class ProyectosRestController {
             @RequestParam(defaultValue = "asc") String direction,
             HttpServletRequest request
     ){
-        log.info("findAll: id: {}, nombre: {}, isDeleted: {}, page: {}, size: {}, sortBy: {}, direction: {}",
-                id, nombre, isDeleted, page, size, sortBy, direction);
         Sort sort = Sort.by(sortBy).ascending();
-        if ("desc".equalsIgnoreCase(direction)) sort = Sort.by(sortBy).descending();
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(request.getRequestURL().toString());
         Page<ProyectoResponseDto> pageResult = proyectoServices.findAll(id, nombre, isDeleted, PageRequest.of(page, size, sort));
+
+        log.info("findAll: id: {}, nombre: {}, isDeleted: {}, page: {}, size: {}, sortBy: {}, direction: {}",
+                id, nombre, isDeleted, page, size, sortBy, direction);
+        if ("desc".equalsIgnoreCase(direction)) sort = Sort.by(sortBy).descending();
+
         return ResponseEntity.ok()
                 .header("link", paginationLinksUtils.createLinkHeader(pageResult, uriBuilder))
                 .body(PageResponse.of(pageResult, sortBy, direction));

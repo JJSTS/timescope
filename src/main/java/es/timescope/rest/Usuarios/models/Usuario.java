@@ -1,14 +1,12 @@
 package es.timescope.rest.Usuarios.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import es.timescope.rest.Organizaciones.models.Organizacion;
 import es.timescope.rest.Proyectos.models.Proyecto;
-import es.timescope.rest.Solicitud.models.Solicitud;
 import es.timescope.rest.Tareas.models.Tarea;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,13 +15,15 @@ import java.util.stream.Collectors;
 
 @Builder
 @Entity
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
 @Getter
 @Setter
 @Table(name = "USUARIOS")
-public class Usuario implements UserDetails {
+public class Usuario {
+//public class Usuario implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -43,6 +43,9 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
+    private Long tiempoProyecto;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     @CollectionTable(
@@ -56,12 +59,12 @@ public class Usuario implements UserDetails {
     @Builder.Default
     private Boolean isDeleted = false;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
-                .collect(Collectors.toSet());
-    }
+//    @Override
+//    public Collection<? extends GrantedAuthority> getAuthorities() {
+//        return roles.stream()
+//                .map(role -> new SimpleGrantedAuthority("ROLES_" + role.name()))
+//                .collect(Collectors.toSet());
+//    }
 
     @OneToMany(mappedBy = "usuario")
     @JsonIgnoreProperties("usuario")
@@ -73,34 +76,34 @@ public class Usuario implements UserDetails {
     @ToString.Exclude
     private List<Proyecto> proyectos;
 
-    @OneToMany(mappedBy = "receptor")
-    @JsonIgnoreProperties("receptor")
-    @ToString.Exclude
-    private List<Solicitud> solicitudes;
+    @ManyToOne
+    @JoinColumn(name = "organizacion_id")
+    @JsonIgnore
+    private Organizacion organizacion;
 
-//   Spring Security
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return UserDetails.super.isAccountNonExpired();
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return UserDetails.super.isCredentialsNonExpired();
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
-    }
+    //Spring Security
+//    @Override
+//    public String getUsername() {
+//        return "";
+//    }
+//
+//    @Override
+//    public boolean isAccountNonExpired() {
+//        return UserDetails.super.isAccountNonExpired();
+//    }
+//
+//    @Override
+//    public boolean isAccountNonLocked() {
+//        return UserDetails.super.isAccountNonLocked();
+//    }
+//
+//    @Override
+//    public boolean isCredentialsNonExpired() {
+//        return UserDetails.super.isCredentialsNonExpired();
+//    }
+//
+//    @Override
+//    public boolean isEnabled() {
+//        return UserDetails.super.isEnabled();
+//    }
 }
