@@ -61,15 +61,15 @@ const ProyectosList: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="loading">⏳ Cargando proyectos...</div>;
+  if (loading) return <div className="loading">Cargando proyectos...</div>;
 
-  if (error) return <div className="error-message">❌ {error}</div>;
+  if (error) return <div className="error-message">{error}</div>;
 
-  if (proyectos.length === 0) return <div className="loading">📭 No hay proyectos disponibles</div>;
+  if (proyectos.length === 0) return <div className="loading">No hay proyectos disponibles</div>;
 
   return (
     <div className="proyectos-container">
-      <h2>📋 Gestión de Proyectos ({proyectos.length})</h2>
+      <h2>Gestión de Proyectos ({proyectos.length})</h2>
       <table className="proyectos-table">
         <thead>
           <tr>

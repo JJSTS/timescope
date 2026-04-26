@@ -1,48 +1,57 @@
 /* Usuarios Container */
 .usuarios-container {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: var(--ts-surface);
+  padding: 2rem;
+  border-radius: var(--ts-radius);
+  box-shadow: var(--ts-shadow);
+  border: 1px solid var(--ts-border);
 }
 
 .usuarios-container h2 {
   margin-bottom: 1.5rem;
-  color: #333;
-  font-size: 1.8rem;
+  color: var(--ts-text);
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
 /* Table */
 .usuarios-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
+  background: var(--ts-surface);
+  border: 1px solid var(--ts-border);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .usuarios-table thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: #f9fafb;
 }
 
 .usuarios-table th {
   padding: 1rem;
   text-align: left;
   font-weight: 600;
-  border-bottom: 2px solid #ddd;
+  border-bottom: 1px solid var(--ts-border);
+  color: var(--ts-text);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
 }
 
 .usuarios-table td {
   padding: 1rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--ts-border-soft);
+  color: var(--ts-text);
 }
 
 .usuarios-table tbody tr:hover {
-  background: #f9f9f9;
+  background: var(--ts-surface-soft);
   transition: background 0.2s ease;
 }
 
 .usuarios-table tbody tr:nth-child(even) {
-  background: #f0f0f0;
+  background: #fcfcfd;
 }
 
 /* Buttons */
@@ -51,56 +60,59 @@
 .btn-cancel {
   padding: 0.5rem 1rem;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
   margin-right: 0.5rem;
   font-weight: 600;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .btn-edit {
-  background: #667eea;
+  background: var(--ts-accent);
   color: white;
 }
 
 .btn-edit:hover {
-  background: #5568d3;
-  transform: translateY(-2px);
+  background: var(--ts-accent-2);
+  transform: translateY(-1px);
 }
 
 .btn-save {
-  background: #4caf50;
+  background: #374151;
   color: white;
 }
 
 .btn-save:hover {
-  background: #45a049;
-  transform: translateY(-2px);
+  background: #1f2937;
+  transform: translateY(-1px);
 }
 
 .btn-cancel {
-  background: #ff6b6b;
-  color: white;
+  background: #f3f4f6;
+  color: var(--ts-text);
+  border: 1px solid var(--ts-border);
 }
 
 .btn-cancel:hover {
-  background: #ee5a52;
-  transform: translateY(-2px);
+  background: #e5e7eb;
+  transform: translateY(-1px);
 }
 
 /* Input Fields in Table */
 .usuarios-table input {
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #667eea;
-  border-radius: 3px;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--ts-border);
+  border-radius: 6px;
   font-size: 0.95rem;
+  background: var(--ts-surface);
+  color: var(--ts-text);
 }
 
 .usuarios-table input:focus {
   outline: none;
-  border-color: #764ba2;
-  box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+  border-color: var(--ts-accent);
+  box-shadow: 0 0 0 3px rgba(88, 80, 184, 0.12);
 }
 
 /* Loading & Error */
@@ -108,26 +120,27 @@
 .error-message {
   padding: 2rem;
   text-align: center;
-  font-size: 1.1rem;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  font-size: 0.95rem;
+  background: var(--ts-surface);
+  border-radius: var(--ts-radius);
+  box-shadow: var(--ts-shadow);
+  border: 1px solid var(--ts-border);
 }
 
 .error-message {
-  background: #fee;
-  color: #c33;
-  border-left: 4px solid #c33;
+  background: #fff5f5;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
 }
 
 .loading {
-  color: #667eea;
+  color: var(--ts-accent);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .usuarios-container {
-    padding: 1rem;
+    padding: 1.25rem;
   }
 
   .usuarios-table {
@@ -146,4 +159,3 @@
     font-size: 0.85rem;
   }
 }
-

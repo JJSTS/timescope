@@ -3,16 +3,18 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--ts-bg);
 }
 
 /* Login Form */
 .login-form {
-  background: white;
+  background: var(--ts-surface);
   padding: 2.5rem;
-  border-radius: 10px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  border-radius: var(--ts-radius);
+  box-shadow: var(--ts-shadow-lg);
+  border: 1px solid var(--ts-border);
   width: 100%;
   max-width: 400px;
 }
@@ -20,8 +22,9 @@
 .login-form h1 {
   text-align: center;
   margin-bottom: 2rem;
-  color: #333;
-  font-size: 2rem;
+  color: var(--ts-text);
+  font-size: 1.6rem;
+  letter-spacing: 0.2px;
 }
 
 /* Form Group */
@@ -32,52 +35,57 @@
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #555;
-  font-weight: 500;
+  color: var(--ts-muted);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.25px;
 }
 
 .form-group input {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--ts-border);
+  border-radius: 6px;
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: var(--ts-surface);
+  color: var(--ts-text);
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+  border-color: var(--ts-accent);
+  box-shadow: 0 0 0 3px rgba(88, 80, 184, 0.12);
 }
 
 /* Error Message */
 .error-message {
-  background: #fee;
-  color: #c33;
+  background: #fff5f5;
+  color: #b91c1c;
   padding: 1rem;
-  border-radius: 5px;
+  border-radius: 6px;
   margin-bottom: 1rem;
-  border-left: 4px solid #c33;
+  border: 1px solid #fecaca;
 }
 
 /* Submit Button */
 .login-form button {
   width: 100%;
-  padding: 0.75rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0.9rem 1rem;
+  background: linear-gradient(135deg, var(--ts-accent) 0%, var(--ts-accent-2) 100%);
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   font-size: 1rem;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .login-form button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 18px rgba(88, 80, 184, 0.25);
 }
 
 .login-form button:disabled {
@@ -92,7 +100,7 @@
   }
 
   .login-form h1 {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
     margin-bottom: 1.5rem;
   }
 }

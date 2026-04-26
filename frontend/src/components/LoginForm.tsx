@@ -20,28 +20,28 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
     setLoading(true);
 
     try {
-      console.log('🔐 Iniciando login con usuario:', username);
+      console.log('Iniciando login con usuario:', username);
       const response = await authService.login(username, password);
-      console.log('✅ Login exitoso. Token:', response.token.substring(0, 20) + '...');
+      console.log('Login exitoso. Token:', response.token.substring(0, 20) + '...');
 
       // Guardar token y username en localStorage
       localStorage.setItem('token', response.token);
-      console.log('💾 Token guardado en localStorage');
+      console.log('Token guardado en localStorage');
 
       localStorage.setItem('username', username);
-      console.log('💾 Username guardado en localStorage:', username);
+      console.log('Username guardado en localStorage:', username);
 
       // Actualizar contexto
       setIsAuthenticated(true);
-      console.log('✅ setIsAuthenticated(true) ejecutado');
+      console.log('setIsAuthenticated(true) ejecutado');
 
       // Pequeño delay para permitir que AuthContext se actualice
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      console.log('✅ Redirigiendo a UserProfile...');
+      console.log('Redirigiendo a UserProfile...');
       onLoginSuccess();
     } catch (err: any) {
-      console.error('❌ Error en login:', err);
+      console.error('Error en login:', err);
       setError(err.message || 'Error al iniciar sesión');
     } finally {
       setLoading(false);
@@ -51,7 +51,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
   return (
     <div className="login-container">
       <div className="login-form">
-        <h1>⏱️ TimeScope</h1>
+        <h1>TimeScope</h1>
         <form onSubmit={handleLogin}>
           <div className="form-group">
             <label htmlFor="username">Usuario:</label>

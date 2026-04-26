@@ -1,27 +1,25 @@
 /* ============================================
-   DASHBOARD STYLES - MODERN MINIMALIST
+   DASHBOARD STYLES - CORPORATE CLEAN
    ============================================ */
 
 .dashboard-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  background: #f8f9fa;
+  height: 100%;
+  min-height: 0;
+  background: var(--ts-bg);
   box-sizing: border-box;
 }
 
-/* ============================================
-   HEADER
-   ============================================ */
-
+/* Header */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: white;
+  background: var(--ts-surface);
   padding: 0 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border-bottom: 1px solid #e5e7eb;
+  box-shadow: var(--ts-shadow);
+  border-bottom: 1px solid var(--ts-border);
   height: 64px;
   flex-shrink: 0;
   position: relative;
@@ -31,14 +29,33 @@
 .header-left {
   display: flex;
   align-items: center;
+  gap: 0.6rem;
+}
+
+.logo-favicon-slot {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  border: 1px solid var(--ts-border);
+  background: linear-gradient(135deg, var(--ts-accent-soft) 0%, rgba(88, 80, 184, 0.02) 100%);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.logo-favicon {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
 }
 
 .logo {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--ts-text);
   margin: 0;
   white-space: nowrap;
+  letter-spacing: 0.2px;
 }
 
 .header-right {
@@ -55,33 +72,40 @@
   justify-content: center;
   background: transparent;
   border: none;
-  font-size: 20px;
+  font-size: 0;
   cursor: pointer;
-  color: #6b7280;
+  color: var(--ts-muted);
   padding: 0;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  border-radius: var(--ts-radius);
+  transition: all 0.2s ease;
   position: relative;
   height: 40px;
   width: 40px;
   min-width: 40px;
   min-height: 40px;
-  max-height: 40px;
   box-sizing: border-box;
   flex-shrink: 0;
+}
+
+.dashboard-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex-shrink: 0;
+  pointer-events: none;
 }
 
 .search-btn:hover,
 .notification-btn:hover,
 .menu-btn:hover {
-  background: #f3f4f6;
-  color: #6a5acd;
+  background: var(--ts-surface-soft);
+  color: var(--ts-accent);
 }
 
 .search-btn:active,
 .notification-btn:active,
 .menu-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.96);
 }
 
 .notification-btn::after {
@@ -100,21 +124,20 @@
   display: block;
 }
 
-/* ============================================
-   MOBILE MENU
-   ============================================ */
-
+/* Mobile menu */
 .mobile-menu {
   position: absolute;
   top: 64px;
   right: 0;
-  background: white;
+  background: var(--ts-surface);
   min-width: 250px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--ts-shadow-lg);
   border-radius: 0 0 12px 12px;
   overflow: hidden;
   animation: slideDown 0.3s ease;
   z-index: 99;
+  border: 1px solid var(--ts-border);
+  border-top: none;
 }
 
 @keyframes slideDown {
@@ -131,12 +154,13 @@
 .mobile-menu-item {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 0.75rem;
   width: 100%;
   padding: 1rem 1.5rem;
   background: none;
   border: none;
-  color: #6b7280;
+  color: var(--ts-muted);
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
@@ -145,50 +169,39 @@
 }
 
 .mobile-menu-item:hover {
-  background: #f3f4f6;
-  color: #6a5acd;
+  background: var(--ts-surface-soft);
+  color: var(--ts-accent);
 }
 
 .mobile-menu-item.active {
-  background: rgba(106, 90, 205, 0.1);
-  color: #6a5acd;
+  background: var(--ts-accent-soft);
+  color: var(--ts-accent);
   font-weight: 600;
 }
 
 .mobile-menu-item.logout {
-  color: #ef4444;
+  color: #b91c1c;
 }
 
 .mobile-menu-item.logout:hover {
-  background: rgba(239, 68, 68, 0.1);
-  color: #dc2626;
+  background: rgba(185, 28, 28, 0.08);
+  color: #991b1b;
 }
 
 .mobile-menu hr {
   border: none;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--ts-border);
   margin: 0;
 }
 
-.mobile-menu-item span {
-  font-size: 1.25rem;
-  min-width: 24px;
-}
-
-/* ============================================
-   MAIN CONTENT
-   ============================================ */
-
+/* Main content */
 .dashboard-content {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 2rem;
-  background: #f8f9fa;
+  background: var(--ts-bg);
 }
-
-/* ============================================
-   SCROLLBAR
-   ============================================ */
 
 .dashboard-content::-webkit-scrollbar {
   width: 8px;
@@ -207,31 +220,23 @@
   background: #9ca3af;
 }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
+.search-btn:focus-visible,
+.notification-btn:focus-visible,
+.menu-btn:focus-visible,
+.mobile-menu-item:focus-visible {
+  outline: 2px solid var(--ts-accent);
+  outline-offset: 2px;
+}
 
+/* Responsive */
 @media (max-width: 768px) {
   .dashboard-header {
     padding: 0 1rem;
   }
 
-  .logo {
-    font-size: 1.1rem;
-  }
-
-  .dashboard-content {
-    padding: 1.5rem;
-  }
-
-  .search-btn {
-    display: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .dashboard-header {
-    padding: 0 1rem;
+  .logo-favicon-slot {
+    width: 24px;
+    height: 24px;
   }
 
   .logo {
@@ -249,6 +254,12 @@
   .mobile-menu-item {
     padding: 0.875rem 1rem;
     font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-btn {
+    display: none;
   }
 }
 

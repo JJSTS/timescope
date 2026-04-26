@@ -5,6 +5,23 @@
   overflow: hidden;
 }
 
+:root {
+  --ts-bg: #fafbfc;
+  --ts-surface: #ffffff;
+  --ts-surface-soft: #f9fafb;
+  --ts-border: #e5e7eb;
+  --ts-border-soft: #f3f4f6;
+  --ts-text: #1a1a1a;
+  --ts-muted: #6b7280;
+  --ts-muted-2: #9ca3af;
+  --ts-accent: #5850b8;
+  --ts-accent-2: #6d5acd;
+  --ts-accent-soft: rgba(88, 80, 184, 0.08);
+  --ts-shadow: 0 2px 8px rgba(88, 80, 184, 0.08);
+  --ts-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.08);
+  --ts-radius: 8px;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -15,4 +32,6 @@ body {
   font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--ts-bg);
+  color: var(--ts-text);
 }

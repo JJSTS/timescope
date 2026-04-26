@@ -3,7 +3,7 @@
    ============================================ */
 
 .profile-container {
-  min-height: 100vh;
+  min-height: 100%;
   background: #fafbfc;
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
@@ -19,7 +19,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: 60vh;
 }
 
 .loading-spinner {
@@ -40,7 +40,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: 60vh;
   padding: 2rem;
   text-align: center;
 }
@@ -66,9 +66,7 @@
   background: white;
   border-bottom: 1px solid #e5e7eb;
   padding: 2rem 2.5rem;
-  position: sticky;
-  top: 0;
-  z-index: 50;
+  position: static; /* Cambiado de sticky a static */
 }
 
 .user-intro {
@@ -528,4 +526,3 @@
     font-size: 0.95rem;
   }
 }
-

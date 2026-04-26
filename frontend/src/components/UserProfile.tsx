@@ -203,7 +203,7 @@ const UserProfile: React.FC = () => {
             </div>
             <div className="detail-row">
               <span className="detail-label">Usuario</span>
-              <span className="detail-value">@{user?.username}</span>
+              <span className="detail-value">{user?.username}</span>
             </div>
             <div className="detail-row">
               <span className="detail-label">Correo</span>
@@ -213,27 +213,6 @@ const UserProfile: React.FC = () => {
               <span className="detail-label">Rol</span>
               <span className="detail-value">{user?.rol || 'Miembro'}</span>
             </div>
-          </div>
-
-          {/* Activity Metrics Card */}
-          <div className="sidebar-card">
-            <h3 className="sidebar-card-title">Actividad</h3>
-            <div className="metric-row">
-              <span className="metric-label">Tareas completadas</span>
-              <span className="metric-number">{completedTasks.length}</span>
-            </div>
-            <div className="metric-row">
-              <span className="metric-label">Tareas en progreso</span>
-              <span className="metric-number">{pendingTasks.length}</span>
-            </div>
-            {tasks.length > 0 && (
-              <div className="metric-row">
-                <span className="metric-label">Tasa de completación</span>
-                <span className="metric-number">
-                  {Math.round((completedTasks.length / tasks.length) * 100)}%
-                </span>
-              </div>
-            )}
           </div>
 
           {/* Actions Card */}

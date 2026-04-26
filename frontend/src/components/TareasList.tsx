@@ -59,15 +59,15 @@ const TareasList: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="loading">⏳ Cargando tareas...</div>;
+  if (loading) return <div className="loading">Cargando tareas...</div>;
 
-  if (error) return <div className="error-message">❌ {error}</div>;
+  if (error) return <div className="error-message">{error}</div>;
 
-  if (tareas.length === 0) return <div className="loading">📭 No hay tareas disponibles</div>;
+  if (tareas.length === 0) return <div className="loading">No hay tareas disponibles</div>;
 
   return (
     <div className="tareas-container">
-      <h2>✓ Gestión de Tareas ({tareas.length})</h2>
+      <h2>Gestión de Tareas ({tareas.length})</h2>
       <table className="tareas-table">
         <thead>
           <tr>
