@@ -1,6 +1,8 @@
 package es.timescope.rest.Usuarios.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import es.timescope.rest.Organizaciones.models.Organizacion;
 import es.timescope.rest.Proyectos.models.Proyecto;
 import es.timescope.rest.Tareas.models.Tarea;
 import jakarta.persistence.*;
@@ -73,6 +75,11 @@ public class Usuario {
     @JsonIgnoreProperties("usuarios")
     @ToString.Exclude
     private List<Proyecto> proyectos;
+
+    @ManyToOne
+    @JoinColumn(name = "organizacion_id")
+    @JsonIgnore
+    private Organizacion organizacion;
 
     //Spring Security
 //    @Override
