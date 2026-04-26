@@ -32,13 +32,13 @@ public class SolicitudServicesImpl implements SolicitudServices {
     public SolicitudResponseDto enviarSolicitud(String username) {
         log.info("Solicitud enviada a {}", username );
         Usuario emisor = usuariosRepository.findByUsername(username).orElseThrow(() -> new EmisorOrReceptorNotFound(username));
-        if(emisor.getUsername().equals()) {throw new EmisorAndReceptorEquals();}
+        if(emisor.getUsername().equals(username)) {throw new EmisorAndReceptorEquals();}
 
-        if (solicitudRepository.existsByEmisorIdAndReceptorIdAndEstado(emisorId, receptorId, Estado.PENDIENTE)) {throw new SolicitudExist();}
+        if (solicitudRepository.existsByEmisorIdAndReceptorIdAndEstado(emisor.getId(), emisor.getId(), Estado.PENDIENTE)) {throw new SolicitudExist();}
 
-        Usuario emisor = usuariosRepository.findById(emisorId).orElseThrow(() -> new EmisorOrReceptorNotFound("Emisor no encontrado"));
+        Usuario receptor = usuariosRepository.findById(emisor.getId()).orElseThrow(() -> new EmisorOrReceptorNotFound("Emisor no encontrado"));
 
-        Usuario receptor = usuariosRepository.findById(receptorId).orElseThrow(() -> new EmisorOrReceptorNotFound("Receptor no encontrado"));
+        Usuario emisors = usuariosRepository.findById(receptor.getId()).orElseThrow(() -> new EmisorOrReceptorNotFound("Receptor no encontrado"));
         Solicitud solicitud = Solicitud.builder()
                 .emisor(emisor)
                 .receptor(receptor)
