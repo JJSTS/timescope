@@ -26,7 +26,7 @@ public class NotificacionServiceImpl implements NotificacionService {
     private final UsuariosRepository repositorioUsuarios;
 
     @Override
-    public NotificacionResponseDto enviarNotificacion(String username, String mensaje, Tipo tipo) {
+    public void enviarNotificacion(String username, String mensaje, Tipo tipo) {
         Usuario usuario = repositorioUsuarios.findByUsername(username).orElseThrow(() -> new UsuarioNotFound(username));
 
         Notificacion notificacion = notificacionMapper.toNotificacion(usuario, mensaje, tipo);
@@ -37,8 +37,6 @@ public class NotificacionServiceImpl implements NotificacionService {
                 username,
                 "/queue/notificacion",
                 mensaje);
-
-        return notificacionMapper.toNotificacionResponseDto(notificacion);
     }
 
     @Override

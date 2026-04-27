@@ -1,5 +1,7 @@
 package es.timescope.rest.Proyectos.services;
 
+import es.timescope.rest.Notificacion.models.Tipo;
+import es.timescope.rest.Notificacion.service.NotificacionService;
 import es.timescope.rest.Proyectos.dto.ProyectoCreateDto;
 import es.timescope.rest.Proyectos.dto.ProyectoResponseDto;
 import es.timescope.rest.Proyectos.exceptions.ProyectoBadRequestException;
@@ -8,6 +10,7 @@ import es.timescope.rest.Proyectos.models.Estado;
 import es.timescope.rest.Proyectos.models.Proyecto;
 import es.timescope.rest.Proyectos.repositories.ProyectosRepository;
 import es.timescope.rest.Proyectos.exceptions.ProyectoNotFoundException;
+import es.timescope.rest.Usuarios.mappers.UsuariosMapper;
 import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
 
@@ -31,6 +34,7 @@ public class ProyectoServicesImpl implements ProyectoServices {
     private final ProyectosRepository proyectosRepository;
     private final UsuariosRepository usuariosRepository;
     private final ProyectosMapper proyectoMapper;
+    private final NotificacionService notificacionService;
 
     @Override
     public Page<ProyectoResponseDto> findAll(Optional<Long> id, Optional<String> nombre, Optional<Boolean> isDeleted, Pageable pageable) {
@@ -89,6 +93,11 @@ public class ProyectoServicesImpl implements ProyectoServices {
             throw new ProyectoBadRequestException("El usuario ya pertenece a este proyecto");
         }
 
+        notificacionService.enviarNotificacion(
+                username,
+                "¡Se te ha añadido al proyecto " + proyecto.getNombre() + " !",
+                Tipo.EQUIPO_UNIDO
+        );
         proyecto.getUsuarios().add(usuario);
         return proyectoMapper.toProyectoResponseDto(proyectosRepository.save(proyecto));
     }
