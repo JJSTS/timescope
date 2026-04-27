@@ -1,6 +1,7 @@
 package es.timescope.rest.Tareas.services;
 
 
+import es.timescope.rest.Tareas.dto.TareaAddDto;
 import es.timescope.rest.Tareas.dto.TareaCreateDto;
 import es.timescope.rest.Tareas.dto.TareaResponseDto;
 import es.timescope.rest.Tareas.dto.TareaUpdateDto;
@@ -23,4 +24,6 @@ public interface TareasServices {
     TareaResponseDto createTarea(TareaCreateDto tareaCreateDto);
 
     TareaResponseDto updateTarea(Long id, TareaUpdateDto tareaUpdateDto);
+
+    TareaResponseDto addTarea(TareaAddDto tareaAddDto);
 }

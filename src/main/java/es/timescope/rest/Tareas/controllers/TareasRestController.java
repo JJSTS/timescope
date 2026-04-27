@@ -1,5 +1,6 @@
 package es.timescope.rest.Tareas.controllers;
 
+import es.timescope.rest.Tareas.dto.TareaAddDto;
 import es.timescope.rest.Tareas.dto.TareaCreateDto;
 import es.timescope.rest.Tareas.dto.TareaResponseDto;
 import es.timescope.rest.Tareas.dto.TareaUpdateDto;
@@ -74,6 +75,12 @@ public class TareasRestController {
     public ResponseEntity<TareaResponseDto> updateTarea(@PathVariable Long id, @Valid @RequestBody TareaUpdateDto tareaUpdateDto) {
         log.info("Actualizando tarea con id: {}, datos: {}", id, tareaUpdateDto);
         return ResponseEntity.ok(tareasServices.updateTarea(id, tareaUpdateDto));
+    }
+
+    @PostMapping("/add")
+    public ResponseEntity<TareaResponseDto> addTarea(@Valid @RequestBody TareaAddDto tareaAddDto) {
+        log.info("Asignando tarea id: {} al usuario: {}", tareaAddDto.getTareaId(), tareaAddDto.getUsername());
+        return ResponseEntity.status(HttpStatus.OK).body(tareasServices.addTarea(tareaAddDto));
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

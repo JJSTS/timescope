@@ -1,9 +1,13 @@
 package es.timescope.rest.Tareas.services;
 
 import es.timescope.rest.Proyectos.repositories.ProyectosRepository;
+import es.timescope.rest.Tareas.dto.TareaAddDto;
 import es.timescope.rest.Tareas.dto.TareaCreateDto;
 import es.timescope.rest.Tareas.dto.TareaResponseDto;
 import es.timescope.rest.Tareas.dto.TareaUpdateDto;
+import es.timescope.rest.Tareas.exceptions.TareaCreateException;
+import es.timescope.rest.Tareas.exceptions.TareaNotFound;
+import es.timescope.rest.Usuarios.exceptions.UsuarioNotFound;
 import es.timescope.rest.Tareas.mappers.TareasMapper;
 import es.timescope.rest.Tareas.models.Tarea;
 import es.timescope.rest.Tareas.repositories.TareasRepository;
@@ -61,7 +65,9 @@ public class TareasServicesImpl implements TareasServices {
     @Override
     public TareaResponseDto findById(Long id) {
         log.info("Buscando el tarea con id: {}", id);
-        return tareasMapper.toTareaResponseDto(tareasRepository.findById(id).orElse(null));
+        return tareasRepository.findById(id)
+                .map(tareasMapper::toTareaResponseDto)
+                .orElseThrow(() -> new TareaNotFound(id));
     }
 
     @Override
@@ -72,17 +78,44 @@ public class TareasServicesImpl implements TareasServices {
     @Override
     public TareaResponseDto createTarea(TareaCreateDto tareaCreateDto){
         log.info("Creando tarea: {}", tareaCreateDto);
-        Tarea tarea = tareasRepository.save(tareasMapper.toTarea(tareaCreateDto));
-        return tareasMapper.toTareaResponseDto(tarea);
+        try {
+            Tarea tarea = tareasRepository.save(tareasMapper.toTarea(tareaCreateDto));
+            return tareasMapper.toTareaResponseDto(tarea);
+        } catch (Exception e) {
+            log.error("Error al crear la tarea: {}", e.getMessage());
+            throw new TareaCreateException("No fue posible crear la tarea: " + e.getMessage());
+        }
     }
 
     @Override
     public TareaResponseDto updateTarea(Long id, TareaUpdateDto tareaUpdateDto) {
         log.info("Actualizando tarea con id: {}", id);
-        Tarea tareaOpt = tareasRepository.findById(id).orElseThrow(() -> new RuntimeException("Tarea no encontrada con id: " + id));
+        Tarea tareaOpt = tareasRepository.findById(id)
+                .orElseThrow(() -> new TareaNotFound(id));
         Usuario usuario = usuariosRepository.findByNombres(tareaUpdateDto.getUsuario());
         log.info("Usuario asociado a la tarea: {}", usuario);
         Tarea tarea = tareasRepository.save(tareasMapper.toTarea(tareaUpdateDto, tareaOpt, usuario));
         return tareasMapper.toTareaResponseDto(tarea);
+    }
+
+    @Override
+    public TareaResponseDto addTarea(TareaAddDto tareaAddDto) {
+        log.info("Asignando tarea con id '{}' al usuario con username: {}", tareaAddDto.getTareaId(), tareaAddDto.getUsername());
+        
+        Tarea tarea = tareasRepository.findById(tareaAddDto.getTareaId())
+                .orElseThrow(() -> new TareaNotFound(tareaAddDto.getTareaId()));
+        
+        Usuario usuario = usuariosRepository.findByUsername(tareaAddDto.getUsername())
+                .orElseThrow(() -> new UsuarioNotFound("Usuario con username '" + tareaAddDto.getUsername() + "' no encontrado"));
+        
+        try {
+            tarea.setUsuario(usuario);
+            Tarea tareaActualizada = tareasRepository.save(tarea);
+            log.info("Tarea con id: {} asignada exitosamente al usuario: {}", tareaActualizada.getId(), tareaAddDto.getUsername());
+            return tareasMapper.toTareaResponseDto(tareaActualizada);
+        } catch (Exception e) {
+            log.error("Error al asignar tarea {} al usuario {}: {}", tareaAddDto.getTareaId(), tareaAddDto.getUsername(), e.getMessage());
+            throw new TareaCreateException("No fue posible asignar la tarea al usuario " + tareaAddDto.getUsername() + ": " + e.getMessage());
+        }
     }
 }
