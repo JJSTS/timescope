@@ -69,7 +69,6 @@ INSERT INTO PROYECTO_USUARIO (proyecto_id, usuario_id) VALUES
 (14, 6),
 (15, 6),
 (16, 4),
-(10, 6),
 (16, 6);
 
 -- TAREAS

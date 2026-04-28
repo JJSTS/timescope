@@ -1,5 +1,7 @@
 package es.timescope.rest.Tareas.services;
 
+import es.timescope.rest.Notificacion.models.Tipo;
+import es.timescope.rest.Notificacion.service.NotificacionService;
 import es.timescope.rest.Proyectos.repositories.ProyectosRepository;
 import es.timescope.rest.Tareas.dto.TareaAddDto;
 import es.timescope.rest.Tareas.dto.TareaCreateDto;
@@ -35,6 +37,7 @@ public class TareasServicesImpl implements TareasServices {
 
     private final UsuariosRepository usuariosRepository;
     private final ProyectosRepository proyectosRepository;
+    private final NotificacionService notificacionService;
 
     @Override
     public Page<TareaResponseDto> findAll(Optional<String> usuario, Optional<String> estado, Pageable pageable){
@@ -112,6 +115,11 @@ public class TareasServicesImpl implements TareasServices {
             tarea.setUsuario(usuario);
             Tarea tareaActualizada = tareasRepository.save(tarea);
             log.info("Tarea con id: {} asignada exitosamente al usuario: {}", tareaActualizada.getId(), tareaAddDto.getUsername());
+            notificacionService.enviarNotificacion(
+                    usuario.getUsername(),
+                    "¡Se te ha asignado la tarea " + tareaActualizada.getNombre() + " !",
+                    Tipo.TAREA_ASIGNADA
+            );
             return tareasMapper.toTareaResponseDto(tareaActualizada);
         } catch (Exception e) {
             log.error("Error al asignar tarea {} al usuario {}: {}", tareaAddDto.getTareaId(), tareaAddDto.getUsername(), e.getMessage());

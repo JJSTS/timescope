@@ -1,0 +1,12 @@
+### GET request to example server
+GET http://localhost:8080/api/v1/notificaciones/pendientes
+Authorization: Bearer {{auth_token}}
+###
+
+GET http://localhost:8080/api/v1/notificaciones/historial
+Authorization: Bearer {{auth_token}}
+
+###
+
+PATCH http://localhost:8080/api/v1/notificaciones/2/leer
+Authorization: Bearer {{auth_token}}
