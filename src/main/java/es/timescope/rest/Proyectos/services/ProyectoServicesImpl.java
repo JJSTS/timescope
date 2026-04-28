@@ -98,6 +98,7 @@ public class ProyectoServicesImpl implements ProyectoServices {
                 "¡Se te ha añadido al proyecto " + proyecto.getNombre() + " !",
                 Tipo.EQUIPO_UNIDO
         );
+
         proyecto.getUsuarios().add(usuario);
         return proyectoMapper.toProyectoResponseDto(proyectosRepository.save(proyecto));
     }

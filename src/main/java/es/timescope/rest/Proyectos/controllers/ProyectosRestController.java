@@ -87,8 +87,9 @@ public class ProyectosRestController {
         return ResponseEntity.ok(proyecto);
     }
 
+
+    @PutMapping("/usuario/{id}")
     @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
-    @PostMapping("/usuario/{id}")
     public ResponseEntity<ProyectoResponseDto> addUsuario(
             @PathVariable Long id,
             @RequestParam String username
