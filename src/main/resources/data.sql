@@ -21,11 +21,11 @@ INSERT INTO USUARIO_ROLES (user_id, roles) VALUES
 -- =====================
 -- PROYECTOS
 -- =====================
-INSERT INTO PROYECTOS (nombre, descripcion, estado, is_deleted) VALUES
-('TimeScope v1',  'Desarrollo de la primera versión de la plataforma TimeScope.',  'ACTIVO', false),
-('App Móvil', 'Aplicación móvil complementaria para la gestión de tareas.','ACTIVO', false),
-('Portal Admin',  'Panel de administración interno para supervisores.', 'SUSPENDIDO', false),
-('API Gateway',   'Diseño e implementación del gateway central de la API REST.',   'COMPLETADO', false);
+INSERT INTO PROYECTOS (nombre, descripcion, estado, organizacion_id, is_deleted) VALUES
+('TimeScope v1',  'Desarrollo de la primera versión de la plataforma TimeScope.',  'ACTIVO', 1, false),
+('App Móvil', 'Aplicación móvil complementaria para la gestión de tareas.','ACTIVO', 1, false),
+('Portal Admin',  'Panel de administración interno para supervisores.', 'SUSPENDIDO', 2, false),
+('API Gateway',   'Diseño e implementación del gateway central de la API REST.',   'COMPLETADO', 2, false);
 
 -- =====================
 -- PROYECTO_USUARIO (relación N:M)

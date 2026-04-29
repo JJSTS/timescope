@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -38,7 +39,7 @@ public class ProyectoServicesImpl implements ProyectoServices {
 
         // Búsqueda por ID (número del proyecto)
         Specification<Proyecto> specIdProyecto = (root, query, criteriaBuilder) ->
-                id.map(i -> criteriaBuilder.equal(root.get("id"),1))
+                id.map(i -> criteriaBuilder.equal(root.get("id"), i))
                         .orElseGet(() -> criteriaBuilder.isTrue(criteriaBuilder.literal(true)));
 
         // Búsqueda por nombre del proyecto
@@ -80,16 +81,17 @@ public class ProyectoServicesImpl implements ProyectoServices {
     @Override
     public void deleteById(Long id) {
         // Si no existe lanza excepción
-        Proyecto proyectoDeleted = proyectosRepository.findById(id).orElseThrow(()-> new ProyectoNotFoundException(id));
+        proyectosRepository.findById(id).orElseThrow(() -> new ProyectoNotFoundException(id));
         proyectosRepository.deleteById(id);
     }
 
     private List<Usuario> checkUsuarios(List<Long> usuariosIds) {
         log.info("Buscando usuarios por id: {}", usuariosIds);
-        List<Usuario> usuarios = List.of();
+        if (usuariosIds == null) return new ArrayList<>();
+        List<Usuario> usuarios = new ArrayList<>();
         for (Long id : usuariosIds) {
             var usuario = usuariosRepository.findById(id).orElse(null);
-            if (usuariosRepository.existsById(id) || Objects.requireNonNull(usuario).getIsDeleted()) {
+            if (usuario == null || usuario.getIsDeleted()) {
                 throw new ProyectoBadRequestException("El usuario con id: " + id + " no existe o está borrado");
             }
             usuarios.add(usuario);
