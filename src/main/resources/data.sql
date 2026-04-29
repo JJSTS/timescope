@@ -1,12 +1,17 @@
--- =====================
 -- USUARIOS
--- =====================
-INSERT INTO USUARIOS (nombres, apellidos, username, email, password, tiempo_proyecto, is_deleted) VALUES
-('Carlos',   'García López','cgarcia',   'carlos.garcia@timescope.es',   'hashed_pass_1', 120, false),
-('María','Martínez Ruiz',   'mmartinez', 'maria.martinez@timescope.es',  'hashed_pass_2', 90,  false),
-('Juan', 'Pérez Sánchez',   'jperez','juan.perez@timescope.es','hashed_pass_3', 200, false),
-('Laura','Fernández Gil',   'lfernandez', 'laura.fernandez@timescope.es','hashed_pass_4', 60,  false),
-('Andrés',   'López Torres','alopez','andres.lopez@timescope.es','hashed_pass_5', 150, false);
+INSERT INTO USUARIOS (nombres, apellidos, username, email, password, is_deleted) VALUES
+--Contraseña: UsuarioGarcia
+('Carlos',   'García López','cgarcia',   'carlos.garcia@timescope.es',   '$2a$10$0BrI0ndP1P5tUiIirUgOeeQZICTwy72AHcGNeJ84soWiwx1aLRACm', false),
+--Contraseña: MartinezMartinez
+('María','Martínez Ruiz',   'mmartinez', 'maria.martinez@timescope.es',  '$2a$10$i/c4xUSoVKJumxz4D2Kqn.O1UMJvqfLh1Te7PiMV/Z8qUVA0gwgFe',  false),
+--Contraseña: JuanElDestructorDeMundos
+('Juan', 'Pérez Sánchez',   'jperez','juan.perez@timescope.es','$2a$10$gTqKcJDeIL9nWV/CLHa1ku5AETa0Khes.C1E6EP.Ked7jaA1X/Io6', false),
+--Contraseña: DragonVampirico2090@@@@
+('Laura','Fernández Gil',   'lfernandez', 'laura.fernandez@timescope.es','$2a$10$vjHYe2EDllMbd8nMraSXGule6lBYxkNdkOtGZEQ0Kb4Rp1Djax50u', false),
+--Contraseña: MeGustanLosGatos3000@
+('Andrés','López Torres','alopez','andres.lopez@timescope.es','$2a$10$e4kQAPpvlFxInkd2ZIpbX.h49bqvsiXoJGXJnpA5dCoGI7X7sbgO2', false),
+--Contraseña: admin123
+('admin','Administrador','admin','admin@timescope.es','$2b$10$PKM9iai6W/I1neYmVUs5t.Fb5rWzlakR1MYPjP8fIF6ZaqbiRzfIe', false);
 
 -- USUARIO_ROLES
 INSERT INTO USUARIO_ROLES (user_id, roles) VALUES
@@ -23,22 +28,22 @@ INSERT INTO USUARIO_ROLES (user_id, roles) VALUES
 
 -- PROYECTOS
 INSERT INTO PROYECTOS (nombre, descripcion, estado, is_deleted) VALUES
-('TimeScope v1',  'Desarrollo de la primera versión de la plataforma TimeScope.',  'ACTIVO', 1, false),
-('App Móvil', 'Aplicación móvil complementaria para la gestión de tareas.','ACTIVO', 1, false),
-('Portal Admin',  'Panel de administración interno para supervisores.', 'SUSPENDIDO', 1, false),
-('API Gateway',   'Diseño e implementación del gateway central de la API REST.',   'COMPLETADO', 1, false),
-('Refactor Backend', 'Limpieza de arquitectura hexagonal y servicios de dominio.', 'ACTIVO', 1, false),
-('QA Automatizada', 'Cobertura de pruebas end-to-end y regresión automatizada.', 'ACTIVO', 1, false),
+('TimeScope v1',  'Desarrollo de la primera versión de la plataforma TimeScope.',  'ACTIVO', false),
+('App Móvil', 'Aplicación móvil complementaria para la gestión de tareas.','ACTIVO', false),
+('Portal Admin',  'Panel de administración interno para supervisores.', 'SUSPENDIDO', false),
+('API Gateway',   'Diseño e implementación del gateway central de la API REST.',   'COMPLETADO', false),
+('Refactor Backend', 'Limpieza de arquitectura hexagonal y servicios de dominio.', 'ACTIVO', false),
+('QA Automatizada', 'Cobertura de pruebas end-to-end y regresión automatizada.', 'ACTIVO', false),
 ('DevOps Pipeline', 'Automatización de build, test y despliegue continuo.', 'ACTIVO', false),
-('Analytics BI', 'Paneles de indicadores para productividad y tiempos de entrega.', 'ACTIVO', 1, false),
-('Gestor Incidencias', 'Módulo para seguimiento de incidencias internas y externas.', 'ACTIVO', 1, false),
-('Integracion ERP', 'Sincronización de usuarios y tareas con sistema ERP.', 'SUSPENDIDO', 1,false),
-('Notificaciones Push', 'Servicio de alertas para tareas próximas a vencer.', 'ACTIVO', 1, false),
-('Migracion Cloud', 'Migración progresiva de infraestructura a entorno cloud.', 'ACTIVO', 1, false),
-('Onboarding Web', 'Flujo de onboarding para nuevos empleados en la plataforma.', 'COMPLETADO', 1, false),
+('Analytics BI', 'Paneles de indicadores para productividad y tiempos de entrega.', 'ACTIVO', false),
+('Gestor Incidencias', 'Módulo para seguimiento de incidencias internas y externas.', 'ACTIVO', false),
+('Integracion ERP', 'Sincronización de usuarios y tareas con sistema ERP.', 'SUSPENDIDO', false),
+('Notificaciones Push', 'Servicio de alertas para tareas próximas a vencer.', 'ACTIVO', false),
+('Migracion Cloud', 'Migración progresiva de infraestructura a entorno cloud.', 'ACTIVO', false),
+('Onboarding Web', 'Flujo de onboarding para nuevos empleados en la plataforma.', 'COMPLETADO', false),
 ('Seguridad App', 'Hardening de autenticación, permisos y auditoría.', 'ACTIVO', false),
-('Soporte Clientes', 'Portal de soporte para clientes y gestión de tickets.', 'ACTIVO', 1, false),
-('Optimizacion SQL', 'Optimización de consultas pesadas y tuning de índices.', 'ACTIVO', 1, false);
+('Soporte Clientes', 'Portal de soporte para clientes y gestión de tickets.', 'ACTIVO', false),
+('Optimizacion SQL', 'Optimización de consultas pesadas y tuning de índices.', 'ACTIVO', false);
 
 
 -- PROYECTO_USUARIO (relación N:M)
@@ -66,9 +71,7 @@ INSERT INTO PROYECTO_USUARIO (proyecto_id, usuario_id) VALUES
 (16, 4),
 (16, 6);
 
--- =====================
 -- TAREAS
--- =====================
 INSERT INTO TAREAS (nombre, descripcion, estado, usuario_id) VALUES
 ('Diseño BD',   'Diseñar el esquema relacional de la base de datos.',   'COMPLETADO', 1),
 ('Modelos JPA', 'Crear las entidades JPA con sus relaciones.','COMPLETADO', 1),
