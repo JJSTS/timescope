@@ -11,13 +11,13 @@ create table USUARIOS (
                           username   varchar(255)                        not null unique,
                           email      varchar(255)                        not null unique,
                           password   varchar(255)                        not null,
-                          tiempo_proyecto bigint                         not null,
+                          tiempo_proyecto bigint                         default 0,
                           is_deleted boolean default false
 );
 
 create table USUARIO_ROLES (
                                user_id bigint not null,
-                               roles varchar (20) check ( roles in ('supervisor','director','empleado')),
+                               roles varchar (20) check ( roles in ('SUPERVISOR','DIRECTOR','EMPLEADO')),
                                FOREIGN KEY (user_id) REFERENCES USUARIOS(id) ON DELETE cascade
 );
 

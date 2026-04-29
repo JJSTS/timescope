@@ -1,11 +1,14 @@
 package es.timescope.rest.Usuarios.services;
 
+import es.timescope.rest.Emails.Impl.UsuarioEmailServiceImpl;
+import es.timescope.rest.Emails.services.UsuarioEmailService;
 import es.timescope.rest.Usuarios.dto.UsuarioCreateDto;
 import es.timescope.rest.Usuarios.dto.UsuarioInfoResponse;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 import es.timescope.rest.Usuarios.exceptions.UsuarioNombreOrEmailExists;
 import es.timescope.rest.Usuarios.exceptions.UsuarioNotFound;
 import es.timescope.rest.Usuarios.mappers.UsuariosMapper;
+import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
 import jakarta.transaction.Transactional;
@@ -21,13 +24,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Slf4j
 @CacheConfig(cacheNames = {"usuarios"})
 @RequiredArgsConstructor
 public class UsuarioServiceImpl implements UsuariosService {
-    
+    private final UsuarioEmailService usuarioEmailService;
     private final UsuariosRepository usuariosRepository;
     private final UsuariosMapper usuarioMapper;
 
@@ -71,13 +75,16 @@ public class UsuarioServiceImpl implements UsuariosService {
     @CachePut(key = "#result.id")
     public UsuarioResponseDto save(UsuarioCreateDto usuarioCreateDto) {
         log.info("Guardando usuario: {}", usuarioCreateDto);
+        Usuario usuario = usuarioMapper.toUsuario(usuarioCreateDto);
+        usuario.setRoles(Set.of(Roles.DESARROLLADOR));
+        usuario.setIsDeleted(false);
 
         usuariosRepository.findByUsernameEqualsIgnoreCaseOrEmailEqualsIgnoreCase(usuarioCreateDto.getUsername(), usuarioCreateDto.getEmail())
                 .ifPresent(u -> {
                     throw new UsuarioNombreOrEmailExists("Ya existe un usuario con ese username o email");
                 });
-
-        return usuarioMapper.toUsuarioResponseDto(usuariosRepository.save(usuarioMapper.toUsuario(usuarioCreateDto)));
+        usuarioEmailService.enviarConfirmacionCreacion(usuario);
+        return usuarioMapper.toUsuarioResponseDto(usuariosRepository.save(usuario));
     }
 
     @Override
@@ -92,6 +99,16 @@ public class UsuarioServiceImpl implements UsuariosService {
                     }
                 });
         return usuarioMapper.toUsuarioResponseDto(usuariosRepository.save(usuarioMapper.toUsuario(userRequest, id)));
+    }
+
+    @Override
+    @Transactional
+    public void asignarRol(Long id, Roles role) {
+        log.info("Asignando un rol al usuario con id: {}", id);
+        Usuario usuario = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
+        usuario.getRoles().clear();
+        usuario.getRoles().add(role);
+        usuariosRepository.save(usuario);
     }
 
     @Override

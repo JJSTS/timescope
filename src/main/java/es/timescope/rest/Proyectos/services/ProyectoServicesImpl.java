@@ -1,5 +1,7 @@
 package es.timescope.rest.Proyectos.services;
 
+import es.timescope.rest.Notificacion.models.Tipo;
+import es.timescope.rest.Notificacion.service.NotificacionService;
 import es.timescope.rest.Proyectos.dto.ProyectoCreateDto;
 import es.timescope.rest.Proyectos.dto.ProyectoResponseDto;
 import es.timescope.rest.Proyectos.exceptions.ProyectoBadRequestException;
@@ -32,6 +34,7 @@ public class ProyectoServicesImpl implements ProyectoServices {
     private final ProyectosRepository proyectosRepository;
     private final UsuariosRepository usuariosRepository;
     private final ProyectosMapper proyectoMapper;
+    private final NotificacionService notificacionService;
 
     @Override
     public Page<ProyectoResponseDto> findAll(Optional<Long> id, Optional<String> nombre, Optional<Boolean> isDeleted, Pageable pageable) {
@@ -58,9 +61,10 @@ public class ProyectoServicesImpl implements ProyectoServices {
     }
 
     @Override
-    public Page<Proyecto> findByEstado(Estado estado, Pageable pageable) {
+    public Page<ProyectoResponseDto> findByEstado(Estado estado, Pageable pageable) {
         log.info("Buscando proyectos por estado: {}", estado);
-        return proyectosRepository.findByEstado(estado, pageable);
+        return proyectosRepository.findByEstado(estado, pageable)
+                .map(proyectoMapper::toProyectoResponseDto);
     }
 
     @Override
@@ -76,6 +80,27 @@ public class ProyectoServicesImpl implements ProyectoServices {
         List<Usuario> usuarios = checkUsuarios(proyectoCreateDto.getUsuarios());
         Proyecto proyectoSaved = proyectosRepository.save(proyectoMapper.toProyecto(proyectoCreateDto, usuarios));
         return proyectoMapper.toProyectoResponseDto(proyectoSaved);
+    }
+
+    @Override
+    public ProyectoResponseDto addUsuario(Long id, String username) {
+        log.info("Añadiendo usuario {} al proyecto {}", username, id);
+        Proyecto proyecto = proyectosRepository.findById(id)
+                .orElseThrow(() -> new ProyectoNotFoundException(id));
+        Usuario usuario = usuariosRepository.findByUsername(username)
+                .orElseThrow(() -> new ProyectoBadRequestException("Usuario con username: " + username + " no encontrado"));
+        if (proyecto.getUsuarios().contains(usuario)) {
+            throw new ProyectoBadRequestException("El usuario ya pertenece a este proyecto");
+        }
+
+        notificacionService.enviarNotificacion(
+                username,
+                "¡Se te ha añadido al proyecto " + proyecto.getNombre() + " !",
+                Tipo.EQUIPO_UNIDO
+        );
+
+        proyecto.getUsuarios().add(usuario);
+        return proyectoMapper.toProyectoResponseDto(proyectosRepository.save(proyecto));
     }
 
     @Override

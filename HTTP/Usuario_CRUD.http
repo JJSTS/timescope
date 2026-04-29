@@ -1,32 +1,24 @@
-### =============================================
-### USUARIOS - CRUD
-### Base URL: http://localhost:8080/api/v1/usuarios
-### =============================================
-
-### GET ALL - Obtener todos los usuarios (paginado)
 ### Requiere rol: director
 GET http://localhost:8080/api/v1/usuarios
     ?page=0
     &size=10
     &sortBy=id
     &direction=asc
-Authorization: Basic cgarcia hashed_pass_1
+Authorization: Bearer {{auth_token}}
 
 ### GET ALL - Filtrar por username
 GET http://localhost:8080/api/v1/usuarios
     ?username=mmartinez
     &page=0
     &size=10
-Authorization: Basic cgarcia hashed_pass_1
-
-###
+Authorization: Bearer {{auth_token}}
 
 ### GET ALL - Filtrar por email
 GET http://localhost:8080/api/v1/usuarios
     ?email=juan.perez@timescope.es
     &page=0
     &size=10
-Authorization: Basic cgarcia hashed_pass_1
+Authorization: Bearer {{auth_token}}
 
 ###
 
@@ -35,9 +27,7 @@ GET http://localhost:8080/api/v1/usuarios
     ?isDeleted=false
     &page=0
     &size=10
-Authorization: Basic cgarcia hashed_pass_1
-
-###
+Authorization: Bearer {{auth_token}}
 
 ### GET ALL - Filtrar por username e isDeleted
 GET http://localhost:8080/api/v1/usuarios
@@ -47,6 +37,21 @@ GET http://localhost:8080/api/v1/usuarios
     &size=10
     &sortBy=id
     &direction=desc
-Authorization: Basic cgarcia hashed_pass_1
+Authorization: Bearer {{auth_token}}
 
-###
+### PATCH - Asignar rol a un usuario - requiere rol: DIRECTOR y COORDINADOR
+
+PATCH http://localhost:8080/api/v1/usuarios/1/asingRol?role=COORDINADOR
+Authorization: Bearer {{auth_token}}
+
+### POST - Crear Usuarios
+POST http://localhost:8080/api/v1/usuarios
+Content-Type: application/json
+
+{
+ "nombres": "Juan Jesus Sebastian",
+ "apellidos": "Trejo Salinas",
+ "email": "juanjesustrejosalinas06@gmail.com",
+ "username": "jjsts06",
+  "password": "kknero"
+}

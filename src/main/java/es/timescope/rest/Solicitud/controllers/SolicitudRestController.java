@@ -26,28 +26,33 @@ public class SolicitudRestController {
 
     @GetMapping("/pendientes/{receptId}")
     public ResponseEntity<List<SolicitudResponseDto>> getPendientes (@PathVariable Long receptId) {
+        log.info("Devolviendo solicitudes pendientes");
         return ResponseEntity.ok(solicitudServices.solicitudesPendientes(receptId));
     }
 
     @PostMapping("/enviar")
     public ResponseEntity<SolicitudResponseDto> enviarSolicitud (@RequestParam String username) {
+        log.info("Enviando solicitud a {}", username);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(solicitudServices.enviarSolicitud(username));
     }
 
     @PutMapping("/{id}/aceptar")
     public ResponseEntity<SolicitudResponseDto> aceptarSolicitud (@PathVariable Long id, @RequestParam Long receptorId) {
+        log.info("Aceptando solicitud a {}", receptorId);
         return ResponseEntity.ok(solicitudServices.aceptarSolicitud(id, receptorId));
     }
 
     @PutMapping("/{id}/rechazar")
     public ResponseEntity<SolicitudResponseDto> rechazarSolicitud(@PathVariable Long id, @RequestParam Long receptorId) {
+        log.info("Rechazando solicitud a {}", receptorId);
         return ResponseEntity.ok(solicitudServices.rechazarSolicitud(id, receptorId));
     }
 
     @DeleteMapping("/{id}/cancelar")
-    public ResponseEntity<Void> cancelarSolicitud(@PathVariable Long id, @RequestParam Long receptorId) {
-        solicitudServices.cancelarSolicitud(id, receptorId);
+    public ResponseEntity<Void> cancelarSolicitud(@PathVariable Long id) {
+        log.info("Cancelando solicitud a {}", id);
+        solicitudServices.cancelarSolicitud(id);
         return ResponseEntity.notFound().build();
     }
 

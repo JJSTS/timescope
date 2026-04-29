@@ -3,6 +3,7 @@ package es.timescope.rest.Usuarios.services;
 import es.timescope.rest.Usuarios.dto.UsuarioCreateDto;
 import es.timescope.rest.Usuarios.dto.UsuarioInfoResponse;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
+import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,8 @@ public interface UsuariosService {
     UsuarioResponseDto save(UsuarioCreateDto userRequest);
 
     UsuarioResponseDto update(Long id, UsuarioCreateDto userRequest);
+
+    void asignarRol(Long id, Roles role);
 
     void deleteById(Long id);
 

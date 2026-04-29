@@ -2,7 +2,7 @@
 
 Directos de proyecto puede crear proyectos y asignar tareas a los empleados.
 
-Director puede ver el cargos de los empleados y todos los proyectos.
+Director puede ver los cargos de los empleados y todos los proyectos.
 
 Supervisor puede cambiar las horas activas de los empleados(En casos de que vaya la luz o internet en la empresa)
 

@@ -26,12 +26,24 @@ public class TareasMapper {
 
     }
 
-    public Tarea toTarea(TareaUpdateDto tareaUpdateDto, Tarea tarea) {
+    public Tarea toTarea(TareaCreateDto tareaCreateDto) {
+        return Tarea.builder()
+                .id(null)
+                .nombre(tareaCreateDto.getNombre())
+                .descripcion(tareaCreateDto.getDescripcion())
+                .fechaCreacion(LocalDateTime.now())
+                .build();
+
+    }
+
+    public Tarea toTarea(TareaUpdateDto tareaUpdateDto, Tarea tarea, Usuario usuario) {
         return Tarea.builder()
                 .id(tarea.getId())
                 .nombre(tareaUpdateDto.getNombre() != null ? tareaUpdateDto.getNombre() : tarea.getNombre())
                 .descripcion(tareaUpdateDto.getDescripcion() != null ? tareaUpdateDto.getDescripcion() : tarea.getDescripcion())
                 .estado(tareaUpdateDto.getEstado() != null ? tareaUpdateDto.getEstado() : tarea.getEstado())
+                .fechaCreacion(tarea.getFechaCreacion())
+                .usuario(usuario != null ? usuario : tarea.getUsuario())
                 .build();
     }
 
@@ -42,7 +54,7 @@ public class TareasMapper {
                 .descripcion(tarea.getDescripcion())
                 .estado(tarea.getEstado())
                 .fechaCreacion(tarea.getFechaCreacion())
-                .usuario(tarea.getUsuario().getNombres())
+                .usuario(tarea.getUsuario() != null ? tarea.getUsuario().getNombres() : null)
                 .build();
     }
 

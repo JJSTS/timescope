@@ -1,5 +1,6 @@
 package es.timescope.rest.Usuarios.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import es.timescope.rest.Usuarios.models.Roles;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -14,6 +15,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+
 public class UsuarioCreateDto {
     @NotBlank(message = "Los nombres no deben de estar vacíos")
     private String nombres;
@@ -31,7 +33,8 @@ public class UsuarioCreateDto {
     private String password;
 
     @Builder.Default
-    private Set<Roles> roles = Set.of(Roles.empleado);
+    @JsonIgnore
+    private Set<Roles> roles = Set.of(Roles.DESARROLLADOR);
 
     @Builder.Default
     private Boolean isDeleted = false;

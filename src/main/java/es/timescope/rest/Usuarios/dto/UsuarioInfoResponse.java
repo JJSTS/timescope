@@ -19,11 +19,10 @@ public class UsuarioInfoResponse {
     private String nombres;
     private String apellidos;
     private String email;
-    private Long tiempoProyecto;
     private String username;
 
     @Builder.Default
-    private Set<Roles> roles = Set.of(Roles.empleado);
+    private Set<Roles> roles = Set.of(Roles.DESARROLLADOR);
 
     @Builder.Default
     private List<String> proyectos = new ArrayList<>();

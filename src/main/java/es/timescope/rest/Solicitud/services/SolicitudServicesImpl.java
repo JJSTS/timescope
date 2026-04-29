@@ -1,5 +1,6 @@
 package es.timescope.rest.Solicitud.services;
 
+import es.timescope.config.auth.AuthUtils;
 import es.timescope.rest.Solicitud.dto.SolicitudResponseDto;
 import es.timescope.rest.Solicitud.exceptions.EmisorAndReceptorEquals;
 import es.timescope.rest.Solicitud.exceptions.EmisorOrReceptorNotFound;
@@ -27,21 +28,30 @@ public class SolicitudServicesImpl implements SolicitudServices {
     private final SolicitudRepository solicitudRepository;
     private final UsuariosRepository usuariosRepository;
     private final SolicitudMapper solicitudMapper;
+    private final AuthUtils authUtils;
 
     @Override
     public SolicitudResponseDto enviarSolicitud(String username) {
         log.info("Solicitud enviada a {}", username );
-        Usuario emisor = usuariosRepository.findByUsername(username).orElseThrow(() -> new EmisorOrReceptorNotFound(username));
-        if(emisor.getUsername().equals(username)) {throw new EmisorAndReceptorEquals();}
 
-        if (solicitudRepository.existsByEmisorIdAndReceptorIdAndEstado(emisor.getId(), emisor.getId(), Estado.PENDIENTE)) {throw new SolicitudExist();}
 
-        Usuario receptor = usuariosRepository.findById(emisor.getId()).orElseThrow(() -> new EmisorOrReceptorNotFound("Emisor no encontrado"));
+        Usuario emisor = authUtils.getUsuarioAuthentication(usuariosRepository);
 
-        Usuario emisors = usuariosRepository.findById(receptor.getId()).orElseThrow(() -> new EmisorOrReceptorNotFound("Receptor no encontrado"));
+        Usuario receptor = usuariosRepository.findByUsername(username)
+                .orElseThrow(() -> new EmisorOrReceptorNotFound(username));
+
+        if(emisor.getId().equals(receptor.getId())) {
+            throw new EmisorAndReceptorEquals();
+        }
+
+        if (solicitudRepository.existsByEmisorIdAndReceptorIdAndEstado(emisor.getId(), receptor.getId(), Estado.PENDIENTE)) {
+            throw new SolicitudExist();
+        }
+
         Solicitud solicitud = Solicitud.builder()
                 .emisor(emisor)
                 .receptor(receptor)
+                .estado(Estado.PENDIENTE)
                 .build();
 
         solicitudRepository.save(solicitud);
@@ -69,9 +79,15 @@ public class SolicitudServicesImpl implements SolicitudServices {
     }
 
     @Override
-    public void cancelarSolicitud(Long id, Long emisorId) {
-        Solicitud solicitud = solicitudRepository.findById(id).orElseThrow(() -> new SolicitudNotFound());
-        validarSolicitud(emisorId, emisorId);
+    public void cancelarSolicitud(Long id) {
+        Solicitud solicitud = solicitudRepository.findById(id)
+                .orElseThrow(() -> new SolicitudNotFound());
+
+        Usuario usuarioAuth = authUtils.getUsuarioAuthentication(usuariosRepository);
+        if (!solicitud.getEmisor().getId().equals(usuarioAuth.getId())) {
+            throw new EmisorOrReceptorNotFound("No tienes permiso para cancelar esta solicitud");
+        }
+
         solicitudRepository.delete(solicitud);
         log.info("Solicitud cancelada");
     }

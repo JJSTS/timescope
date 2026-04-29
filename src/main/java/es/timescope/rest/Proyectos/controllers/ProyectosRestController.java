@@ -1,6 +1,7 @@
 package es.timescope.rest.Proyectos.controllers;
 
-import es.timescope.rest.Proyectos.dto.ProyectoResponseDto;
+import es.timescope.rest.Proyectos.dto.*;
+import es.timescope.rest.Proyectos.models.Estado;
 import es.timescope.rest.Proyectos.services.ProyectoServices;
 import es.timescope.utils.pagination.PageResponse;
 import es.timescope.utils.pagination.PaginationLinksUtils;
@@ -11,10 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Optional;
@@ -27,8 +26,9 @@ public class ProyectosRestController {
     private final ProyectoServices  proyectoServices;
     private final PaginationLinksUtils paginationLinksUtils;
 
+    // Incluye las búsquedas por id, nombre e isDeleted
     @GetMapping
-//    @PreAuthorize("hasRole('director') and hasRole('supervisor')")
+//    @PreAuthorize("hasAnyRole('DIRECTOR', 'COORDINADOR')")
     public ResponseEntity<PageResponse<ProyectoResponseDto>> findAll(
             @RequestParam(required = false) Optional<Long> id,
             @RequestParam(required = false)Optional<String> nombre,
@@ -50,5 +50,88 @@ public class ProyectosRestController {
         return ResponseEntity.ok()
                 .header("link", paginationLinksUtils.createLinkHeader(pageResult, uriBuilder))
                 .body(PageResponse.of(pageResult, sortBy, direction));
+    }
+
+    @GetMapping("/estado/{estado}")
+    public ResponseEntity<PageResponse<ProyectoResponseDto>> findByEstado(
+            @PathVariable Estado estado,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction,
+            HttpServletRequest request
+    ) {
+        log.info("findByEstado: estado: {}, page: {}, size: {}, sortBy: {}, direction: {}",
+                estado, page, size, sortBy, direction);
+
+        Sort sort = Sort.by(sortBy).ascending();
+        if ("desc".equalsIgnoreCase(direction)) {
+            sort = Sort.by(sortBy).descending();
+        }
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(request.getRequestURL().toString());
+
+        Page<ProyectoResponseDto> pageResult = proyectoServices
+                .findByEstado(estado, PageRequest.of(page, size, sort));
+
+        return ResponseEntity.ok()
+                .header("link", paginationLinksUtils.createLinkHeader(pageResult, uriBuilder))
+                .body(PageResponse.of(pageResult, sortBy, direction));
+    }
+
+    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
+    @PostMapping
+    public ResponseEntity<ProyectoResponseDto> createProyecto(@RequestBody ProyectoCreateDto proyectoCreateDto) {
+        log.info("Recibiendo solicitud para crear proyecto: {}", proyectoCreateDto);
+        ProyectoResponseDto proyecto = proyectoServices.save(proyectoCreateDto);
+        return ResponseEntity.ok(proyecto);
+    }
+
+
+    @PutMapping("/usuario/{id}")
+    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
+    public ResponseEntity<ProyectoResponseDto> addUsuario(
+            @PathVariable Long id,
+            @RequestParam String username
+    ){
+        log.info("Añadiendo usuario {} al proyecto {}", id, username);
+        return ResponseEntity.ok(proyectoServices.addUsuario(id, username));
+    }
+
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<PageResponse<ProyectoResponseDto>> findByUsuarioId(
+            @PathVariable Long usuarioId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction,
+            HttpServletRequest request
+    ) {
+        log.info("findByUsuarioId: usuarioId: {}, page: {}, size: {}, sortBy: {}, direction: {}",
+                usuarioId, page, size, sortBy, direction);
+
+        Sort sort = Sort.by(sortBy).ascending();
+        if ("desc".equalsIgnoreCase(direction)) {
+            sort = Sort.by(sortBy).descending();
+        }
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(request.getRequestURL().toString());
+
+        Page<ProyectoResponseDto> pageResult = proyectoServices
+                .findByUsuarioId(usuarioId, PageRequest.of(page, size, sort));
+
+        return ResponseEntity.ok()
+                .header("link", paginationLinksUtils.createLinkHeader(pageResult, uriBuilder))
+                .body(PageResponse.of(pageResult, sortBy, direction));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
+    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+        log.info("Eliminando proyecto con id: {}", id);
+
+        proyectoServices.deleteById(id);
+
+        return ResponseEntity.noContent().build(); // 204
     }
 }

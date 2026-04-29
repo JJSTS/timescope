@@ -148,10 +148,4 @@ erDiagram
         string estado
         datetime fecha_limite
     }
-
-
-
-
-
-
-
+```

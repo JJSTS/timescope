@@ -1,5 +1,6 @@
 package es.timescope.rest.Notificacion.service;
 
+import es.timescope.config.auth.AuthUtils;
 import es.timescope.rest.Notificacion.dto.NotificacionResponseDto;
 import es.timescope.rest.Notificacion.exception.NotificacionNotFound;
 import es.timescope.rest.Notificacion.mapper.NotificacionMapper;
@@ -20,15 +21,15 @@ import java.util.List;
 public class NotificacionServiceImpl implements NotificacionService {
 
     private final SimpMessagingTemplate simpMessagingTemplate;
-
     private final NotificacionRepository notificacionRepository;
     private final NotificacionMapper notificacionMapper;
     private final UsuariosRepository repositorioUsuarios;
 
     @Override
-    public NotificacionResponseDto enviarNotificacion(String username, String mensaje, Tipo tipo) {
-        Usuario usuario = repositorioUsuarios.findByUsername(username).orElseThrow(() -> new UsuarioNotFound(username));
+    public void enviarNotificacion(String username, String mensaje, Tipo tipo) {
 
+
+        Usuario usuario = repositorioUsuarios.findByUsername(username).orElseThrow(() -> new UsuarioNotFound(username));
         Notificacion notificacion = notificacionMapper.toNotificacion(usuario, mensaje, tipo);
 
         notificacionRepository.save(notificacion);
@@ -37,11 +38,10 @@ public class NotificacionServiceImpl implements NotificacionService {
                 username,
                 "/queue/notificacion",
                 mensaje);
-
-        return notificacionMapper.toNotificacionResponseDto(notificacion);
     }
 
     @Override
+
     public void marcarLeido(Long id) {
         Notificacion notificacion = notificacionRepository.findById(id)
                 .orElseThrow(() -> new NotificacionNotFound("Notificacion no encontrada"));

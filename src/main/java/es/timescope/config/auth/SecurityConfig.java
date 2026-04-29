@@ -1,0 +1,102 @@
+package es.timescope.config.auth;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.security.autoconfigure.web.servlet.PathRequest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
+
+@RequiredArgsConstructor
+@Configuration
+@EnableMethodSecurity(jsr250Enabled = true)
+public class SecurityConfig {
+  private final UserDetailsService userDetailsService;
+  private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+  @Value("${api.version}")
+  private String apiVersion;
+
+  @Bean
+  @Order(1)
+  public SecurityFilterChain h2ConsoleFilterChain(HttpSecurity http) throws Exception {
+    http
+            .securityMatcher("/h2-console/**")
+            .authorizeHttpRequests(auth -> auth
+                    .anyRequest().permitAll())
+            .csrf(AbstractHttpConfigurer::disable)
+            .headers(headers -> headers
+                    .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));
+    return http.build();
+  }
+
+  @Bean
+  @Order(2)
+  public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
+    http
+            .securityMatcher("/api/**")
+            .csrf(AbstractHttpConfigurer::disable)
+            .cors(Customizer.withDefaults())
+            .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
+            .authorizeHttpRequests(request -> request
+                    .requestMatchers("/api/" + apiVersion + "/auth/**").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/" + apiVersion + "/usuarios").permitAll()
+                    .anyRequest().authenticated())
+            .authenticationProvider(authenticationProvider()).addFilterBefore(
+                    jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+    return http.build();
+  }
+
+  @Bean
+  @Order(3)
+  public SecurityFilterChain formLoginFilterChain(HttpSecurity http) throws Exception {
+    http
+      .authorizeHttpRequests(auth -> auth
+              .requestMatchers("/error/**").permitAll()
+              .requestMatchers("/public/**","/", "/auth/**", "/webjars/**", "/css/**", "/images/**").permitAll()
+              .anyRequest().authenticated())
+            .formLogin(form -> form
+                    .loginPage("/auth/login")
+                    .loginProcessingUrl("/auth/login-post")
+                    .permitAll())
+            .logout(logout -> logout
+                    .logoutUrl("/auth/logout")
+                    .permitAll());
+    return http.build();
+  }
+
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
+
+  @Bean
+  public AuthenticationProvider authenticationProvider() {
+    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+    authProvider.setPasswordEncoder(passwordEncoder());
+    return authProvider;
+  }
+
+  @Bean
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
+      throws Exception {
+    return config.getAuthenticationManager();
+  }
+}
