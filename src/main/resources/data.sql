@@ -1,4 +1,3 @@
--- =====================
 -- USUARIOS
 INSERT INTO USUARIOS (nombres, apellidos, username, email, password, is_deleted) VALUES
 --Contraseña: UsuarioGarcia
