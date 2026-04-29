@@ -61,9 +61,10 @@ public class ProyectoServicesImpl implements ProyectoServices {
     }
 
     @Override
-    public Page<Proyecto> findByEstado(Estado estado, Pageable pageable) {
+    public Page<ProyectoResponseDto> findByEstado(Estado estado, Pageable pageable) {
         log.info("Buscando proyectos por estado: {}", estado);
-        return proyectosRepository.findByEstado(estado, pageable);
+        return proyectosRepository.findByEstado(estado, pageable).
+                map(proyectoMapper::toProyectoResponseDto);
     }
 
     @Override
