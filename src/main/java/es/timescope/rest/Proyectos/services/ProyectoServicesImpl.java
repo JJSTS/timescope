@@ -10,7 +10,6 @@ import es.timescope.rest.Proyectos.models.Estado;
 import es.timescope.rest.Proyectos.models.Proyecto;
 import es.timescope.rest.Proyectos.repositories.ProyectosRepository;
 import es.timescope.rest.Proyectos.exceptions.ProyectoNotFoundException;
-import es.timescope.rest.Usuarios.mappers.UsuariosMapper;
 import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
 
@@ -61,10 +60,9 @@ public class ProyectoServicesImpl implements ProyectoServices {
     }
 
     @Override
-    public Page<ProyectoResponseDto> findByEstado(Estado estado, Pageable pageable) {
+    public Page<Proyecto> findByEstado(Estado estado, Pageable pageable) {
         log.info("Buscando proyectos por estado: {}", estado);
-        return proyectosRepository.findByEstado(estado, pageable)
-                .map(proyectoMapper::toProyectoResponseDto);
+        return proyectosRepository.findByEstado(estado, pageable);
     }
 
     @Override
@@ -106,16 +104,17 @@ public class ProyectoServicesImpl implements ProyectoServices {
     @Override
     public void deleteById(Long id) {
         // Si no existe lanza excepción
-        Proyecto proyectoDeleted = proyectosRepository.findById(id).orElseThrow(()-> new ProyectoNotFoundException(id));
+        proyectosRepository.findById(id).orElseThrow(() -> new ProyectoNotFoundException(id));
         proyectosRepository.deleteById(id);
     }
 
     private List<Usuario> checkUsuarios(List<Long> usuariosIds) {
         log.info("Buscando usuarios por id: {}", usuariosIds);
-        List<Usuario> usuarios = List.of();
+        if (usuariosIds == null) return new ArrayList<>();
+        List<Usuario> usuarios = new ArrayList<>();
         for (Long id : usuariosIds) {
             var usuario = usuariosRepository.findById(id).orElse(null);
-            if (usuariosRepository.existsById(id) || usuario.getIsDeleted()) {
+            if (usuario == null || usuario.getIsDeleted()) {
                 throw new ProyectoBadRequestException("El usuario con id: " + id + " no existe o está borrado");
             }
             usuarios.add(usuario);
