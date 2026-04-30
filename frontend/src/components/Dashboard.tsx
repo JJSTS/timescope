@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import LoginForm from './LoginForm';
 import UserProfile from './UserProfile';
 import UsuariosList from './UsuariosList';
 import TareasList from './TareasList';
@@ -56,9 +55,6 @@ const Dashboard: React.FC = () => {
     setIsMenuOpen(false);
   };
 
-  if (!isAuthenticated) {
-    return <LoginForm onLoginSuccess={() => setActiveTab('perfil')} />;
-  }
 
   return (
     <div className="dashboard-container">

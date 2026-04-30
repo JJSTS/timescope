@@ -1,48 +1,91 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
+import faviconImage from '../images/Favicon.png';
 import '../styles/LoginForm.css';
 
-interface LoginFormProps {
-  onLoginSuccess: () => void;
+interface LoginFormData {
+  username: string;
+  password: string;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { setIsAuthenticated } = useAuth();
+interface RegisterFormData {
+  nombres: string;
+  email: string;
+  username: string;
+  password: string;
+}
 
-  const handleLogin = async (e: React.FormEvent) => {
+export const Login: React.FC = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [isLogin, setIsLogin] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+
+  // Login state
+  const [loginData, setLoginData] = useState<LoginFormData>({
+    username: '',
+    password: ''
+  });
+
+  // Register state
+  const [registerData, setRegisterData] = useState<RegisterFormData>({
+    nombres: '',
+    email: '',
+    username: '',
+    password: ''
+  });
+
+  const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setLoginData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleRegisterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setRegisterData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      console.log('Iniciando login con usuario:', username);
-      const response = await authService.login(username, password);
-      console.log('Login exitoso. Token:', response.token.substring(0, 20) + '...');
-
-      // Guardar token y username en localStorage
-      localStorage.setItem('token', response.token);
-      console.log('Token guardado en localStorage');
-
-      localStorage.setItem('username', username);
-      console.log('Username guardado en localStorage:', username);
-
-      // Actualizar contexto
-      setIsAuthenticated(true);
-      console.log('setIsAuthenticated(true) ejecutado');
-
-      // Pequeño delay para permitir que AuthContext se actualice
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      console.log('Redirigiendo a UserProfile...');
-      onLoginSuccess();
+      const response = await authService.login(loginData.username, loginData.password);
+      login(loginData.username, response.token);
+      navigate('/dashboard');
     } catch (err: any) {
-      console.error('Error en login:', err);
-      setError(err.message || 'Error al iniciar sesión');
+      setError(err.response?.data?.message || err.message || 'Error al iniciar sesión');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegisterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await authService.register(
+        registerData.nombres,
+        registerData.email,
+        registerData.username,
+        registerData.password
+      );
+      login(registerData.username, response.token);
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message || 'Error al crear la cuenta');
     } finally {
       setLoading(false);
     }
@@ -50,40 +93,224 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
 
   return (
     <div className="login-container">
-      <div className="login-form">
-        <h1>TimeScope</h1>
-        <form onSubmit={handleLogin}>
-          <div className="form-group">
-            <label htmlFor="username">Usuario:</label>
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Ingresa tu usuario"
-              required
-            />
+      {/* Left Side - Hero */}
+      <div className="login-hero">
+        <div className="hero-content">
+          <div className="hero-header">
+            <h1 className="hero-title">
+              Accede a <span className="hero-brand">TimeScope</span> y organiza el tiempo de tu equipo
+            </h1>
+            <p className="hero-description">
+              Gestión de tiempo simplificada para equipos modernos. Rastrea proyectos, mide productividad y colabora en tiempo real.
+            </p>
           </div>
-          <div className="form-group">
-            <label htmlFor="password">Contraseña:</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Ingresa tu contraseña"
-              required
-            />
+
+          {/* Stats Cards */}
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-icon stat-icon-orange">👥</div>
+              <div className="stat-value">+150</div>
+              <div className="stat-label">Equipos</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon stat-icon-sky">📈</div>
+              <div className="stat-value">2.5K</div>
+              <div className="stat-label">Proyectos</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon stat-icon-lime">📍</div>
+              <div className="stat-value">Madrid</div>
+              <div className="stat-label">España</div>
+            </div>
           </div>
-          {error && <div className="error-message">{error}</div>}
-          <button type="submit" disabled={loading}>
-            {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-          </button>
-        </form>
+        </div>
+      </div>
+
+      {/* Right Side - Auth Card */}
+      <div className="login-form-wrapper">
+        <div className="login-card">
+          {/* Logo */}
+          <div className="login-logo">
+            <div className="logo-icon"> <img className="logo-favicon" src={faviconImage} alt="" /> </div>
+            <span className="logo-text">TimeScope</span>
+          </div>
+
+          <h2 className="login-title">Bienvenido a TimeScope</h2>
+
+          {/* Toggle Buttons */}
+          <div className="toggle-buttons">
+            <button
+              type="button"
+              onClick={() => {
+                setIsLogin(false);
+                setError('');
+              }}
+              className={`toggle-btn ${!isLogin ? 'toggle-btn-active' : ''}`}
+            >
+              Crear cuenta
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsLogin(true);
+                setError('');
+              }}
+              className={`toggle-btn ${isLogin ? 'toggle-btn-active' : ''}`}
+            >
+              Iniciar sesión
+            </button>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="error-message">
+              {error}
+            </div>
+          )}
+
+          {/* Login Form */}
+          {isLogin && (
+            <form onSubmit={handleLoginSubmit} className="auth-form">
+              <div className="form-group">
+                <label htmlFor="login-username" className="form-label">
+                  Usuario
+                </label>
+                <input
+                  id="login-username"
+                  name="username"
+                  type="text"
+                  value={loginData.username}
+                  onChange={handleLoginChange}
+                  className="form-input"
+                  placeholder="tu_usuario"
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="login-password" className="form-label">
+                  Contraseña
+                </label>
+                <input
+                  id="login-password"
+                  name="password"
+                  type="password"
+                  value={loginData.password}
+                  onChange={handleLoginChange}
+                  className="form-input"
+                  placeholder="••••••••"
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="submit-btn"
+                disabled={loading}
+              >
+                {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+              </button>
+
+              <div className="forgot-password">
+                <button type="button" className="forgot-link">
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Register Form */}
+          {!isLogin && (
+            <form onSubmit={handleRegisterSubmit} className="auth-form">
+              <div className="form-group">
+                <label htmlFor="register-nombres" className="form-label">
+                  Nombre completo
+                </label>
+                <input
+                  id="register-nombres"
+                  name="nombres"
+                  type="text"
+                  value={registerData.nombres}
+                  onChange={handleRegisterChange}
+                  className="form-input"
+                  placeholder="Laura Fernández"
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="register-email" className="form-label">
+                  Correo electrónico
+                </label>
+                <input
+                  id="register-email"
+                  name="email"
+                  type="email"
+                  value={registerData.email}
+                  onChange={handleRegisterChange}
+                  className="form-input"
+                  placeholder="laura@empresa.com"
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="register-username" className="form-label">
+                  Usuario
+                </label>
+                <input
+                  id="register-username"
+                  name="username"
+                  type="text"
+                  value={registerData.username}
+                  onChange={handleRegisterChange}
+                  className="form-input"
+                  placeholder="tu_usuario"
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="register-password" className="form-label">
+                  Contraseña
+                </label>
+                <input
+                  id="register-password"
+                  name="password"
+                  type="password"
+                  value={registerData.password}
+                  onChange={handleRegisterChange}
+                  className="form-input"
+                  placeholder="Mínimo 8 caracteres"
+                  required
+                  minLength={8}
+                  disabled={loading}
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="submit-btn"
+                disabled={loading}
+              >
+                {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+              </button>
+
+              <p className="terms-text">
+                Al crear una cuenta, aceptas nuestros términos de servicio y política de privacidad.
+              </p>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
-export default LoginForm;
+export default Login;
 

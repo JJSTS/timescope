@@ -19,11 +19,11 @@ export const authService = {
     }
   },
 
-  async register(nombres: string, apellidos: string, username: string, email: string, password: string) {
+  async register(nombres: string, email: string, username: string, password: string) {
     try {
       const response = await axios.post(`${API_URL}/auth/signup`, {
         nombres,
-        apellidos,
+        apellidos: '', // Backend puede ignorar esto si no lo requiere
         username,
         email,
         password
@@ -36,7 +36,7 @@ export const authService = {
 
   logout() {
     localStorage.removeItem('token');
-    localStorage.removeItem('userId');
+    localStorage.removeItem('username');
   }
 };
 

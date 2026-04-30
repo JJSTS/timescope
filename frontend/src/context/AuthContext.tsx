@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 interface AuthContextType {
   isAuthenticated: boolean;
   logout: () => void;
+  login: (username: string, token: string) => void;
   username?: string;
   setIsAuthenticated: (value: boolean) => void;
   setUsername: (value: string | undefined) => void;
@@ -79,10 +80,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUsername(undefined);
   };
 
+  const login = (newUsername: string, token: string) => {
+    console.log('Login ejecutado para usuario:', newUsername);
+    localStorage.setItem('token', token);
+    localStorage.setItem('username', newUsername);
+    setIsAuthenticated(true);
+    setUsername(newUsername);
+  };
+
   console.log('AuthContext render. Username:', username, 'IsAuth:', isAuthenticated);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, logout, username, setUsername, setIsAuthenticated }}>
+    <AuthContext.Provider value={{ isAuthenticated, logout, login, username, setUsername, setIsAuthenticated }}>
       {children}
     </AuthContext.Provider>
   );
