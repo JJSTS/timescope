@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 @Setter
 @Table(name = "USUARIOS")
 public class Usuario implements UserDetails {
-//public class Usuario implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

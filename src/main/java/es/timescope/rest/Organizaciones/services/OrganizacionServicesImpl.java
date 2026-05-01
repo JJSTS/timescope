@@ -1,11 +1,14 @@
 package es.timescope.rest.Organizaciones.services;
 
+import es.timescope.config.auth.AuthUtils;
 import es.timescope.rest.Organizaciones.dto.*;
 import es.timescope.rest.Organizaciones.exceptions.OrganizacionNotFoundException;
 import es.timescope.rest.Organizaciones.mappers.OrganizacionesMapper;
 import es.timescope.rest.Organizaciones.models.Organizacion;
 import es.timescope.rest.Organizaciones.repositories.OrganizacionesRepository;
 import es.timescope.rest.Proyectos.repositories.ProyectosRepository;
+import es.timescope.rest.Usuarios.models.Roles;
+import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -14,6 +17,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,6 +29,7 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
     private final OrganizacionesRepository repository;
     private final ProyectosRepository proyectosRepository;
     private final UsuariosRepository usuariosRepository;
+    private final AuthUtils authUtils;
 
     private Organizacion getEntity(Long id) {
         return repository.findById(id)
@@ -59,8 +64,11 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
 
     @Override
     public OrganizacionResponseDto create(OrganizacionCreateDto dto) {
+        Usuario admin = authUtils.getUsuarioAuthentication(usuariosRepository);
+
         Organizacion org = new Organizacion();
         org.setNombre(dto.getNombre());
+        org.setAdmin(admin);
 
         if (dto.getEmpresaMatrizId() != null) {
             org.setEmpresaMatriz(getEntity(dto.getEmpresaMatrizId()));

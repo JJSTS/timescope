@@ -33,6 +33,10 @@ public class Organizacion {
     private List<Usuario> usuarios;
 
     @ManyToOne
+    @JoinColumn(name = "admin_id")
+    private Usuario admin;
+
+    @ManyToOne
     @JoinColumn(name = "empresa_matriz_id")
     @JsonIgnore
     @ToString.Exclude

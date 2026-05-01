@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
 public class SolicitudResponseDto {
 
     private Long id;
-    private String emisor;
-    private String receptor;
+    private String usuario;
+    private String organizacion;
     private Estado estado;
     private LocalDateTime fechaCreacion;
 }

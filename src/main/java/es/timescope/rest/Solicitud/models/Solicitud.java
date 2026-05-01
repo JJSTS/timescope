@@ -1,5 +1,6 @@
 package es.timescope.rest.Solicitud.models;
 
+import es.timescope.rest.Organizaciones.models.Organizacion;
 import es.timescope.rest.Usuarios.models.Usuario;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,14 +22,15 @@ public class Solicitud {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "emisor_id")
-    private Usuario emisor;
+    private Usuario usuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receptor_id")
-    private Usuario receptor;
+    @JoinColumn(name = "organizacion_id")
+    private Organizacion organizacion;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, name = "estado")
+    @Builder.Default
     private Estado estado = Estado.PENDIENTE;
 
     @Column(nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")

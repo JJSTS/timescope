@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SolicitudCreatedDto {
 
-    private String emisor;
-    private String receptor;
+    private String usuario;
+    private String orgnizacion;
 
 }

@@ -6,13 +6,13 @@ import java.util.List;
 
 public interface SolicitudServices {
 
-    SolicitudResponseDto enviarSolicitud(String username);
+    SolicitudResponseDto enviarSolicitud(String organizacionNombre);
 
-    SolicitudResponseDto aceptarSolicitud(Long id, Long receptorId);
+    SolicitudResponseDto aceptarSolicitud(Long id);
 
-    SolicitudResponseDto rechazarSolicitud(Long id, Long receptorId);
+    SolicitudResponseDto rechazarSolicitud(Long id);
 
     void cancelarSolicitud(Long id);
 
-    List<SolicitudResponseDto> solicitudesPendientes(Long receptorId);
+    List<SolicitudResponseDto> solicitudesPendientes(Long organizacionId);
 }

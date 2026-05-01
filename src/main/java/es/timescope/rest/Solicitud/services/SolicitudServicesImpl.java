@@ -1,6 +1,11 @@
 package es.timescope.rest.Solicitud.services;
 
 import es.timescope.config.auth.AuthUtils;
+import es.timescope.rest.Notificacion.models.Tipo;
+import es.timescope.rest.Notificacion.service.NotificacionService;
+import es.timescope.rest.Organizaciones.exceptions.OrganizacionNotFoundException;
+import es.timescope.rest.Organizaciones.models.Organizacion;
+import es.timescope.rest.Organizaciones.repositories.OrganizacionesRepository;
 import es.timescope.rest.Solicitud.dto.SolicitudResponseDto;
 import es.timescope.rest.Solicitud.exceptions.EmisorAndReceptorEquals;
 import es.timescope.rest.Solicitud.exceptions.EmisorOrReceptorNotFound;
@@ -27,54 +32,79 @@ public class SolicitudServicesImpl implements SolicitudServices {
 
     private final SolicitudRepository solicitudRepository;
     private final UsuariosRepository usuariosRepository;
+    private final OrganizacionesRepository organizacionRepository;
+    private final NotificacionService notificacionService;
+
     private final SolicitudMapper solicitudMapper;
     private final AuthUtils authUtils;
 
     @Override
-    public SolicitudResponseDto enviarSolicitud(String username) {
-        log.info("Solicitud enviada a {}", username );
+    public SolicitudResponseDto enviarSolicitud(String organizacionNombre) {
+        log.info("Solicitud enviada a {}", organizacionNombre);
 
+        Usuario usuario = authUtils.getUsuarioAuthentication(usuariosRepository);
 
-        Usuario emisor = authUtils.getUsuarioAuthentication(usuariosRepository);
+        Organizacion organizacion = organizacionRepository.findByNombreIgnoreCase(organizacionNombre)
+                .orElseThrow(() -> {
+                    log.error("Organización no encontrada: {}", organizacionNombre);
+                    return new OrganizacionNotFoundException(organizacionNombre);
+                });
 
-        Usuario receptor = usuariosRepository.findByUsername(username)
-                .orElseThrow(() -> new EmisorOrReceptorNotFound(username));
-
-        if(emisor.getId().equals(receptor.getId())) {
-            throw new EmisorAndReceptorEquals();
-        }
-
-        if (solicitudRepository.existsByEmisorIdAndReceptorIdAndEstado(emisor.getId(), receptor.getId(), Estado.PENDIENTE)) {
+        if (solicitudRepository.existsByUsuarioIdAndOrganizacionIdAndEstado(usuario.getId(), organizacion.getId(), Estado.PENDIENTE)) {
             throw new SolicitudExist();
         }
 
         Solicitud solicitud = Solicitud.builder()
-                .emisor(emisor)
-                .receptor(receptor)
-                .estado(Estado.PENDIENTE)
+                .usuario(usuario)
+                .organizacion(organizacion)
                 .build();
 
         solicitudRepository.save(solicitud);
+
+        notificacionService.enviarNotificacion(
+                organizacion.getAdmin().getUsername(),
+                usuario.getNombres()+ " " + usuario.getApellidos() + " ha enviado una solicitud para unirse!",
+                Tipo.SOLICITUD_RECIBIDA
+        );
+
         return solicitudMapper.toResponseDto(solicitud);
     }
 
     @Override
-    public SolicitudResponseDto aceptarSolicitud(Long id, Long receptorId) {
-        log.info("Aceptando solicitud de {} a {}", id, receptorId);
+    public SolicitudResponseDto aceptarSolicitud(Long id) {
+        log.info("Aceptando solicitud");
 
-        Solicitud solicitud = validarSolicitud(id, receptorId);
+        Solicitud solicitud = validarSolicitud(id);
         solicitud.setEstado(Estado.ACEPTADA);
+
+        Usuario usuario = solicitud.getUsuario();
+        usuario.setOrganizacion(solicitud.getOrganizacion());
+        usuariosRepository.save(usuario);
         solicitudRepository.save(solicitud);
-        log.info("Solicitud aceptada");
+
+        notificacionService.enviarNotificacion(
+                solicitud.getUsuario().getUsername(),
+                 "! " + solicitud.getOrganizacion().getNombre() + " ha aceptado la solicitud!",
+                Tipo.SOLICITUD_ACEPTADA
+        );
+
+        log.info("Solicitud aceptada de {}",  solicitud.getUsuario().getUsername());
         return solicitudMapper.toResponseDto(solicitud);
     }
 
     @Override
-    public SolicitudResponseDto rechazarSolicitud(Long id, Long receptorId) {
+    public SolicitudResponseDto rechazarSolicitud(Long id) {
         log.info("Solicitud rechazada");
-        Solicitud solicitud = validarSolicitud(id, receptorId);
+        Solicitud solicitud = validarSolicitud(id);
         solicitud.setEstado(Estado.RECHAZADA);
         solicitudRepository.save(solicitud);
+
+        notificacionService.enviarNotificacion(
+                solicitud.getUsuario().getUsername(),
+                solicitud.getOrganizacion().getNombre() + " ha rechazado la solicitud",
+                Tipo.SOLICITUD_RECHAZADA
+        );
+
         return solicitudMapper.toResponseDto(solicitud);
     }
 
@@ -84,8 +114,12 @@ public class SolicitudServicesImpl implements SolicitudServices {
                 .orElseThrow(() -> new SolicitudNotFound());
 
         Usuario usuarioAuth = authUtils.getUsuarioAuthentication(usuariosRepository);
-        if (!solicitud.getEmisor().getId().equals(usuarioAuth.getId())) {
+        if (!solicitud.getUsuario().getId().equals(usuarioAuth.getId())) {
             throw new EmisorOrReceptorNotFound("No tienes permiso para cancelar esta solicitud");
+        }
+
+        if (solicitud.getEstado() != Estado.PENDIENTE) {
+            throw new SolicitudExist();
         }
 
         solicitudRepository.delete(solicitud);
@@ -93,19 +127,15 @@ public class SolicitudServicesImpl implements SolicitudServices {
     }
 
     @Override
-    public List<SolicitudResponseDto> solicitudesPendientes(Long receptorId) {
+    public List<SolicitudResponseDto> solicitudesPendientes(Long organizacionId) {
         return solicitudMapper.toResponseDtoList(
-                solicitudRepository.findByReceptorIdAndEstado(receptorId, Estado.PENDIENTE)
+                solicitudRepository.findByOrganizacionIdAndEstado(organizacionId, Estado.PENDIENTE)
         );
     }
 
-    public Solicitud validarSolicitud(Long id, Long receptorId) {
+    public Solicitud validarSolicitud(Long id) {
         Solicitud solicitud = solicitudRepository.findById(id).orElseThrow(() -> new SolicitudNotFound());
-
-        if (!solicitud.getReceptor().getId().equals(receptorId)) throw new EmisorOrReceptorNotFound("No tienes permiso sobre esta solicitud");
         if (solicitud.getEstado() != Estado.PENDIENTE) throw new SolicitudExist();
-
         return solicitud;
-
     }
 }
