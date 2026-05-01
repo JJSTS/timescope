@@ -20,8 +20,8 @@ const SearchIcon: React.FC<IconProps> = ({ className }) => (
 
 const BellIcon: React.FC<IconProps> = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-    <path d="M10.5 19a1.5 1.5 0 0 0 3 0" />
-    <path d="M6.5 17h11l-1.2-1.6A4 4 0 0 1 15 12.8V10a3 3 0 1 0-6 0v2.8a4 4 0 0 1-1.3 2.6Z" />
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
   </svg>
 );
 

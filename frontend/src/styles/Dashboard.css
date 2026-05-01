@@ -88,11 +88,16 @@
 }
 
 .dashboard-icon {
-  width: 20px;
-  height: 20px;
+  width: 26px;
+  height: 26px;
   display: block;
   flex-shrink: 0;
   pointer-events: none;
+}
+
+.notification-btn .dashboard-icon {
+  width: 21px;
+  height: 21px;
 }
 
 .search-btn:hover,
