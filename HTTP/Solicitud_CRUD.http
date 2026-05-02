@@ -1,0 +1,39 @@
+### GET - Obtener solicitudes pendientes para un receptor
+GET http://localhost:8080/api/v1/solicitud/pendientes/4
+Authorization: Bearer {{auth_token}}
+
+### GET - Obtener solicitudes pendientes (usuario 2)
+GET http://localhost:8080/api/v1/solicitud/pendientes/2
+Authorization: Bearer {{auth_token}}
+
+### POST - Enviar solicitud a un usuario por username
+POST http://localhost:8080/api/v1/solicitud/enviar?username=lfernandez
+Authorization: Bearer {{auth_token}}
+
+### POST - Enviar solicitud a otro usuario
+POST http://localhost:8080/api/v1/solicitud/enviar?username=mmartinez
+Authorization: Bearer {{auth_token}}
+
+### PUT - Aceptar solicitud
+PUT http://localhost:8080/api/v1/solicitud/1/aceptar?receptorId=1
+Authorization: Bearer {{auth_token}}
+
+### PUT - Aceptar otra solicitud
+PUT http://localhost:8080/api/v1/solicitud/2/aceptar?receptorId=2
+Authorization: Bearer {{auth_token}}
+
+### PUT - Rechazar solicitud
+PUT http://localhost:8080/api/v1/solicitud/1/rechazar?receptorId=1
+Authorization: Bearer {{auth_token}}
+
+### PUT - Rechazar otra solicitud
+PUT http://localhost:8080/api/v1/solicitud/3/rechazar?receptorId=2
+Authorization: Bearer {{auth_token}}
+
+### DELETE - Cancelar solicitud
+DELETE http://localhost:8080/api/v1/solicitud/1/cancelar
+Authorization: Bearer {{auth_token}}
+
+### DELETE - Cancelar otra solicitud
+DELETE http://localhost:8080/api/v1/solicitud/2/cancelar
+Authorization: Bearer {{auth_token}}

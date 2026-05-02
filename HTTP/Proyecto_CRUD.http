@@ -28,14 +28,7 @@ GET http://localhost:8080/api/v1/proyectos
     ?id=1
 Authorization: Bearer {{auth_token}}
 
-### POST - AddUser
-POST http://localhost:8080/api/v1/proyectos/usuario/1?username=lfernandez
+### PUT - AddUser
+PUT http://localhost:8080/api/v1/proyectos/usuario/8?username=mmartinez
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
-
-{
-  "nombre": "Proyect 1",
-  "descripcion": "proyecto de pruebas",
-  "estado": "SUSPENDIDO",
-  "usuarios": "Martin"
-}
