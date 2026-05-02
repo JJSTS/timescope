@@ -1,3 +1,4 @@
+-- =====================
 -- USUARIOS
 INSERT INTO USUARIOS (nombres, apellidos, username, email, password, is_deleted) VALUES
 --Contraseña: UsuarioGarcia
@@ -25,25 +26,44 @@ INSERT INTO USUARIO_ROLES (user_id, roles) VALUES
 (6, 'DIRECTOR'),
 (6, 'DESARROLLADOR');
 
+-- ORGANIZACIONES CON ADMINS
+INSERT INTO ORGANIZACION (nombre, admin_id, is_deleted) VALUES
+('TechCorpSolutions', 2, false),           -- Admin: María (COORDINADOR)
+('InnovatechDigital', 3, false),           -- Admin: Juan (LIDER)
+('CloudSystemPro', 4, false),              -- Admin: Laura (DIRECTOR)
+('DataDriveAnalytics', 5, false),          -- Admin: Andrés (LIDER)
+('WebMasterAgency', 6, false),             -- Admin: admin (DIRECTOR)
+('SecureNetSecurity', 6, false),           -- Admin: admin (DIRECTOR)
+('StreamFlowStartup', 6, false),           -- Admin: admin (DIRECTOR)
+('CoreTechEnterprise', 6, false);          -- Admin: admin (DIRECTOR)
+
+-- RELACIÓN USUARIOS - ORGANIZACIONES
+UPDATE USUARIOS SET organizacion_id = 1 WHERE id = 1;  -- Carlos → TechCorp
+UPDATE USUARIOS SET organizacion_id = 1 WHERE id = 2;  -- María → TechCorp (ADMIN)
+UPDATE USUARIOS SET organizacion_id = 2 WHERE id = 3;  -- Juan → Innovatech (ADMIN)
+UPDATE USUARIOS SET organizacion_id = 3 WHERE id = 4;  -- Laura → CloudSystem (ADMIN)
+UPDATE USUARIOS SET organizacion_id = 4 WHERE id = 5;  -- Andrés → DataDrive (ADMIN)
+UPDATE USUARIOS SET organizacion_id = 1 WHERE id = 6;  -- admin → TechCorp (SUPER ADMIN)
+
 
 -- PROYECTOS
-INSERT INTO PROYECTOS (nombre, descripcion, estado, is_deleted) VALUES
-('TimeScope v1',  'Desarrollo de la primera versión de la plataforma TimeScope.',  'ACTIVO', false),
-('App Móvil', 'Aplicación móvil complementaria para la gestión de tareas.','ACTIVO', false),
-('Portal Admin',  'Panel de administración interno para supervisores.', 'SUSPENDIDO', false),
-('API Gateway',   'Diseño e implementación del gateway central de la API REST.',   'COMPLETADO', false),
-('Refactor Backend', 'Limpieza de arquitectura hexagonal y servicios de dominio.', 'ACTIVO', false),
-('QA Automatizada', 'Cobertura de pruebas end-to-end y regresión automatizada.', 'ACTIVO', false),
-('DevOps Pipeline', 'Automatización de build, test y despliegue continuo.', 'ACTIVO', false),
-('Analytics BI', 'Paneles de indicadores para productividad y tiempos de entrega.', 'ACTIVO', false),
-('Gestor Incidencias', 'Módulo para seguimiento de incidencias internas y externas.', 'ACTIVO', false),
-('Integracion ERP', 'Sincronización de usuarios y tareas con sistema ERP.', 'SUSPENDIDO', false),
-('Notificaciones Push', 'Servicio de alertas para tareas próximas a vencer.', 'ACTIVO', false),
-('Migracion Cloud', 'Migración progresiva de infraestructura a entorno cloud.', 'ACTIVO', false),
-('Onboarding Web', 'Flujo de onboarding para nuevos empleados en la plataforma.', 'COMPLETADO', false),
-('Seguridad App', 'Hardening de autenticación, permisos y auditoría.', 'ACTIVO', false),
-('Soporte Clientes', 'Portal de soporte para clientes y gestión de tickets.', 'ACTIVO', false),
-('Optimizacion SQL', 'Optimización de consultas pesadas y tuning de índices.', 'ACTIVO', false);
+INSERT INTO PROYECTOS (nombre, descripcion, estado, organizacion_id, is_deleted) VALUES
+('TimeScope v1',  'Desarrollo de la primera versión de la plataforma TimeScope.',  'ACTIVO', 1, false),
+('App Móvil', 'Aplicación móvil complementaria para la gestión de tareas.','ACTIVO', 1, false),
+('Portal Admin',  'Panel de administración interno para supervisores.', 'SUSPENDIDO', 1, false),
+('API Gateway',   'Diseño e implementación del gateway central de la API REST.',   'COMPLETADO', 1, false),
+('Refactor Backend', 'Limpieza de arquitectura hexagonal y servicios de dominio.', 'ACTIVO', 1, false),
+('QA Automatizada', 'Cobertura de pruebas end-to-end y regresión automatizada.', 'ACTIVO', 2, false),
+('DevOps Pipeline', 'Automatización de build, test y despliegue continuo.', 'ACTIVO', 2, false),
+('Analytics BI', 'Paneles de indicadores para productividad y tiempos de entrega.', 'ACTIVO', 2, false),
+('Gestor Incidencias', 'Módulo para seguimiento de incidencias internas y externas.', 'ACTIVO', 3, false),
+('Integracion ERP', 'Sincronización de usuarios y tareas con sistema ERP.', 'SUSPENDIDO', 3, false),
+('Notificaciones Push', 'Servicio de alertas para tareas próximas a vencer.', 'ACTIVO', 3, false),
+('Migracion Cloud', 'Migración progresiva de infraestructura a entorno cloud.', 'ACTIVO', 4, false),
+('Onboarding Web', 'Flujo de onboarding para nuevos empleados en la plataforma.', 'COMPLETADO', 4, false),
+('Seguridad App', 'Hardening de autenticación, permisos y auditoría.', 'ACTIVO', 4, false),
+('Soporte Clientes', 'Portal de soporte para clientes y gestión de tickets.', 'ACTIVO', 5, false),
+('Optimizacion SQL', 'Optimización de consultas pesadas y tuning de índices.', 'ACTIVO', 5, false);
 
 
 -- PROYECTO_USUARIO (relación N:M)
@@ -71,7 +91,9 @@ INSERT INTO PROYECTO_USUARIO (proyecto_id, usuario_id) VALUES
 (16, 4),
 (16, 6);
 
+-- =====================
 -- TAREAS
+-- =====================
 INSERT INTO TAREAS (nombre, descripcion, estado, usuario_id) VALUES
 ('Diseño BD',   'Diseñar el esquema relacional de la base de datos.',   'COMPLETADO', 1),
 ('Modelos JPA', 'Crear las entidades JPA con sus relaciones.','COMPLETADO', 1),
