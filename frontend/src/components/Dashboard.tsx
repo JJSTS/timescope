@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import UserProfile from './UserProfile';
 import UsuariosList from './UsuariosList';
@@ -41,9 +42,17 @@ const CloseIcon: React.FC<IconProps> = ({ className }) => (
 );
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const { isAuthenticated, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<'perfil' | 'usuarios' | 'tareas' | 'proyectos'>('perfil');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Redirigir a login si no está autenticado
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleTabClick = (tab: 'perfil' | 'usuarios' | 'tareas' | 'proyectos') => {
     setActiveTab(tab);
