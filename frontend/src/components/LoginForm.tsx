@@ -11,10 +11,14 @@ interface LoginFormData {
 }
 
 interface RegisterFormData {
-  nombres: string;
+  nombre: string;
+  apellidos: string;
   email: string;
   username: string;
   password: string;
+  passwordComprobacion: string;
+  organizacionNombre: string;
+  crearOrganizacion: boolean;
 }
 
 export const Login: React.FC = () => {
@@ -32,10 +36,14 @@ export const Login: React.FC = () => {
 
   // Register state
   const [registerData, setRegisterData] = useState<RegisterFormData>({
-    nombres: '',
+    nombre: '',
+    apellidos: '',
     email: '',
     username: '',
-    password: ''
+    password: '',
+    passwordComprobacion: '',
+    organizacionNombre: '',
+    crearOrganizacion: false
   });
 
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,10 +55,10 @@ export const Login: React.FC = () => {
   };
 
   const handleRegisterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setRegisterData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
@@ -76,11 +84,34 @@ export const Login: React.FC = () => {
     setLoading(true);
 
     try {
+      // Validar que las contraseñas coincidan
+      if (registerData.password !== registerData.passwordComprobacion) {
+        setError('Las contraseñas no coinciden');
+        setLoading(false);
+        return;
+      }
+
+      // Validar que el nombre de organización no esté vacío
+      if (!registerData.organizacionNombre || !registerData.organizacionNombre.trim()) {
+        setError('El nombre de la organización es obligatorio');
+        setLoading(false);
+        return;
+      }
+
+      // Preparar datos de organización
+      const orgData = {
+        nombre: registerData.organizacionNombre,
+        crearNueva: registerData.crearOrganizacion  // ← FLAG: crear o unirse
+      };
+
       const response = await authService.register(
-        registerData.nombres,
+        registerData.nombre,
+        registerData.apellidos,
         registerData.email,
         registerData.username,
-        registerData.password
+        registerData.password,
+        registerData.passwordComprobacion,
+        orgData
       );
       login(registerData.username, response.token);
       navigate('/dashboard');
@@ -221,91 +252,176 @@ export const Login: React.FC = () => {
             </form>
           )}
 
-          {/* Register Form */}
-          {!isLogin && (
-            <form onSubmit={handleRegisterSubmit} className="auth-form">
-              <div className="form-group">
-                <label htmlFor="register-nombres" className="form-label">
-                  Nombre completo
-                </label>
-                <input
-                  id="register-nombres"
-                  name="nombres"
-                  type="text"
-                  value={registerData.nombres}
-                  onChange={handleRegisterChange}
-                  className="form-input"
-                  placeholder="Laura Fernández"
-                  required
-                  disabled={loading}
-                />
-              </div>
+           {/* Register Form */}
+           {!isLogin && (
+             <form onSubmit={handleRegisterSubmit} className="auth-form register-mode">
+               {/* Campos de usuario */}
+               <div className="form-group">
+                 <label htmlFor="register-nombre" className="form-label">
+                   Nombre
+                 </label>
+                 <input
+                   id="register-nombre"
+                   name="nombre"
+                   type="text"
+                   value={registerData.nombre}
+                   onChange={handleRegisterChange}
+                   className="form-input"
+                   placeholder="Laura"
+                   required
+                   disabled={loading}
+                 />
+               </div>
 
-              <div className="form-group">
-                <label htmlFor="register-email" className="form-label">
-                  Correo electrónico
-                </label>
-                <input
-                  id="register-email"
-                  name="email"
-                  type="email"
-                  value={registerData.email}
-                  onChange={handleRegisterChange}
-                  className="form-input"
-                  placeholder="laura@empresa.com"
-                  required
-                  disabled={loading}
-                />
-              </div>
+               <div className="form-group">
+                 <label htmlFor="register-apellidos" className="form-label">
+                   Apellidos
+                 </label>
+                 <input
+                   id="register-apellidos"
+                   name="apellidos"
+                   type="text"
+                   value={registerData.apellidos}
+                   onChange={handleRegisterChange}
+                   className="form-input"
+                   placeholder="Fernández García"
+                   required
+                   disabled={loading}
+                 />
+               </div>
 
-              <div className="form-group">
-                <label htmlFor="register-username" className="form-label">
-                  Usuario
-                </label>
-                <input
-                  id="register-username"
-                  name="username"
-                  type="text"
-                  value={registerData.username}
-                  onChange={handleRegisterChange}
-                  className="form-input"
-                  placeholder="tu_usuario"
-                  required
-                  disabled={loading}
-                />
-              </div>
+               <div className="form-group">
+                 <label htmlFor="register-email" className="form-label">
+                   Correo electrónico
+                 </label>
+                 <input
+                   id="register-email"
+                   name="email"
+                   type="email"
+                   value={registerData.email}
+                   onChange={handleRegisterChange}
+                   className="form-input"
+                   placeholder="laura@empresa.com"
+                   required
+                   disabled={loading}
+                 />
+               </div>
 
-              <div className="form-group">
-                <label htmlFor="register-password" className="form-label">
-                  Contraseña
-                </label>
-                <input
-                  id="register-password"
-                  name="password"
-                  type="password"
-                  value={registerData.password}
-                  onChange={handleRegisterChange}
-                  className="form-input"
-                  placeholder="Mínimo 8 caracteres"
-                  required
-                  minLength={8}
-                  disabled={loading}
-                />
-              </div>
+               <div className="form-group">
+                 <label htmlFor="register-username" className="form-label">
+                   Usuario
+                 </label>
+                 <input
+                   id="register-username"
+                   name="username"
+                   type="text"
+                   value={registerData.username}
+                   onChange={handleRegisterChange}
+                   className="form-input"
+                   placeholder="tu_usuario"
+                   required
+                   disabled={loading}
+                 />
+               </div>
 
-              <button
-                type="submit"
-                className="submit-btn"
-                disabled={loading}
-              >
-                {loading ? 'Creando cuenta...' : 'Crear cuenta'}
-              </button>
+               <div className="form-group">
+                 <label htmlFor="register-password" className="form-label">
+                   Contraseña
+                 </label>
+                 <input
+                   id="register-password"
+                   name="password"
+                   type="password"
+                   value={registerData.password}
+                   onChange={handleRegisterChange}
+                   className="form-input"
+                   placeholder="Mínimo 5 caracteres"
+                   required
+                   minLength={5}
+                   disabled={loading}
+                 />
+               </div>
 
-              <p className="terms-text">
-                Al crear una cuenta, aceptas nuestros términos de servicio y política de privacidad.
-              </p>
-            </form>
-          )}
+               <div className="form-group">
+                 <label htmlFor="register-password-comp" className="form-label">
+                   Confirmar contraseña
+                 </label>
+                 <input
+                   id="register-password-comp"
+                   name="passwordComprobacion"
+                   type="password"
+                   value={registerData.passwordComprobacion}
+                   onChange={handleRegisterChange}
+                   className="form-input"
+                   placeholder="Repite tu contraseña"
+                   required
+                   minLength={5}
+                   disabled={loading}
+                 />
+               </div>
+
+               {/* SECCIÓN DE ORGANIZACIÓN */}
+               <div className="org-section">
+                 <div className="form-group">
+                   <label htmlFor="org-nombre" className="form-label">
+                     Organización (Obligatorio)
+                   </label>
+                   <input
+                     id="org-nombre"
+                     name="organizacionNombre"
+                     type="text"
+                     value={registerData.organizacionNombre}
+                     onChange={handleRegisterChange}
+                     className="form-input"
+                     placeholder="Nombre de la organización"
+                     required
+                     disabled={loading}
+                   />
+                 </div>
+
+                 {/* Checkbox */}
+                 <div className="form-group checkbox-group">
+                   <input
+                     id="crear-org"
+                     name="crearOrganizacion"
+                     type="checkbox"
+                     checked={registerData.crearOrganizacion}
+                     onChange={handleRegisterChange}
+                     className="form-checkbox"
+                     disabled={loading}
+                   />
+                   <label htmlFor="crear-org" className="checkbox-label">
+                     ¿Crear una nueva organización?
+                   </label>
+                 </div>
+
+                 {/* Info text según la opción */}
+                 {!registerData.crearOrganizacion && (
+                   <p className="org-join-info">
+                     ℹ️ Se enviará una solicitud a la organización existente
+                   </p>
+                 )}
+
+                 {registerData.crearOrganizacion && (
+                   <p className="org-create-info">
+                     ✨ Se creará una nueva organización
+                   </p>
+                 )}
+               </div>
+
+               <button
+                 type="submit"
+                 className="submit-btn"
+                 disabled={loading}
+               >
+                 {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+               </button>
+
+               <p className="terms-text">
+                 Al crear una cuenta, aceptas nuestros <a href="#">términos de servicios y política de privacidad</a>.
+               </p>
+             </form>
+           )}
         </div>
       </div>
     </div>

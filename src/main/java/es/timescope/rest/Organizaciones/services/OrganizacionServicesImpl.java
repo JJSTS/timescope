@@ -70,9 +70,6 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
         org.setNombre(dto.getNombre());
         org.setAdmin(admin);
 
-        if (dto.getEmpresaMatrizId() != null) {
-            org.setEmpresaMatriz(getEntity(dto.getEmpresaMatrizId()));
-        }
 
         return OrganizacionesMapper.toDto(repository.save(org));
     }
