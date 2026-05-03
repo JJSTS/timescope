@@ -62,8 +62,11 @@
 
 /* Left Side - Hero */
 .login-hero {
-  display: none;
-  flex: 1;
+  display: none; /* Oculto por defecto en móvil */
+  flex: 0 0 50%;
+  height: 100vh; /* Ocupa toda la altura */
+  position: sticky; /* Se queda fijo */
+  top: 0;
   align-items: center;
   justify-content: center;
   padding: 4rem;
@@ -72,9 +75,25 @@
   animation: slideInLeft 0.8s ease-out;
 }
 
+/* Right Side - Form Wrapper */
+.login-form-wrapper {
+  flex: 1; /* Ocupa el espacio restante */
+  height: 100vh; /* Ocupa toda la altura */
+  overflow-y: auto; /* Permite scroll INTERNO */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Alinea el card arriba */
+  padding: 4rem 2rem; /* Añadido padding vertical */
+  background: white;
+  animation: slideInRight 0.8s ease-out;
+}
+
 @media (min-width: 1024px) {
   .login-hero {
     display: flex;
+  }
+  .login-form-wrapper {
+    flex: 0 0 50%;
   }
 }
 
@@ -180,17 +199,6 @@
   font-size: 0.75rem;
   color: #e0e0e0;
   margin: 0;
-}
-
-/* Right Side - Form Wrapper */
-.login-form-wrapper {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  background: white;
-  animation: slideInRight 0.8s ease-out;
 }
 
 .login-card {
@@ -657,32 +665,25 @@
   line-height: 1.4;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
   .login-container {
     flex-direction: column;
   }
 
+  .login-hero {
+    display: none;
+  }
+
   .login-form-wrapper {
     flex: 1;
+    height: auto; /* Altura automática en móvil */
     padding: 1.5rem;
-    background: white;
+    align-items: center; /* Centrar el card verticalmente */
   }
 
   .login-card {
     max-width: 100%;
     padding: 1.5rem;
-  }
-
-  .hero-title {
-    font-size: 2rem;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .stat-card {
-    padding: 1rem;
   }
 }
 
