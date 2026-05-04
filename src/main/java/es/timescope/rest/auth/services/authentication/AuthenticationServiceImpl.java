@@ -1,15 +1,19 @@
 package es.timescope.rest.auth.services.authentication;
 
+import es.timescope.config.auth.AuthUtils;
 import es.timescope.rest.Emails.services.EmailService;
 import es.timescope.rest.Emails.services.UsuarioEmailService;
 import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
+import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
+import es.timescope.rest.auth.dto.ChangePasswordDto;
 import es.timescope.rest.auth.dto.JwtAuthResponse;
 import es.timescope.rest.auth.dto.UserSignInRequest;
 import es.timescope.rest.auth.dto.UserSignUpRequest;
 import es.timescope.rest.auth.exceptions.AuthDifferentPasswords;
 import es.timescope.rest.auth.exceptions.AuthExistingUsernameOrEmail;
 import es.timescope.rest.auth.exceptions.AuthSignInNotValid;
+import es.timescope.rest.auth.exceptions.PasswordException;
 import es.timescope.rest.auth.repositories.AuthUsersRepository;
 import es.timescope.rest.auth.services.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +36,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private final JwtService jwtService;
   private final AuthenticationManager authenticationManager;
   private final UsuarioEmailService usuarioEmailService;
+  private final AuthUtils authUtils;
+  private final UsuariosRepository  usuariosRepository;
 
   @Override
   public JwtAuthResponse signUp(UserSignUpRequest request) {
@@ -67,5 +73,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         .orElseThrow(() -> new AuthSignInNotValid("Usuario o contraseña incorrectos"));
     var jwt = jwtService.generateToken(user);
     return JwtAuthResponse.builder().token(jwt).build();
+  }
+
+  @Override
+  public void cambiarPassword(ChangePasswordDto changePasswordDto) {
+    Usuario usuario = authUtils.getUsuarioAuthentication(usuariosRepository);
+
+    if (!passwordEncoder.matches(changePasswordDto.getPassword(), usuario.getPassword())) {
+        throw new PasswordException("La contraseña actual no es correcta");
+    }
+
+    if (!changePasswordDto.getNewPassword().equals(changePasswordDto.getPasswordComprobacion())) {
+        throw new PasswordException("Las contraseñas no coinciden");
+    }
+
+    usuario.setPassword(passwordEncoder.encode(changePasswordDto.getNewPassword()));
+    authUsersRepository.save(usuario);
+    log.info("Contraseña cambiada para el usuario: {}", usuario.getUsername());
   }
 }
