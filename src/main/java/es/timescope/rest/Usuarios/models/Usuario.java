@@ -78,6 +78,7 @@ public class Usuario implements UserDetails {
     @ManyToOne
     @JoinColumn(name = "organizacion_id")
     @JsonIgnore
+    @ToString.Exclude
     private Organizacion organizacion;
 
     @Override

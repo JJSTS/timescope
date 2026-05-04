@@ -54,12 +54,6 @@ public class UsuariosRestController {
                 .body(PageResponse.of(pageResult, sortBy, direction));
     }
 
-    @PostMapping
-    public ResponseEntity<UsuarioResponseDto> createUsuario(@Valid @RequestBody UsuarioCreateDto usuarioCreateDto) {
-        log.info("save: userRequest: {}", usuarioCreateDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuariosService.save(usuarioCreateDto));
-    }
-
     @PatchMapping("/{id}/asingRol")
     @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
     public ResponseEntity<?> assingRol(@PathVariable Long id, @RequestParam Roles role) {

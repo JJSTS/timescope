@@ -16,16 +16,7 @@ public interface UsuariosService {
 
     UsuarioInfoResponse findById(Long id);
 
-    UsuarioResponseDto save(UsuarioCreateDto userRequest);
-
     UsuarioResponseDto update(Long id, UsuarioCreateDto userRequest);
 
     void asignarRol(Long id, Roles role);
-
-    void deleteById(Long id);
-
-    List<Usuario> findAllActiveUsuarios();
-
-    Optional<Usuario> findByUsuarioname(String username);
-    void save(Usuario user);
 }

@@ -1,5 +1,7 @@
 package es.timescope.rest.auth.services.authentication;
 
+import es.timescope.rest.Emails.services.EmailService;
+import es.timescope.rest.Emails.services.UsuarioEmailService;
 import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.auth.dto.JwtAuthResponse;
@@ -29,6 +31,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final AuthenticationManager authenticationManager;
+  private final UsuarioEmailService usuarioEmailService;
 
   @Override
   public JwtAuthResponse signUp(UserSignUpRequest request) {
@@ -44,6 +47,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           .build();
       try {
         var userStored = authUsersRepository.save(user);
+        usuarioEmailService.enviarConfirmacionCreacion(request);
         return JwtAuthResponse.builder().token(jwtService.generateToken(userStored)).build();
       } catch (DataIntegrityViolationException ex) {
         throw new AuthExistingUsernameOrEmail("El usuario con username " + request.getUsername() + " o email " + request.getEmail() + " ya existe");
