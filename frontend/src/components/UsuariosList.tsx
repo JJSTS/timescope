@@ -40,7 +40,7 @@ const UsuariosList: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get<PageResponse>('http://localhost:8080/api/v1/usuarios', {
+      const response = await axios.get<PageResponse>('https://timescope-api.loca.lt/api/v1/usuarios', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -73,7 +73,7 @@ const UsuariosList: React.FC = () => {
     if (editingId) {
       try {
         await axios.put(
-          `http://localhost:8080/api/v1/usuarios/${editingId}`,
+          `https://timescope-api.loca.lt/api/v1/usuarios/${editingId}`,
           editForm,
           { headers: { Authorization: `Bearer ${token}` } }
         );

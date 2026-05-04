@@ -37,7 +37,7 @@ const ProyectosList: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get<PageResponse>('http://localhost:8080/api/v1/proyectos', {
+      const response = await axios.get<PageResponse>('https://timescope-api.loca.lt/api/v1/proyectos', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

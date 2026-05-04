@@ -36,7 +36,7 @@ const TareasList: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get<PageResponse>('http://localhost:8080/api/v1/tareas', {
+      const response = await axios.get<PageResponse>('https://timescope-api.loca.lt/api/v1/tareas', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

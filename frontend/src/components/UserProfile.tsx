@@ -39,7 +39,7 @@ const UserProfile: React.FC = () => {
           return;
         }
 
-        const userUrl = `http://localhost:8080/api/v1/usuarios?username=${username}`;
+        const userUrl = `https://timescope-api.loca.lt/api/v1/usuarios?username=${username}`;
 
         const userResponse = await fetch(userUrl, {
           headers: {
@@ -63,7 +63,7 @@ const UserProfile: React.FC = () => {
         }
 
         // Obtener tareas
-        const tasksUrl = `http://localhost:8080/api/v1/tareas`;
+        const tasksUrl = `https://timescope-api.loca.lt/api/v1/tareas`;
 
         const tasksResponse = await fetch(tasksUrl, {
           headers: {
