@@ -1,5 +1,6 @@
 package es.timescope.rest.auth.services.authentication;
-
+import es.timescope.rest.Emails.services.EmailService;
+import es.timescope.rest.Emails.services.UsuarioEmailService;
 import es.timescope.rest.Organizaciones.models.Organizacion;
 import es.timescope.rest.Organizaciones.repositories.OrganizacionesRepository;
 import es.timescope.rest.Usuarios.models.Roles;
@@ -33,9 +34,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final AuthenticationManager authenticationManager;
+  private final UsuarioEmailService usuarioEmailService;
 
   @Override
-  @Transactional
   public JwtAuthResponse signUp(UserSignUpRequest request) {
     log.info("Creando usuario: {}", request);
     if (request.getPassword().contentEquals(request.getPasswordComprobacion())) {
@@ -49,25 +50,26 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           .build();
       try {
         var userStored = authUsersRepository.save(user);
-        
+
          // Si el usuario quiere crear una organización
-         if (request.getOrganizacion() != null && request.getOrganizacion().getNombre() != null && 
+         if (request.getOrganizacion() != null && request.getOrganizacion().getNombre() != null &&
              !request.getOrganizacion().getNombre().isBlank()) {
            log.info("Creando organización: {}", request.getOrganizacion().getNombre());
-           
+
            Organizacion org = Organizacion.builder()
                .nombre(request.getOrganizacion().getNombre())
                .admin(userStored)
                .build();
-           
+
            Organizacion orgCreated = organizacionesRepository.save(org);
            userStored.setOrganizacion(orgCreated);
            authUsersRepository.save(userStored);
-           
-           log.info("Organización creada exitosamente con ID: {} y nombre: {} con admin: {}", 
+
+           log.info("Organización creada exitosamente con ID: {} y nombre: {} con admin: {}",
                orgCreated.getId(), orgCreated.getNombre(), userStored.getUsername());
          }
-        
+
+        usuarioEmailService.enviarConfirmacionCreacion(request);
         return JwtAuthResponse.builder().token(jwtService.generateToken(userStored)).build();
       } catch (DataIntegrityViolationException ex) {
         throw new AuthExistingUsernameOrEmail("El usuario con username " + request.getUsername() + " o email " + request.getEmail() + " ya existe");

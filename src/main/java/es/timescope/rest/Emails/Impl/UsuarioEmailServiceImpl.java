@@ -2,8 +2,8 @@ package es.timescope.rest.Emails.Impl;
 
 import es.timescope.rest.Emails.services.EmailService;
 import es.timescope.rest.Emails.services.UsuarioEmailService;
-import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.Emails.exceptions.EmailNotSent;
+import es.timescope.rest.auth.dto.UserSignUpRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ public class UsuarioEmailServiceImpl implements UsuarioEmailService {
     private final EmailService emailService;
 
     @Override
-    public void enviarConfirmacionCreacion(Usuario usuario) {
+    public void enviarConfirmacionCreacion(UserSignUpRequest usuario) {
         try{
             log.info("enviando confirmacion de creacion del usuario {} al correo {}", usuario.getUsername(), usuario.getEmail());
             String subject = "Confirmación de creacion";

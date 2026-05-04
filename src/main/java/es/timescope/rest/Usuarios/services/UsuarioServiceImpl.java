@@ -73,22 +73,6 @@ public class UsuarioServiceImpl implements UsuariosService {
     }
 
     @Override
-    @CachePut(key = "#result.id")
-    public UsuarioResponseDto save(UsuarioCreateDto usuarioCreateDto) {
-        log.info("Guardando usuario: {}", usuarioCreateDto);
-        Usuario usuario = usuarioMapper.toUsuario(usuarioCreateDto);
-        usuario.setRoles(Set.of(Roles.DESARROLLADOR));
-        usuario.setIsDeleted(false);
-
-        usuariosRepository.findByUsernameEqualsIgnoreCaseOrEmailEqualsIgnoreCase(usuarioCreateDto.getUsername(), usuarioCreateDto.getEmail())
-                .ifPresent(u -> {
-                    throw new UsuarioNombreOrEmailExists("Ya existe un usuario con ese username o email");
-                });
-        usuarioEmailService.enviarConfirmacionCreacion(usuario);
-        return usuarioMapper.toUsuarioResponseDto(usuariosRepository.save(usuario));
-    }
-
-    @Override
     public UsuarioResponseDto update(Long id, UsuarioCreateDto userRequest) {
         log.info("Buscando el usuario con id: {}", id);
         usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
@@ -134,35 +118,5 @@ public class UsuarioServiceImpl implements UsuariosService {
         usuario.getRoles().clear();
         usuario.getRoles().add(role);
         usuariosRepository.save(usuario);
-    }
-
-    @Override
-    @Transactional
-    public void deleteById(Long id) {
-        log.info("Borrando usuario por id: {}", id);
-        Usuario user = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
-        if (usuariosRepository.existsProyectosByUsuarioId(id) && usuariosRepository.existsTareasByUsuarioId(id)) {
-            log.info("Borrado lógico de usuario por id: {}", id);
-            usuariosRepository.updateIsDeletedToTrueById(id);
-        } else {
-            log.info("Borrado físico de usuario por id: {}", id);
-            usuariosRepository.delete(user);
-        }
-    }
-
-    @Override
-    public List<Usuario> findAllActiveUsuarios() {
-        log.info("Buscando todos los usuarios activos");
-        return usuariosRepository.findAllByIsDeletedFalse();
-    }
-
-    @Override
-    public Optional<Usuario> findByUsuarioname(String username) {
-        return usuariosRepository.findByUsername(username);
-    }
-
-    @Override
-    public void save(Usuario user) {
-        usuariosRepository.save(user);
     }
 }

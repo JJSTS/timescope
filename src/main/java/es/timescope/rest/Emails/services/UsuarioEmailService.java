@@ -1,7 +1,8 @@
 package es.timescope.rest.Emails.services;
 
 import es.timescope.rest.Usuarios.models.Usuario;
+import es.timescope.rest.auth.dto.UserSignUpRequest;
 
 public interface UsuarioEmailService {
-    void enviarConfirmacionCreacion(Usuario usuario);
+    void enviarConfirmacionCreacion(UserSignUpRequest usuario);
 }
