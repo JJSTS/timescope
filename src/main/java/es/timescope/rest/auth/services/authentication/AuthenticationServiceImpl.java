@@ -89,6 +89,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     usuario.setPassword(passwordEncoder.encode(changePasswordDto.getNewPassword()));
     authUsersRepository.save(usuario);
+    usuarioEmailService.enviarCambioContrasenia(usuario);
     log.info("Contraseña cambiada para el usuario: {}", usuario.getUsername());
   }
 }
