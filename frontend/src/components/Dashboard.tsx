@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import UserProfile from './UserProfile';
 import UsuariosList from './UsuariosList';
 import TareasList from './TareasList';
 import ProyectosList from './ProyectosList';
+import NotificacionesPanel from './NotificacionesPanel';
 import '../styles/Dashboard.css';
 import faviconImage from '../images/Favicon.png';
 
@@ -46,6 +47,12 @@ const Dashboard: React.FC = () => {
   const { isAuthenticated, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<'perfil' | 'usuarios' | 'tareas' | 'proyectos'>('perfil');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [pendientesCount, setPendientesCount] = useState(0);
+
+  const handlePendientesChange = useCallback((count: number) => {
+    setPendientesCount(count);
+  }, []);
 
   // Redirigir a login si no está autenticado
   useEffect(() => {
@@ -80,9 +87,24 @@ const Dashboard: React.FC = () => {
           <button type="button" className="search-btn" title="Buscar" aria-label="Buscar">
             <SearchIcon className="dashboard-icon" />
           </button>
-          <button type="button" className="notification-btn" title="Notificaciones" aria-label="Notificaciones">
-            <BellIcon className="dashboard-icon" />
-          </button>
+          <div style={{ position: 'relative' }}>
+            <button
+              type="button"
+              className={`notification-btn ${pendientesCount > 0 ? 'has-notifications' : ''}`}
+              title="Notificaciones"
+              aria-label="Notificaciones"
+              aria-expanded={notifOpen}
+              onClick={() => { setNotifOpen(prev => !prev); setIsMenuOpen(false); }}
+            >
+              <BellIcon className="dashboard-icon" />
+            </button>
+            {notifOpen && (
+              <NotificacionesPanel
+                onClose={() => setNotifOpen(false)}
+                onPendientesChange={handlePendientesChange}
+              />
+            )}
+          </div>
           <button
             type="button"
             className="menu-btn"

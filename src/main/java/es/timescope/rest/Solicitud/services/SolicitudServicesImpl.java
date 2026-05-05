@@ -133,6 +133,15 @@ public class SolicitudServicesImpl implements SolicitudServices {
         );
     }
 
+    @Override
+    public List<SolicitudResponseDto> misSolicitudesPendientes() {
+        Usuario usuario = authUtils.getUsuarioAuthentication(usuariosRepository);
+        if (usuario.getOrganizacion() == null) return List.of();
+        return solicitudMapper.toResponseDtoList(
+                solicitudRepository.findByOrganizacionIdAndEstado(usuario.getOrganizacion().getId(), Estado.PENDIENTE)
+        );
+    }
+
     public Solicitud validarSolicitud(Long id) {
         Solicitud solicitud = solicitudRepository.findById(id).orElseThrow(() -> new SolicitudNotFound());
         if (solicitud.getEstado() != Estado.PENDIENTE) throw new SolicitudExist();
