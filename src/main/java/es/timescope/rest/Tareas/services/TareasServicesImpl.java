@@ -9,6 +9,7 @@ import es.timescope.rest.Tareas.dto.TareaResponseDto;
 import es.timescope.rest.Tareas.dto.TareaUpdateDto;
 import es.timescope.rest.Tareas.exceptions.TareaCreateException;
 import es.timescope.rest.Tareas.exceptions.TareaNotFound;
+import es.timescope.rest.Tareas.models.Estado;
 import es.timescope.rest.Usuarios.exceptions.UsuarioNotFound;
 import es.timescope.rest.Tareas.mappers.TareasMapper;
 import es.timescope.rest.Tareas.models.Tarea;
@@ -74,8 +75,17 @@ public class TareasServicesImpl implements TareasServices {
     }
 
     @Override
-    public List<Tarea> findByUsuarioId(Long usuarioId){
-        return tareasRepository.findByUsuarioId(usuarioId);
+    public List<TareaResponseDto> findByUsuarioId(Long usuarioId){
+        log.info("Buscando todas las tareas del usuario con id: {}", usuarioId);
+        List<Tarea> tareas = tareasRepository.findByUsuarioId(usuarioId);
+        return tareasMapper.toTareaResponseDtoList(tareas);
+    }
+
+    @Override
+    public List<TareaResponseDto> findByUsuarioIdAndEstado(Long usuarioId, Estado estado) {
+        log.info("Buscando todas las tareas del usuario con id: {} y estado: {}", usuarioId, estado);
+        List<Tarea> tareas = tareasRepository.findByUsuarioIdAndEstado(usuarioId, estado);
+        return tareasMapper.toTareaResponseDtoList(tareas);
     }
 
     @Override
@@ -126,4 +136,5 @@ public class TareasServicesImpl implements TareasServices {
             throw new TareaCreateException("No fue posible asignar la tarea al usuario " + tareaAddDto.getUsername() + ": " + e.getMessage());
         }
     }
+
 }
