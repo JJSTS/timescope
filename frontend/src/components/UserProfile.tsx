@@ -19,7 +19,7 @@ interface User {
   apellidos: string;
   username: string;
   email: string;
-  rol?: string;
+  roles?: string[];  // Array de roles
 }
 
 const UserProfile: React.FC = () => {
@@ -29,6 +29,7 @@ const UserProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -64,8 +65,8 @@ const UserProfile: React.FC = () => {
           throw new Error('Usuario no encontrado');
         }
 
-        // Obtener tareas
-        const tasksUrl = `http://localhost:8080/api/v1/tareas`;
+        // Obtener tareas del usuario autenticado (solo ACTIVAS)
+        const tasksUrl = `http://localhost:8080/api/v1/tareas/me/activo`;
 
         const tasksResponse = await fetch(tasksUrl, {
           headers: {
@@ -75,14 +76,16 @@ const UserProfile: React.FC = () => {
         });
 
         if (tasksResponse.ok) {
-          const tasksPageResponse = await tasksResponse.json();
+          const tasksData = await tasksResponse.json();
 
-          if (tasksPageResponse.content && Array.isArray(tasksPageResponse.content)) {
-            const tasksArray = tasksPageResponse.content.slice(0, 5);
-            setTasks(tasksArray);
-          } else {
-            setTasks([]);
-          }
+          // El endpoint /tareas/me/activo retorna un array directo
+          const tasksArray = Array.isArray(tasksData) ? tasksData : (tasksData.content || []);
+          console.log('Tareas recibidas:', tasksArray);
+          setTasks(tasksArray);
+        } else {
+          console.error('Error en tasksResponse:', tasksResponse.status);
+          const errorText = await tasksResponse.text();
+          console.error('Detalle del error:', errorText);
         }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
@@ -121,8 +124,24 @@ const UserProfile: React.FC = () => {
     );
   }
 
-  const pendingTasks = tasks.filter(t => t.estado === 'ACTIVO');
+  const pendingTasks = tasks; // Ya están filtradas como ACTIVAS desde el endpoint
   const completedTasks = tasks.filter(t => t.estado === 'COMPLETADO');
+
+  // Funciones para el carousel
+  const handleNextTasks = () => {
+    if (currentTaskIndex + 5 < pendingTasks.length) {
+      setCurrentTaskIndex(currentTaskIndex + 5);
+    }
+  };
+
+  const handlePrevTasks = () => {
+    if (currentTaskIndex > 0) {
+      setCurrentTaskIndex(Math.max(0, currentTaskIndex - 5));
+    }
+  };
+
+  // Tareas visibles (máximo 5 por página)
+  const visibleTasks = pendingTasks.slice(currentTaskIndex, currentTaskIndex + 5);
 
   return (
     <>
@@ -135,7 +154,16 @@ const UserProfile: React.FC = () => {
           </div>
           <div className="user-info">
             <h1 className="user-name">{user?.nombres} {user?.apellidos}</h1>
-            <p className="user-meta">{user?.rol || 'Miembro del equipo'}</p>
+            <div className="user-roles">
+              {user?.roles && user.roles.length > 0
+                ? user.roles.map(r => (
+                    <span key={r} className={`role-badge role-${r.toLowerCase()}`}>
+                      {r.charAt(0).toUpperCase() + r.slice(1)}
+                    </span>
+                  ))
+                : <span className="role-badge role-miembro">Miembro</span>
+              }
+            </div>
             <p className="user-email">{user?.email}</p>
           </div>
         </div>
@@ -150,33 +178,79 @@ const UserProfile: React.FC = () => {
           {/* Active Tasks Section */}
           <section className="content-section">
             <div className="section-header">
-              <h2>Tareas pendientes</h2>
-              <span className="count-badge">{pendingTasks.length}</span>
+              <div className="tasks-header-left">
+                <h2>Tareas pendientes</h2>
+                <p className="tasks-subtitle">
+                  {pendingTasks.length} abiertas · ordenadas por vencimiento
+                </p>
+              </div>
+              <button className="tasks-filter-btn">
+                Filtrar
+              </button>
             </div>
 
             {pendingTasks.length > 0 ? (
-              <div className="tasks-grid">
-                {pendingTasks.map((task) => (
-                  <div key={task.id} className="task-card">
-                    <div className="task-card-header">
-                      <h3>{task.nombre}</h3>
-                      {task.proyecto && <span className="project-tag">{task.proyecto}</span>}
-                    </div>
-                    <p className="task-description">{task.descripcion}</p>
-                    {task.fechaLimite && (
-                      <div className="task-meta">
-                        <span className="meta-label">Vencimiento:</span>
-                        <span className="meta-value">
-                          {new Date(task.fechaLimite).toLocaleDateString('es-ES', {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric'
-                          })}
-                        </span>
+              <div>
+                {/* Tasks List */}
+                <div className="tasks-list">
+                  {visibleTasks.map((task) => (
+                    <div key={task.id} className="task-list-item">
+                      <div className="task-list-left">
+                        <div className="task-list-title-row">
+                          <h3 className="task-list-title">{task.nombre}</h3>
+                          <span className={`status-badge status-${task.estado?.toLowerCase()}`}>
+                            {task.estado === 'ACTIVO' ? 'Activo' : 
+                             task.estado === 'ABIERTO' ? 'Abierto' :
+                             task.estado === 'COMPLETADO' ? 'Completado' : 
+                             task.estado}
+                          </span>
+                        </div>
+                        <p className="task-list-description">{task.descripcion}</p>
                       </div>
-                    )}
+                      
+                      <div className="task-list-right">
+                        {task.proyecto && (
+                          <div className="task-list-category">
+                            <span className="category-label">PROYECTO</span>
+                            <span className="category-value">{task.proyecto}</span>
+                          </div>
+                        )}
+                        
+                        {task.fechaLimite && (
+                          <div className="task-list-date">
+                            {new Date(task.fechaLimite).toLocaleDateString('es-ES', {
+                              day: '2-digit',
+                              month: 'short'
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pagination controls */}
+                {pendingTasks.length > 5 && (
+                  <div className="tasks-pagination">
+                    <button
+                      className="pagination-btn"
+                      onClick={handlePrevTasks}
+                      disabled={currentTaskIndex === 0}
+                    >
+                      ◀ Anteriores
+                    </button>
+                    <span className="pagination-info">
+                      Tareas {currentTaskIndex + 1}-{Math.min(currentTaskIndex + 5, pendingTasks.length)} de {pendingTasks.length}
+                    </span>
+                    <button
+                      className="pagination-btn"
+                      onClick={handleNextTasks}
+                      disabled={currentTaskIndex + 5 >= pendingTasks.length}
+                    >
+                      Siguientes ▶
+                    </button>
                   </div>
-                ))}
+                )}
               </div>
             ) : (
               <div className="empty-placeholder">
@@ -213,8 +287,17 @@ const UserProfile: React.FC = () => {
               <span className="detail-value">{user?.email}</span>
             </div>
             <div className="detail-row">
-              <span className="detail-label">Rol</span>
-              <span className="detail-value">{user?.rol || 'Miembro'}</span>
+              <span className="detail-label">Roles</span>
+              <div className="detail-roles-container">
+                {user?.roles && user.roles.length > 0
+                  ? user.roles.map(r => (
+                      <span key={r} className={`role-badge role-${r.toLowerCase()}`}>
+                        {r.charAt(0).toUpperCase() + r.slice(1)}
+                      </span>
+                    ))
+                  : <span className="role-badge role-miembro">Miembro</span>
+                }
+              </div>
             </div>
           </div>
 

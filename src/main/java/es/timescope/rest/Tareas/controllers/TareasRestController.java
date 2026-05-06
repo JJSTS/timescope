@@ -28,7 +28,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,10 +74,28 @@ public class TareasRestController {
     }
 
     @GetMapping("/me/activo")
-    public ResponseEntity<List<TareaResponseDto>> getTasksByUserActivo(@AuthenticationPrincipal Usuario usuario){
-        log.info("Obteniendo tareas activas del usuario: {}", usuario.getUsername());
-        List<TareaResponseDto> tareasMapeadas = tareasServices.findByUsuarioIdAndEstado(usuario.getId(), Estado.ACTIVO);
-        return ResponseEntity.ok(tareasMapeadas);
+    public ResponseEntity<List<TareaResponseDto>> getTasksByUserActivo(){
+        try {
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            
+            if (!(principal instanceof Usuario)) {
+                log.error("Principal no es una instancia de Usuario");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(List.of());
+            }
+            
+            Usuario usuario = (Usuario) principal;
+            log.info("Obteniendo tareas activas y abiertas del usuario: {}", usuario.getUsername());
+            
+            List<TareaResponseDto> tareas = new ArrayList<>();
+            tareas.addAll(tareasServices.findByUsuarioIdAndEstado(usuario.getId(), Estado.ACTIVO));
+            tareas.addAll(tareasServices.findByUsuarioIdAndEstado(usuario.getId(), Estado.ABIERTO));
+            
+            log.info("Total de tareas obtenidas: {}", tareas.size());
+            return ResponseEntity.ok(tareas);
+        } catch (Exception e) {
+            log.error("Error al obtener tareas activas y abiertas", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(List.of());
+        }
     }
 
     @GetMapping("/{id}")
