@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import UserProfile from './UserProfile';
@@ -6,12 +6,12 @@ import UsuariosList from './UsuariosList';
 import TareasList from './TareasList';
 import ProyectosList from './ProyectosList';
 import NotificacionesPanel from './NotificacionesPanel';
+import ToastNotificacion, { ToastItem } from './ToastNotificacion';
+import { useWebSocketNotif } from '../hooks/useWebSocketNotif';
 import '../styles/Dashboard.css';
 import faviconImage from '../images/Favicon.png';
 
-type IconProps = {
-  className?: string;
-};
+type IconProps = { className?: string };
 
 const SearchIcon: React.FC<IconProps> = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
@@ -44,22 +44,35 @@ const CloseIcon: React.FC<IconProps> = ({ className }) => (
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, username } = useAuth();
   const [activeTab, setActiveTab] = useState<'perfil' | 'usuarios' | 'tareas' | 'proyectos'>('perfil');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [pendientesCount, setPendientesCount] = useState(0);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const toastIdRef = useRef(0);
+
+  useEffect(() => {
+    if (!isAuthenticated) navigate('/');
+  }, [isAuthenticated, navigate]);
 
   const handlePendientesChange = useCallback((count: number) => {
     setPendientesCount(count);
   }, []);
 
-  // Redirigir a login si no está autenticado
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/');
-    }
-  }, [isAuthenticated, navigate]);
+  const handleNuevaNotificacion = useCallback((mensaje: string) => {
+    setPendientesCount(prev => prev + 1);
+    setToasts(prev => [
+      ...prev,
+      { id: ++toastIdRef.current, mensaje },
+    ]);
+  }, []);
+
+  const removeToast = useCallback((id: number) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  useWebSocketNotif(username, handleNuevaNotificacion);
 
   const handleTabClick = (tab: 'perfil' | 'usuarios' | 'tareas' | 'proyectos') => {
     setActiveTab(tab);
@@ -71,9 +84,11 @@ const Dashboard: React.FC = () => {
     setIsMenuOpen(false);
   };
 
-
   return (
     <div className="dashboard-container">
+      {/* Toasts de notificación en tiempo real */}
+      <ToastNotificacion toasts={toasts} onRemove={removeToast} />
+
       {/* Header */}
       <header className="dashboard-header">
         <div className="header-left">
@@ -118,42 +133,18 @@ const Dashboard: React.FC = () => {
           </button>
         </div>
 
-        {/* Mobile Menu */}
         {isMenuOpen && (
           <nav id="mobile-menu" className="mobile-menu" aria-label="Navegación móvil">
-            <button
-              className={`mobile-menu-item ${activeTab === 'perfil' ? 'active' : ''}`}
-              onClick={() => handleTabClick('perfil')}
-            >
-              Mi Perfil
-            </button>
-            <button
-              className={`mobile-menu-item ${activeTab === 'usuarios' ? 'active' : ''}`}
-              onClick={() => handleTabClick('usuarios')}
-            >
-              Usuarios
-            </button>
-            <button
-              className={`mobile-menu-item ${activeTab === 'tareas' ? 'active' : ''}`}
-              onClick={() => handleTabClick('tareas')}
-            >
-              Tareas
-            </button>
-            <button
-              className={`mobile-menu-item ${activeTab === 'proyectos' ? 'active' : ''}`}
-              onClick={() => handleTabClick('proyectos')}
-            >
-              Proyectos
-            </button>
+            <button className={`mobile-menu-item ${activeTab === 'perfil' ? 'active' : ''}`} onClick={() => handleTabClick('perfil')}>Mi Perfil</button>
+            <button className={`mobile-menu-item ${activeTab === 'usuarios' ? 'active' : ''}`} onClick={() => handleTabClick('usuarios')}>Usuarios</button>
+            <button className={`mobile-menu-item ${activeTab === 'tareas' ? 'active' : ''}`} onClick={() => handleTabClick('tareas')}>Tareas</button>
+            <button className={`mobile-menu-item ${activeTab === 'proyectos' ? 'active' : ''}`} onClick={() => handleTabClick('proyectos')}>Proyectos</button>
             <hr />
-            <button className="mobile-menu-item logout" onClick={handleLogout}>
-              Cerrar sesión
-            </button>
+            <button className="mobile-menu-item logout" onClick={handleLogout}>Cerrar sesión</button>
           </nav>
         )}
       </header>
 
-      {/* Main Content */}
       <main className="dashboard-content">
         {activeTab === 'perfil' && <UserProfile />}
         {activeTab === 'usuarios' && <UsuariosList />}
@@ -165,4 +156,3 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
-
