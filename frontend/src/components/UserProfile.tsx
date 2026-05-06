@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import TaskCalendar from './TaskCalendar';
+import ChangePasswordModal from './ChangePasswordModal';
 import '../styles/UserProfile.css';
 
 interface Task {
@@ -27,6 +28,7 @@ const UserProfile: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -123,6 +125,7 @@ const UserProfile: React.FC = () => {
   const completedTasks = tasks.filter(t => t.estado === 'COMPLETADO');
 
   return (
+    <>
     <div className="profile-container">
       {/* Header Section */}
       <div className="profile-header">
@@ -218,11 +221,18 @@ const UserProfile: React.FC = () => {
           {/* Actions Card */}
           <div className="sidebar-card actions-card">
             <button className="action-btn primary">Editar perfil</button>
-            <button className="action-btn secondary">Cambiar contraseña</button>
+            <button className="action-btn secondary" onClick={() => setShowChangePassword(true)}>
+              Cambiar contraseña
+            </button>
           </div>
         </aside>
       </div>
     </div>
+
+    {showChangePassword && (
+      <ChangePasswordModal onClose={() => setShowChangePassword(false)} />
+    )}
+    </>
   );
 };
 
