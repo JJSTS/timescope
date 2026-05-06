@@ -1,0 +1,227 @@
+/* ============================================
+   SEARCH BAR
+   ============================================ */
+
+.sb-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Icon button */
+.sb-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  background: transparent;
+  border: none;
+  border-radius: var(--ts-radius);
+  cursor: pointer;
+  color: var(--ts-muted);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.sb-icon-btn:hover,
+.sb-icon-btn--active {
+  background: var(--ts-surface-soft);
+  color: var(--ts-accent);
+}
+
+.sb-icon-btn:active {
+  transform: scale(0.96);
+}
+
+/* Expandable input wrapper */
+.sb-input-wrapper {
+  display: flex;
+  align-items: center;
+  width: 0;
+  overflow: hidden;
+  transition: width 0.25s ease;
+  position: relative;
+}
+
+.sb-input-wrapper--open {
+  width: 260px;
+}
+
+@media (max-width: 768px) {
+  .sb-input-wrapper--open {
+    width: 160px;
+  }
+}
+
+.sb-input {
+  width: 100%;
+  height: 36px;
+  padding: 0 2rem 0 0.75rem;
+  border: 1px solid var(--ts-border);
+  border-radius: 6px;
+  background: var(--ts-surface-soft);
+  color: var(--ts-text);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+
+.sb-input::placeholder {
+  color: var(--ts-muted);
+}
+
+.sb-input:focus {
+  border-color: var(--ts-accent);
+  box-shadow: 0 0 0 3px var(--ts-accent-soft);
+  background: var(--ts-surface);
+}
+
+/* Spinner */
+.sb-spinner {
+  position: absolute;
+  right: 0.5rem;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--ts-border);
+  border-top-color: var(--ts-accent);
+  border-radius: 50%;
+  animation: sbSpin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes sbSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Clear button */
+.sb-clear {
+  position: absolute;
+  right: 0.4rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ts-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0 0.15rem;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.sb-clear:hover {
+  color: var(--ts-text);
+}
+
+/* Dropdown */
+.sb-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 320px;
+  background: var(--ts-surface);
+  border: 1px solid var(--ts-border);
+  border-radius: 10px;
+  box-shadow: var(--ts-shadow-lg);
+  overflow: hidden;
+  z-index: 200;
+  animation: sbSlideDown 0.15s ease-out;
+}
+
+@keyframes sbSlideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 480px) {
+  .sb-dropdown {
+    width: calc(100vw - 2rem);
+    right: -1rem;
+  }
+}
+
+.sb-empty {
+  padding: 1.25rem 1rem;
+  font-size: 0.875rem;
+  color: var(--ts-muted);
+  text-align: center;
+}
+
+/* Group */
+.sb-group {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--ts-border);
+}
+
+.sb-group:last-child {
+  border-bottom: none;
+}
+
+.sb-group-label {
+  padding: 0.25rem 1rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ts-muted);
+}
+
+/* Result row */
+.sb-result {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.sb-result:hover {
+  background: var(--ts-surface-soft);
+}
+
+.sb-badge {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  color: white;
+}
+
+.sb-badge--proyecto     { background: #5850b8; }
+.sb-badge--tarea        { background: #0891b2; }
+.sb-badge--organizacion { background: #059669; }
+
+.sb-result-name {
+  flex: 1;
+  font-size: 0.875rem;
+  color: var(--ts-text);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sb-result-estado {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ts-muted);
+  background: var(--ts-surface-soft);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
