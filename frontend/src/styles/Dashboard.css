@@ -263,8 +263,8 @@
 }
 
 @media (max-width: 768px) {
-  .search-btn {
-    display: none;
+  .sb-icon-btn {
+    display: flex;
   }
 }
 

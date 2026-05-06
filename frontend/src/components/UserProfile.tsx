@@ -169,13 +169,10 @@ const UserProfile: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Layout: 70/30 */}
       <div className="profile-main-layout">
 
-        {/* Left Column - Main Content (70%) */}
         <div className="profile-main-content">
 
-          {/* Active Tasks Section */}
           <section className="content-section">
             <div className="section-header">
               <div className="tasks-header-left">
@@ -259,7 +256,6 @@ const UserProfile: React.FC = () => {
             )}
           </section>
 
-          {/* Calendar Section */}
           <section className="content-section calendar-section-wrapper">
             <div className="section-header">
               <h2>Calendario</h2>

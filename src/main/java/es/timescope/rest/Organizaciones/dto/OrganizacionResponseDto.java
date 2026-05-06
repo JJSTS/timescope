@@ -1,5 +1,6 @@
 package es.timescope.rest.Organizaciones.dto;
 
+import es.timescope.rest.Usuarios.models.Usuario;
 import lombok.Builder;
 import lombok.Data;
 
@@ -13,6 +14,10 @@ public class OrganizacionResponseDto {
 
     private Long empresaMatrizId;
     private List<Long> filialesIds;
+
+
+    private String administrador;
+    private String userAdmin;
 
     private List<Long> proyectosIds;
     private List<Long> usuariosIds;

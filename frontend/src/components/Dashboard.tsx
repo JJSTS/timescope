@@ -7,18 +7,14 @@ import TareasList from './TareasList';
 import ProyectosList from './ProyectosList';
 import NotificacionesPanel from './NotificacionesPanel';
 import ToastNotificacion, { ToastItem } from './ToastNotificacion';
+import SearchBar from './SearchBar';
+import OrganizacionModal from './OrganizacionModal';
 import { useWebSocketNotif } from '../hooks/useWebSocketNotif';
 import '../styles/Dashboard.css';
 import faviconImage from '../images/Favicon.png';
 
 type IconProps = { className?: string };
 
-const SearchIcon: React.FC<IconProps> = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-    <circle cx="11" cy="11" r="7" />
-    <path d="m20 20-3.5-3.5" />
-  </svg>
-);
 
 const BellIcon: React.FC<IconProps> = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
@@ -47,6 +43,8 @@ const Dashboard: React.FC = () => {
   const { isAuthenticated, logout, username } = useAuth();
   const [activeTab, setActiveTab] = useState<'perfil' | 'usuarios' | 'tareas' | 'proyectos'>('perfil');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [highlightedId, setHighlightedId] = useState<number | null>(null);
+  const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
   const [notifOpen, setNotifOpen] = useState(false);
   const [pendientesCount, setPendientesCount] = useState(0);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
@@ -74,9 +72,10 @@ const Dashboard: React.FC = () => {
 
   useWebSocketNotif(username, handleNuevaNotificacion);
 
-  const handleTabClick = (tab: 'perfil' | 'usuarios' | 'tareas' | 'proyectos') => {
+  const handleTabClick = (tab: 'perfil' | 'usuarios' | 'tareas' | 'proyectos', highlightId?: number) => {
     setActiveTab(tab);
     setIsMenuOpen(false);
+    setHighlightedId(highlightId ?? null);
   };
 
   const handleLogout = () => {
@@ -99,9 +98,7 @@ const Dashboard: React.FC = () => {
         </div>
 
         <div className="header-right">
-          <button type="button" className="search-btn" title="Buscar" aria-label="Buscar">
-            <SearchIcon className="dashboard-icon" />
-          </button>
+          <SearchBar onNavigate={handleTabClick} onSelectOrg={setSelectedOrgId} />
           <div style={{ position: 'relative' }}>
             <button
               type="button"
@@ -148,9 +145,13 @@ const Dashboard: React.FC = () => {
       <main className="dashboard-content">
         {activeTab === 'perfil' && <UserProfile />}
         {activeTab === 'usuarios' && <UsuariosList />}
-        {activeTab === 'tareas' && <TareasList />}
-        {activeTab === 'proyectos' && <ProyectosList />}
+        {activeTab === 'tareas' && <TareasList highlightedId={highlightedId} />}
+        {activeTab === 'proyectos' && <ProyectosList highlightedId={highlightedId} />}
       </main>
+
+      {selectedOrgId !== null && (
+        <OrganizacionModal orgId={selectedOrgId} onClose={() => setSelectedOrgId(null)} />
+      )}
     </div>
   );
 };
