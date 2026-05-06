@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import '../styles/SearchBar.css';
 
-type Tab = 'perfil' | 'usuarios' | 'tareas' | 'proyectos';
+type Tab = 'perfil' | 'equipo' | 'tareas' | 'proyectos';
 
 interface SearchResult {
   id: number;

@@ -22,9 +22,18 @@ interface User {
   roles?: string[];  // Array de roles
 }
 
+interface TeamMember {
+  id: number;
+  nombres: string;
+  apellidos: string;
+  username: string;
+  roles?: string[];
+}
+
 const UserProfile: React.FC = () => {
   const { username } = useAuth();
   const [user, setUser] = useState<User | null>(null);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -86,6 +95,21 @@ const UserProfile: React.FC = () => {
           console.error('Error en tasksResponse:', tasksResponse.status);
           const errorText = await tasksResponse.text();
           console.error('Detalle del error:', errorText);
+        }
+
+        // Obtener miembros del equipo
+        const teamUrl = `http://localhost:8080/api/v1/usuarios?size=50`;
+        const teamResponse = await fetch(teamUrl, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (teamResponse.ok) {
+          const teamData = await teamResponse.json();
+          const teamArray = Array.isArray(teamData) ? teamData : (teamData.content || []);
+          setTeamMembers(teamArray);
         }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
@@ -267,33 +291,32 @@ const UserProfile: React.FC = () => {
         {/* Right Column - Sidebar (30%) */}
         <aside className="profile-sidebar">
 
-          {/* User Details Card */}
-          <div className="sidebar-card">
-            <h3 className="sidebar-card-title">Información del perfil</h3>
-            <div className="detail-row">
-              <span className="detail-label">ID de empleado</span>
-              <span className="detail-value">{user?.id}</span>
-            </div>
-            <div className="detail-row">
-              <span className="detail-label">Usuario</span>
-              <span className="detail-value">{user?.username}</span>
-            </div>
-            <div className="detail-row">
-              <span className="detail-label">Correo</span>
-              <span className="detail-value">{user?.email}</span>
-            </div>
-            <div className="detail-row">
-              <span className="detail-label">Roles</span>
-              <div className="detail-roles-container">
-                {user?.roles && user.roles.length > 0
-                  ? user.roles.map(r => (
-                      <span key={r} className={`role-badge role-${r.toLowerCase()}`}>
-                        {r.charAt(0).toUpperCase() + r.slice(1)}
-                      </span>
-                    ))
-                  : <span className="role-badge role-miembro">Miembro</span>
-                }
-              </div>
+          {/* Team Members Card */}
+          <div className="sidebar-card team-card">
+            <h3 className="sidebar-card-title">
+              Equipo
+              <span className="team-count">{teamMembers.length}</span>
+            </h3>
+            <div className="team-members-list">
+              {teamMembers.length > 0 ? (
+                teamMembers.map((member) => (
+                  <div key={member.id} className="team-member-item">
+                    <div className={`team-member-avatar role-${member.roles?.[0]?.toLowerCase() || 'miembro'}`}>
+                      {member.nombres?.charAt(0)}{member.apellidos?.charAt(0)}
+                    </div>
+                    <div className="team-member-info">
+                      <div className="team-member-name">
+                        {member.nombres} {member.apellidos}
+                      </div>
+                      <div className="team-member-role">
+                        {member.roles?.[0] ? member.roles[0].toUpperCase() : 'MIEMBRO'}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="team-empty">No hay miembros del equipo</p>
+              )}
             </div>
           </div>
 

@@ -15,6 +15,12 @@ import faviconImage from '../images/Favicon.png';
 
 type IconProps = { className?: string };
 
+const SearchIcon: React.FC<IconProps> = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+    <circle cx="11" cy="11" r="7" />
+    <path d="m20 20-3.5-3.5" />
+  </svg>
+);
 
 const BellIcon: React.FC<IconProps> = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
@@ -23,36 +29,33 @@ const BellIcon: React.FC<IconProps> = ({ className }) => (
   </svg>
 );
 
-const MenuIcon: React.FC<IconProps> = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-    <path d="M4 6h16" />
-    <path d="M4 12h16" />
-    <path d="M4 18h16" />
-  </svg>
-);
-
-const CloseIcon: React.FC<IconProps> = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-    <path d="M6 6l12 12" />
-    <path d="M18 6 6 18" />
-  </svg>
-);
-
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, logout, username } = useAuth();
-  const [activeTab, setActiveTab] = useState<'perfil' | 'usuarios' | 'tareas' | 'proyectos'>('perfil');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [highlightedId, setHighlightedId] = useState<number | null>(null);
-  const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<'perfil' | 'tareas' | 'proyectos' | 'equipo'>('perfil');
   const [notifOpen, setNotifOpen] = useState(false);
   const [pendientesCount, setPendientesCount] = useState(0);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const [userInitials, setUserInitials] = useState('');
+  const [highlightedId, setHighlightedId] = useState<number | null>(null);
+  const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
   const toastIdRef = useRef(0);
 
   useEffect(() => {
     if (!isAuthenticated) navigate('/');
   }, [isAuthenticated, navigate]);
+
+  // Obtener iniciales del usuario
+  useEffect(() => {
+    if (username) {
+      const initials = username
+        .split(' ')
+        .slice(0, 2)
+        .map(word => word.charAt(0).toUpperCase())
+        .join('');
+      setUserInitials(initials || username.charAt(0).toUpperCase());
+    }
+  }, [username]);
 
   const handlePendientesChange = useCallback((count: number) => {
     setPendientesCount(count);
@@ -72,15 +75,15 @@ const Dashboard: React.FC = () => {
 
   useWebSocketNotif(username, handleNuevaNotificacion);
 
-  const handleTabClick = (tab: 'perfil' | 'usuarios' | 'tareas' | 'proyectos', highlightId?: number) => {
+  const handleTabClick = (tab: 'perfil' | 'tareas' | 'proyectos' | 'equipo', highlightId?: number) => {
     setActiveTab(tab);
-    setIsMenuOpen(false);
-    setHighlightedId(highlightId ?? null);
+    if (highlightId !== undefined) {
+      setHighlightedId(highlightId);
+    }
   };
 
   const handleLogout = () => {
     logout();
-    setIsMenuOpen(false);
   };
 
   return (
@@ -88,17 +91,53 @@ const Dashboard: React.FC = () => {
       {/* Toasts de notificación en tiempo real */}
       <ToastNotificacion toasts={toasts} onRemove={removeToast} />
 
-      {/* Header */}
+      {/* Header mejorado */}
       <header className="dashboard-header">
-        <div className="header-left">
-          <span className="logo-favicon-slot" aria-hidden="true">
-            <img className="logo-favicon" src={faviconImage} alt="" />
-          </span>
-          <h1 className="logo">TimeScope</h1>
+        {/* Left Section: Logo + Navigation */}
+        <div className="header-left-section">
+          <div className="header-logo-area">
+            <span className="logo-favicon-slot" aria-hidden="true">
+              <img className="logo-favicon" src={faviconImage} alt="" />
+            </span>
+            <h1 className="logo">TimeScope</h1>
+          </div>
+
+          {/* Horizontal Navigation */}
+          <nav className="header-nav" aria-label="Navegación principal">
+            <button
+              className={`nav-tab ${activeTab === 'perfil' ? 'active' : ''}`}
+              onClick={() => handleTabClick('perfil')}
+            >
+              Mi Perfil
+            </button>
+            <button
+              className={`nav-tab ${activeTab === 'tareas' ? 'active' : ''}`}
+              onClick={() => handleTabClick('tareas')}
+            >
+              Tareas
+            </button>
+            <button
+              className={`nav-tab ${activeTab === 'proyectos' ? 'active' : ''}`}
+              onClick={() => handleTabClick('proyectos')}
+            >
+              Proyectos
+            </button>
+            <button
+              className={`nav-tab ${activeTab === 'equipo' ? 'active' : ''}`}
+              onClick={() => handleTabClick('equipo')}
+            >
+              Equipo
+            </button>
+          </nav>
         </div>
 
-        <div className="header-right">
-          <SearchBar onNavigate={handleTabClick} onSelectOrg={setSelectedOrgId} />
+        {/* Right Section: Search, Notifications, Avatar */}
+        <div className="header-right-section">
+          <SearchBar 
+            onNavigate={handleTabClick} 
+            onSelectOrg={setSelectedOrgId}
+          />
+
           <div style={{ position: 'relative' }}>
             <button
               type="button"
@@ -106,7 +145,7 @@ const Dashboard: React.FC = () => {
               title="Notificaciones"
               aria-label="Notificaciones"
               aria-expanded={notifOpen}
-              onClick={() => { setNotifOpen(prev => !prev); setIsMenuOpen(false); }}
+              onClick={() => setNotifOpen(prev => !prev)}
             >
               <BellIcon className="dashboard-icon" />
             </button>
@@ -117,36 +156,26 @@ const Dashboard: React.FC = () => {
               />
             )}
           </div>
-          <button
-            type="button"
-            className="menu-btn"
-            title="Menú"
-            aria-label="Menú"
-            aria-expanded={isMenuOpen}
-            aria-controls="mobile-menu"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <CloseIcon className="dashboard-icon" /> : <MenuIcon className="dashboard-icon" />}
-          </button>
-        </div>
 
-        {isMenuOpen && (
-          <nav id="mobile-menu" className="mobile-menu" aria-label="Navegación móvil">
-            <button className={`mobile-menu-item ${activeTab === 'perfil' ? 'active' : ''}`} onClick={() => handleTabClick('perfil')}>Mi Perfil</button>
-            <button className={`mobile-menu-item ${activeTab === 'usuarios' ? 'active' : ''}`} onClick={() => handleTabClick('usuarios')}>Usuarios</button>
-            <button className={`mobile-menu-item ${activeTab === 'tareas' ? 'active' : ''}`} onClick={() => handleTabClick('tareas')}>Tareas</button>
-            <button className={`mobile-menu-item ${activeTab === 'proyectos' ? 'active' : ''}`} onClick={() => handleTabClick('proyectos')}>Proyectos</button>
-            <hr />
-            <button className="mobile-menu-item logout" onClick={handleLogout}>Cerrar sesión</button>
-          </nav>
-        )}
+          {/* User Avatar with Dropdown */}
+          <div className="user-avatar-menu">
+            <div className="user-avatar" title={username}>
+              {userInitials}
+            </div>
+            <div className="user-dropdown">
+              <button className="dropdown-item" onClick={handleLogout}>
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
+        </div>
       </header>
 
       <main className="dashboard-content">
         {activeTab === 'perfil' && <UserProfile />}
-        {activeTab === 'usuarios' && <UsuariosList />}
         {activeTab === 'tareas' && <TareasList highlightedId={highlightedId} />}
         {activeTab === 'proyectos' && <ProyectosList highlightedId={highlightedId} />}
+        {activeTab === 'equipo' && <UsuariosList />}
       </main>
 
       {selectedOrgId !== null && (
