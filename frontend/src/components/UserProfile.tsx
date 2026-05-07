@@ -172,24 +172,37 @@ const UserProfile: React.FC = () => {
     <div className="profile-container">
       {/* Header Section */}
       <div className="profile-header">
-        <div className="user-intro">
-          <div className="user-avatar-small">
-            {user?.nombres?.charAt(0)}{user?.apellidos?.charAt(0)}
-          </div>
-          <div className="user-info">
-            <h1 className="user-name">{user?.nombres} {user?.apellidos}</h1>
-            <div className="user-roles">
-              {user?.roles && user.roles.length > 0
-                ? user.roles.map(r => (
-                    <span key={r} className={`role-badge role-${r.toLowerCase()}`}>
-                      {r.charAt(0).toUpperCase() + r.slice(1)}
-                    </span>
-                  ))
-                : <span className="role-badge role-miembro">Miembro</span>
-              }
+        <div className="header-left-content">
+          <div className="header-main">
+            <div className="user-avatar-large">
+              {user?.nombres?.charAt(0)}{user?.apellidos?.charAt(0)}
             </div>
-            <p className="user-email">{user?.email}</p>
+            <div className="user-info-expanded">
+              <h1 className="user-name-large">{user?.nombres} {user?.apellidos}</h1>
+              <div className="user-meta">
+                <span className="user-email-header">{user?.email}</span>
+              </div>
+              <div className="user-roles">
+                {user?.roles && user.roles.length > 0
+                  ? user.roles.map(r => (
+                      <span key={r} className={`role-badge role-${r.toLowerCase()}`}>
+                        {r.toUpperCase()}
+                      </span>
+                    ))
+                  : <span className="role-badge role-miembro">MIEMBRO</span>
+                }
+              </div>
+            </div>
           </div>
+        </div>
+
+        <div className="header-right-actions">
+          <button className="header-btn-secondary" title="Cambiar contraseña" onClick={() => setShowChangePassword(true)}>
+            🔐 Contraseña
+          </button>
+          <button className="header-btn-primary">
+            ✏️ Editar perfil
+          </button>
         </div>
       </div>
 
@@ -288,7 +301,7 @@ const UserProfile: React.FC = () => {
           </section>
         </div>
 
-        {/* Right Column - Sidebar (30%) */}
+        {/* Right Column - Sidebar (Equipo) */}
         <aside className="profile-sidebar">
 
           {/* Team Members Card */}
@@ -318,14 +331,6 @@ const UserProfile: React.FC = () => {
                 <p className="team-empty">No hay miembros del equipo</p>
               )}
             </div>
-          </div>
-
-          {/* Actions Card */}
-          <div className="sidebar-card actions-card">
-            <button className="action-btn primary">Editar perfil</button>
-            <button className="action-btn secondary" onClick={() => setShowChangePassword(true)}>
-              Cambiar contraseña
-            </button>
           </div>
         </aside>
       </div>
