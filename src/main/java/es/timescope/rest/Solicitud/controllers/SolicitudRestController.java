@@ -32,14 +32,12 @@ public class SolicitudRestController {
                 .body(solicitudServices.enviarSolicitud(organizacion));
     }
 
-    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
     @PutMapping("/{id}/aceptar")
     public ResponseEntity<SolicitudResponseDto> aceptarSolicitud (@PathVariable Long id) {
         log.info("Aceptando solicitud");
         return ResponseEntity.ok(solicitudServices.aceptarSolicitud(id));
     }
 
-    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
     @PutMapping("/{id}/rechazar")
     public ResponseEntity<SolicitudResponseDto> rechazarSolicitud(@PathVariable Long id) {
         log.info("Rechazando solicitud");
@@ -54,9 +52,15 @@ public class SolicitudRestController {
     }
 
     @GetMapping("/pendientes/{organizacionId}")
-    public ResponseEntity<List<SolicitudResponseDto>> getPendientes (@PathVariable Long organizacionId) {
+    public ResponseEntity<List<SolicitudResponseDto>> getPendientes(@PathVariable Long organizacionId) {
         log.info("Devolviendo solicitudes pendientes");
         return ResponseEntity.ok(solicitudServices.solicitudesPendientes(organizacionId));
+    }
+
+    @GetMapping("/mis-pendientes")
+    public ResponseEntity<List<SolicitudResponseDto>> getMisPendientes() {
+        log.info("Devolviendo mis solicitudes pendientes");
+        return ResponseEntity.ok(solicitudServices.misSolicitudesPendientes());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

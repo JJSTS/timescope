@@ -65,8 +65,8 @@ Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
 {
-  "tareaId": 1,
-  "username": "admin"
+  "tareaId": 2,
+  "username": "mmartinez"
 }
 
 ### POST ADD - Asignar tarea ID 3 al usuario cgarcia
@@ -89,3 +89,11 @@ Authorization: Bearer {{auth_token}}
   "username": "mmartinez"
 }
 
+### GET MY TASKS - Obtener todas mis tareas (usuario autenticado)
+GET http://localhost:8080/api/v1/tareas/me
+Authorization: Bearer {{auth_token}}
+
+
+### GET MY TASKS - Obtener todas las tareas activas (usuario autenticado)
+GET http://localhost:8080/api/v1/tareas/me/activo
+Authorization: Bearer {{auth_token}}

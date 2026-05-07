@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import '../styles/ProyectosList.css';
 
@@ -23,15 +23,37 @@ interface PageResponse {
   totalPages: number;
 }
 
-const ProyectosList: React.FC = () => {
+interface Props {
+  highlightedId?: number | null;
+}
+
+const ProyectosList: React.FC<Props> = ({ highlightedId }) => {
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeHighlight, setActiveHighlight] = useState<number | null>(null);
+  const rowRefs = useRef<Record<number, HTMLTableRowElement | null>>({});
   const token = localStorage.getItem('token');
 
   useEffect(() => {
     fetchProyectos();
   }, []);
+
+  useEffect(() => {
+    if (!highlightedId) return;
+    setActiveHighlight(highlightedId);
+
+    const tryScroll = () => {
+      const row = rowRefs.current[highlightedId];
+      if (row) {
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    };
+
+    const t = setTimeout(tryScroll, 100);
+    const clear = setTimeout(() => setActiveHighlight(null), 3000);
+    return () => { clearTimeout(t); clearTimeout(clear); };
+  }, [highlightedId]);
 
   const fetchProyectos = async () => {
     setLoading(true);
@@ -44,16 +66,12 @@ const ProyectosList: React.FC = () => {
         }
       });
 
-      console.log('Respuesta de proyectos:', response.data);
-
-      // Manejar tanto respuestas paginadas como arrays directos
       const proyectosData = Array.isArray(response.data)
         ? response.data
         : response.data.content || [];
 
       setProyectos(proyectosData);
     } catch (error: any) {
-      console.error('Error al obtener proyectos:', error);
       const errorMsg = error.response?.data?.message || error.message || 'Error al cargar proyectos';
       setError(errorMsg);
     } finally {
@@ -62,9 +80,7 @@ const ProyectosList: React.FC = () => {
   };
 
   if (loading) return <div className="loading">Cargando proyectos...</div>;
-
   if (error) return <div className="error-message">{error}</div>;
-
   if (proyectos.length === 0) return <div className="loading">No hay proyectos disponibles</div>;
 
   return (
@@ -83,7 +99,11 @@ const ProyectosList: React.FC = () => {
         </thead>
         <tbody>
           {proyectos.map((proyecto) => (
-            <tr key={proyecto.id}>
+            <tr
+              key={proyecto.id}
+              ref={el => { rowRefs.current[proyecto.id] = el; }}
+              className={activeHighlight === proyecto.id ? 'row-highlighted' : ''}
+            >
               <td>{proyecto.id}</td>
               <td>{proyecto.nombre}</td>
               <td>{proyecto.descripcion || '-'}</td>
@@ -99,4 +119,3 @@ const ProyectosList: React.FC = () => {
 };
 
 export default ProyectosList;
-

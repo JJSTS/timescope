@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import UserProfile from './UserProfile';
 import UsuariosList from './UsuariosList';
 import TareasList from './TareasList';
 import ProyectosList from './ProyectosList';
+import NotificacionesPanel from './NotificacionesPanel';
+import ToastNotificacion, { ToastItem } from './ToastNotificacion';
+import SearchBar from './SearchBar';
+import OrganizacionModal from './OrganizacionModal';
+import { useWebSocketNotif } from '../hooks/useWebSocketNotif';
 import '../styles/Dashboard.css';
 import faviconImage from '../images/Favicon.png';
 
-type IconProps = {
-  className?: string;
-};
+type IconProps = { className?: string };
 
 const SearchIcon: React.FC<IconProps> = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
@@ -26,121 +29,160 @@ const BellIcon: React.FC<IconProps> = ({ className }) => (
   </svg>
 );
 
-const MenuIcon: React.FC<IconProps> = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-    <path d="M4 6h16" />
-    <path d="M4 12h16" />
-    <path d="M4 18h16" />
-  </svg>
-);
-
-const CloseIcon: React.FC<IconProps> = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-    <path d="M6 6l12 12" />
-    <path d="M18 6 6 18" />
-  </svg>
-);
-
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'perfil' | 'usuarios' | 'tareas' | 'proyectos'>('perfil');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isAuthenticated, logout, username } = useAuth();
+  const [activeTab, setActiveTab] = useState<'perfil' | 'tareas' | 'proyectos' | 'equipo'>('perfil');
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [pendientesCount, setPendientesCount] = useState(0);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const [userInitials, setUserInitials] = useState('');
+  const [highlightedId, setHighlightedId] = useState<number | null>(null);
+  const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
+  const toastIdRef = useRef(0);
 
-  // Redirigir a login si no está autenticado
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/');
-    }
+    if (!isAuthenticated) navigate('/');
   }, [isAuthenticated, navigate]);
 
-  const handleTabClick = (tab: 'perfil' | 'usuarios' | 'tareas' | 'proyectos') => {
+  // Obtener iniciales del usuario
+  useEffect(() => {
+    if (username) {
+      const initials = username
+        .split(' ')
+        .slice(0, 2)
+        .map(word => word.charAt(0).toUpperCase())
+        .join('');
+      setUserInitials(initials || username.charAt(0).toUpperCase());
+    }
+  }, [username]);
+
+  const handlePendientesChange = useCallback((count: number) => {
+    setPendientesCount(count);
+  }, []);
+
+  const handleNuevaNotificacion = useCallback((mensaje: string) => {
+    setPendientesCount(prev => prev + 1);
+    setToasts(prev => [
+      ...prev,
+      { id: ++toastIdRef.current, mensaje },
+    ]);
+  }, []);
+
+  const removeToast = useCallback((id: number) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  useWebSocketNotif(username, handleNuevaNotificacion);
+
+  const handleTabClick = (tab: 'perfil' | 'tareas' | 'proyectos' | 'equipo', highlightId?: number) => {
     setActiveTab(tab);
-    setIsMenuOpen(false);
+    if (highlightId !== undefined) {
+      setHighlightedId(highlightId);
+    }
   };
 
   const handleLogout = () => {
     logout();
-    setIsMenuOpen(false);
   };
-
 
   return (
     <div className="dashboard-container">
-      {/* Header */}
+      {/* Toasts de notificación en tiempo real */}
+      <ToastNotificacion toasts={toasts} onRemove={removeToast} />
+
+      {/* Header mejorado */}
       <header className="dashboard-header">
-        <div className="header-left">
-          <span className="logo-favicon-slot" aria-hidden="true">
-            <img className="logo-favicon" src={faviconImage} alt="" />
-          </span>
-          <h1 className="logo">TimeScope</h1>
-        </div>
+        {/* Left Section: Logo + Navigation */}
+        <div className="header-left-section">
+          <div className="header-logo-area">
+            <span className="logo-favicon-slot" aria-hidden="true">
+              <img className="logo-favicon" src={faviconImage} alt="" />
+            </span>
+            <h1 className="logo">TimeScope</h1>
+          </div>
 
-        <div className="header-right">
-          <button type="button" className="search-btn" title="Buscar" aria-label="Buscar">
-            <SearchIcon className="dashboard-icon" />
-          </button>
-          <button type="button" className="notification-btn" title="Notificaciones" aria-label="Notificaciones">
-            <BellIcon className="dashboard-icon" />
-          </button>
-          <button
-            type="button"
-            className="menu-btn"
-            title="Menú"
-            aria-label="Menú"
-            aria-expanded={isMenuOpen}
-            aria-controls="mobile-menu"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <CloseIcon className="dashboard-icon" /> : <MenuIcon className="dashboard-icon" />}
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <nav id="mobile-menu" className="mobile-menu" aria-label="Navegación móvil">
+          {/* Horizontal Navigation */}
+          <nav className="header-nav" aria-label="Navegación principal">
             <button
-              className={`mobile-menu-item ${activeTab === 'perfil' ? 'active' : ''}`}
+              className={`nav-tab ${activeTab === 'perfil' ? 'active' : ''}`}
               onClick={() => handleTabClick('perfil')}
             >
               Mi Perfil
             </button>
             <button
-              className={`mobile-menu-item ${activeTab === 'usuarios' ? 'active' : ''}`}
-              onClick={() => handleTabClick('usuarios')}
-            >
-              Usuarios
-            </button>
-            <button
-              className={`mobile-menu-item ${activeTab === 'tareas' ? 'active' : ''}`}
+              className={`nav-tab ${activeTab === 'tareas' ? 'active' : ''}`}
               onClick={() => handleTabClick('tareas')}
             >
               Tareas
             </button>
             <button
-              className={`mobile-menu-item ${activeTab === 'proyectos' ? 'active' : ''}`}
+              className={`nav-tab ${activeTab === 'proyectos' ? 'active' : ''}`}
               onClick={() => handleTabClick('proyectos')}
             >
               Proyectos
             </button>
-            <hr />
-            <button className="mobile-menu-item logout" onClick={handleLogout}>
-              Cerrar sesión
+            <button
+              className={`nav-tab ${activeTab === 'equipo' ? 'active' : ''}`}
+              onClick={() => handleTabClick('equipo')}
+            >
+              Equipo
             </button>
           </nav>
-        )}
+        </div>
+
+        {/* Right Section: Search, Notifications, Avatar */}
+        <div className="header-right-section">
+          <SearchBar 
+            onNavigate={handleTabClick} 
+            onSelectOrg={setSelectedOrgId}
+          />
+
+          <div style={{ position: 'relative' }}>
+            <button
+              type="button"
+              className={`notification-btn ${pendientesCount > 0 ? 'has-notifications' : ''}`}
+              title="Notificaciones"
+              aria-label="Notificaciones"
+              aria-expanded={notifOpen}
+              onClick={() => setNotifOpen(prev => !prev)}
+            >
+              <BellIcon className="dashboard-icon" />
+            </button>
+            {notifOpen && (
+              <NotificacionesPanel
+                onClose={() => setNotifOpen(false)}
+                onPendientesChange={handlePendientesChange}
+              />
+            )}
+          </div>
+
+          {/* User Avatar with Dropdown */}
+          <div className="user-avatar-menu">
+            <div className="user-avatar" title={username}>
+              {userInitials}
+            </div>
+            <div className="user-dropdown">
+              <button className="dropdown-item" onClick={handleLogout}>
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
+        </div>
       </header>
 
-      {/* Main Content */}
       <main className="dashboard-content">
         {activeTab === 'perfil' && <UserProfile />}
-        {activeTab === 'usuarios' && <UsuariosList />}
-        {activeTab === 'tareas' && <TareasList />}
-        {activeTab === 'proyectos' && <ProyectosList />}
+        {activeTab === 'tareas' && <TareasList highlightedId={highlightedId} />}
+        {activeTab === 'proyectos' && <ProyectosList highlightedId={highlightedId} />}
+        {activeTab === 'equipo' && <UsuariosList />}
       </main>
+
+      {selectedOrgId !== null && (
+        <OrganizacionModal orgId={selectedOrgId} onClose={() => setSelectedOrgId(null)} />
+      )}
     </div>
   );
 };
 
 export default Dashboard;
-

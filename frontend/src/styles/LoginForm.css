@@ -436,6 +436,35 @@
   cursor: not-allowed;
 }
 
+/* Password input with eye toggle */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper .form-input {
+  padding-right: 2.75rem;
+}
+
+.eye-btn {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 0.2s ease;
+  line-height: 1;
+}
+
+.eye-btn:hover {
+  color: #ff6b35;
+}
+
 /* Forgot Password */
 .forgot-password {
   text-align: center;
@@ -676,9 +705,9 @@
 
   .login-form-wrapper {
     flex: 1;
-    height: auto; /* Altura automática en móvil */
+    height: auto;
     padding: 1.5rem;
-    align-items: center; /* Centrar el card verticalmente */
+    align-items: flex-start;
   }
 
   .login-card {

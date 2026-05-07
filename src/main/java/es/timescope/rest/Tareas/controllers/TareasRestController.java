@@ -4,8 +4,11 @@ import es.timescope.rest.Tareas.dto.TareaAddDto;
 import es.timescope.rest.Tareas.dto.TareaCreateDto;
 import es.timescope.rest.Tareas.dto.TareaResponseDto;
 import es.timescope.rest.Tareas.dto.TareaUpdateDto;
+import es.timescope.rest.Tareas.mappers.TareasMapper;
+import es.timescope.rest.Tareas.models.Estado;
 import es.timescope.rest.Tareas.models.Tarea;
 import es.timescope.rest.Tareas.services.TareasServices;
+import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.utils.pagination.PageResponse;
 import es.timescope.utils.pagination.PaginationLinksUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,8 +27,13 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -56,6 +64,38 @@ public class TareasRestController {
                 .header("link", paginationLinksUtils.createLinkHeader(pageResult, uriBuilder))
                 .body(PageResponse.of(pageResult, sortBy, direction));
 
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<List<TareaResponseDto>> getTasksByUser(@AuthenticationPrincipal Usuario usuario){
+        log.info("Obteniendo tareas del usuario: {}", usuario.getUsername());
+        List<TareaResponseDto> tareasMapeadas = tareasServices.findByUsuarioId(usuario.getId());
+        return ResponseEntity.ok(tareasMapeadas);
+    }
+
+    @GetMapping("/me/activo")
+    public ResponseEntity<List<TareaResponseDto>> getTasksByUserActivo(){
+        try {
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            
+            if (!(principal instanceof Usuario)) {
+                log.error("Principal no es una instancia de Usuario");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(List.of());
+            }
+            
+            Usuario usuario = (Usuario) principal;
+            log.info("Obteniendo tareas activas y abiertas del usuario: {}", usuario.getUsername());
+            
+            List<TareaResponseDto> tareas = new ArrayList<>();
+            tareas.addAll(tareasServices.findByUsuarioIdAndEstado(usuario.getId(), Estado.ACTIVO));
+            tareas.addAll(tareasServices.findByUsuarioIdAndEstado(usuario.getId(), Estado.ABIERTO));
+            
+            log.info("Total de tareas obtenidas: {}", tareas.size());
+            return ResponseEntity.ok(tareas);
+        } catch (Exception e) {
+            log.error("Error al obtener tareas activas y abiertas", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(List.of());
+        }
     }
 
     @GetMapping("/{id}")

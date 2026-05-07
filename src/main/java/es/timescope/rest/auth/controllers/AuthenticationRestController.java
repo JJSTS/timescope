@@ -1,5 +1,6 @@
 package es.timescope.rest.auth.controllers;
 
+import es.timescope.rest.auth.dto.ChangePasswordDto;
 import es.timescope.rest.auth.dto.JwtAuthResponse;
 import es.timescope.rest.auth.dto.UserSignInRequest;
 import es.timescope.rest.auth.dto.UserSignUpRequest;
@@ -35,6 +36,12 @@ public class AuthenticationRestController {
   public ResponseEntity<JwtAuthResponse> signIn(@Valid @RequestBody UserSignInRequest request) {
     log.info("Iniciando sesión de usuario: {}", request);
     return ResponseEntity.ok(authenticationService.signIn(request));
+  }
+
+  @PatchMapping("/password")
+  public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordDto changePasswordDto) {
+    authenticationService.cambiarPassword(changePasswordDto);
+    return ResponseEntity.ok().build();
   }
 
   @ResponseStatus(HttpStatus.BAD_REQUEST)

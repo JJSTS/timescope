@@ -55,6 +55,21 @@ export const authService = {
     }
   },
 
+  async changePassword(password: string, newPassword: string, passwordComprobacion: string): Promise<void> {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch(`${API_URL}/auth/password`, {
+        password,
+        newPassword,
+        passwordComprobacion
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || error.response?.data?.detail || 'Error al cambiar la contraseña');
+    }
+  },
+
   logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('username');

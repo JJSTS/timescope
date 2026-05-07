@@ -3,7 +3,7 @@ POST http://localhost:8080/api/v1/solicitud/enviar/TechCorpSolutions
 Authorization: Bearer {{auth_token}}
 
 ### POST - Enviar solicitud a InnovatechDigital
-POST http://localhost:8080/api/v1/solicitud/enviar/InnovatechDigital
+POST http://localhost:8080/api/v1/solicitud/enviar/WebMasterAgency
 Authorization: Bearer {{auth_token}}
 
 ### GET - Obtener solicitudes pendientes de una organización
@@ -12,6 +12,10 @@ Authorization: Bearer {{auth_token}}
 
 ### GET - Obtener solicitudes pendientes de Innovatech
 GET http://localhost:8080/api/v1/solicitud/pendientes/2
+Authorization: Bearer {{auth_token}}
+
+### GET - Obtener solicitudes pendientes de Innovatech
+GET http://localhost:8080/api/v1/solicitud/mis-pendientes
 Authorization: Bearer {{auth_token}}
 
 ### 3️⃣ PUT - Aceptar solicitud (Administrador/Coordinador)

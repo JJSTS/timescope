@@ -21,12 +21,33 @@ interface RegisterFormData {
   crearOrganizacion: boolean;
 }
 
+const EyeIcon: React.FC<{ visible: boolean }> = ({ visible }) =>
+  visible ? (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+  ) : (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+      <line x1="1" y1="1" x2="23" y2="23"/>
+    </svg>
+  );
+
 export const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [showPasswords, setShowPasswords] = useState({ login: false, register: false, registerConfirm: false });
+
+  const toggleShow = (field: keyof typeof showPasswords) => {
+    setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }));
+  };
 
   // Login state
   const [loginData, setLoginData] = useState<LoginFormData>({
@@ -223,17 +244,22 @@ export const Login: React.FC = () => {
                 <label htmlFor="login-password" className="form-label">
                   Contraseña
                 </label>
-                <input
-                  id="login-password"
-                  name="password"
-                  type="password"
-                  value={loginData.password}
-                  onChange={handleLoginChange}
-                  className="form-input"
-                  placeholder="••••••••"
-                  required
-                  disabled={loading}
-                />
+                <div className="input-wrapper">
+                  <input
+                    id="login-password"
+                    name="password"
+                    type={showPasswords.login ? 'text' : 'password'}
+                    value={loginData.password}
+                    onChange={handleLoginChange}
+                    className="form-input"
+                    placeholder="••••••••"
+                    required
+                    disabled={loading}
+                  />
+                  <button type="button" className="eye-btn" onClick={() => toggleShow('login')} tabIndex={-1} aria-label="Mostrar contraseña">
+                    <EyeIcon visible={showPasswords.login} />
+                  </button>
+                </div>
               </div>
 
               <button
@@ -328,36 +354,46 @@ export const Login: React.FC = () => {
                  <label htmlFor="register-password" className="form-label">
                    Contraseña
                  </label>
-                 <input
-                   id="register-password"
-                   name="password"
-                   type="password"
-                   value={registerData.password}
-                   onChange={handleRegisterChange}
-                   className="form-input"
-                   placeholder="Mínimo 5 caracteres"
-                   required
-                   minLength={5}
-                   disabled={loading}
-                 />
+                 <div className="input-wrapper">
+                   <input
+                     id="register-password"
+                     name="password"
+                     type={showPasswords.register ? 'text' : 'password'}
+                     value={registerData.password}
+                     onChange={handleRegisterChange}
+                     className="form-input"
+                     placeholder="Mínimo 5 caracteres"
+                     required
+                     minLength={5}
+                     disabled={loading}
+                   />
+                   <button type="button" className="eye-btn" onClick={() => toggleShow('register')} tabIndex={-1} aria-label="Mostrar contraseña">
+                     <EyeIcon visible={showPasswords.register} />
+                   </button>
+                 </div>
                </div>
 
                <div className="form-group">
                  <label htmlFor="register-password-comp" className="form-label">
                    Confirmar contraseña
                  </label>
-                 <input
-                   id="register-password-comp"
-                   name="passwordComprobacion"
-                   type="password"
-                   value={registerData.passwordComprobacion}
-                   onChange={handleRegisterChange}
-                   className="form-input"
-                   placeholder="Repite tu contraseña"
-                   required
-                   minLength={5}
-                   disabled={loading}
-                 />
+                 <div className="input-wrapper">
+                   <input
+                     id="register-password-comp"
+                     name="passwordComprobacion"
+                     type={showPasswords.registerConfirm ? 'text' : 'password'}
+                     value={registerData.passwordComprobacion}
+                     onChange={handleRegisterChange}
+                     className="form-input"
+                     placeholder="Repite tu contraseña"
+                     required
+                     minLength={5}
+                     disabled={loading}
+                   />
+                   <button type="button" className="eye-btn" onClick={() => toggleShow('registerConfirm')} tabIndex={-1} aria-label="Mostrar contraseña">
+                     <EyeIcon visible={showPasswords.registerConfirm} />
+                   </button>
+                 </div>
                </div>
 
                {/* SECCIÓN DE ORGANIZACIÓN */}
@@ -429,4 +465,3 @@ export const Login: React.FC = () => {
 };
 
 export default Login;
-

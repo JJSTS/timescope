@@ -51,6 +51,16 @@
   transition: background 0.2s ease;
 }
 
+.proyectos-table tbody tr.row-highlighted {
+  animation: rowFlash 3s ease-out forwards;
+}
+
+@keyframes rowFlash {
+  0%   { background: rgba(88, 80, 184, 0.18); }
+  30%  { background: rgba(88, 80, 184, 0.18); }
+  100% { background: transparent; }
+}
+
 .proyectos-table tbody tr:nth-child(even) {
   background: #fcfcfd;
 }
