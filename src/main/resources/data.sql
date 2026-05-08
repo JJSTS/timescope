@@ -36,6 +36,22 @@ INSERT INTO ORGANIZACION (nombre, admin_id, is_deleted) VALUES
 ('StreamFlowStartup', 6, false),           -- Admin: admin (DIRECTOR)
 ('CoreTechEnterprise', 6, false);          -- Admin: admin (DIRECTOR)
 
+-- ROLES POR ORGANIZACIÓN (tabla ternaria user-org-rol)
+INSERT INTO USUARIO_ORG_ROL (user_id, org_id, rol) VALUES
+(1, 1, 'DESARROLLADOR'),   -- cgarcia → DESARROLLADOR en TechCorp
+(2, 1, 'DESARROLLADOR'),   -- mmartinez → DESARROLLADOR en TechCorp
+(3, 2, 'LIDER'),           -- jperez → LIDER en Innovatech
+(4, 3, 'DIRECTOR'),        -- lfernandez → DIRECTOR en CloudSystem
+(5, 4, 'DESARROLLADOR'),   -- alopez → DESARROLLADOR en DataDrive
+(6, 1, 'DIRECTOR'),        -- admin → DIRECTOR en TechCorp
+(6, 2, 'DIRECTOR'),        -- admin → DIRECTOR en Innovatech
+(6, 3, 'DIRECTOR'),        -- admin → DIRECTOR en CloudSystem
+(6, 4, 'DIRECTOR'),        -- admin → DIRECTOR en DataDrive
+(6, 5, 'DIRECTOR'),        -- admin → DIRECTOR en WebMaster
+(6, 6, 'DIRECTOR'),        -- admin → DIRECTOR en SecureNet
+(6, 7, 'DIRECTOR'),        -- admin → DIRECTOR en StreamFlow
+(6, 8, 'DIRECTOR');        -- admin → DIRECTOR en CoreTech
+
 -- DIRECTORES POR ORGANIZACIÓN
 INSERT INTO ORGANIZACION_DIRECTORES (org_id, user_id) VALUES
 (1, 2),  -- TechCorp → mmartinez

@@ -1,5 +1,8 @@
 package es.timescope.config.auth;
 
+import es.timescope.rest.Usuarios.models.UsuarioOrgRol;
+import es.timescope.rest.Usuarios.repositories.UsuarioOrgRolRepository;
+import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.auth.services.jwt.JwtService;
 import es.timescope.rest.auth.services.users.AuthUsersService;
 import jakarta.servlet.FilterChain;
@@ -10,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,6 +24,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,6 +34,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
   private final AuthUsersService authUsersService;
+  private final UsuarioOrgRolRepository usuarioOrgRolRepository;
 
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
@@ -59,6 +68,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token no autorizado o no válido");
       return;
     }
+
     log.info("Usuario autenticado: {}", userName);
     if (StringUtils.hasText(userName)
         && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -70,14 +80,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Usuario no autorizado");
         return;
       }
-      authUsersService.loadUserByUsername(userName);
-      log.info("Usuario encontrado: {}", userDetails);
+
       if (jwtService.isTokenValid(jwt, userDetails)) {
         log.info("JWT válido");
+
+        Long orgId = jwtService.extractOrgId(jwt);
+        Collection<? extends GrantedAuthority> authorities;
+
+        if (orgId != null && userDetails instanceof Usuario usuario) {
+          // Roles acotados a la organización activa
+          List<UsuarioOrgRol> orgRoles = usuarioOrgRolRepository
+              .findByUsuarioIdAndOrganizacionId(usuario.getId(), orgId);
+          authorities = orgRoles.stream()
+              .map(r -> new SimpleGrantedAuthority("ROLE_" + r.getRol().name()))
+              .collect(Collectors.toList());
+          log.info("Roles de org {}: {}", orgId, authorities);
+        } else {
+          // Sin orgId en el token: usa los roles globales del usuario
+          authorities = userDetails.getAuthorities();
+          log.info("Roles globales: {}", authorities);
+        }
+
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-            userDetails, null, userDetails.getAuthorities());
-        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            userDetails, null, authorities);
+        authToken.setDetails(orgId);
         context.setAuthentication(authToken);
         SecurityContextHolder.setContext(context);
       }

@@ -123,8 +123,8 @@ public class TareasServicesImpl implements TareasServices {
                 .orElseThrow(() -> new TareaNotFound(id));
 
         // DESARROLLADOR solo puede editar sus propias tareas
-        boolean soloDesarrollador = !caller.getRoles().contains(Roles.DIRECTOR)
-                && !caller.getRoles().contains(Roles.LIDER);
+        boolean soloDesarrollador = !authUtils.callerHasRole(Roles.DIRECTOR)
+                && !authUtils.callerHasRole(Roles.LIDER);
         if (soloDesarrollador) {
             boolean esSuTarea = tareaOpt.getUsuario() != null
                     && tareaOpt.getUsuario().getId().equals(caller.getId());

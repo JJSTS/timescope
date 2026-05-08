@@ -3,6 +3,7 @@ package es.timescope.rest.Organizaciones.controllers;
 import es.timescope.rest.Organizaciones.dto.OrganizacionCreateDto;
 import es.timescope.rest.Organizaciones.dto.OrganizacionResponseDto;
 import es.timescope.rest.Organizaciones.services.OrganizacionServices;
+import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.utils.pagination.PaginationLinksUtils;
 import es.timescope.utils.pagination.PageResponse;
 
@@ -120,5 +121,16 @@ public class OrganizacionesRestController {
             @PathVariable Long usuarioId) {
         log.info("Eliminando director {} de org {}", usuarioId, id);
         return ResponseEntity.ok(service.removeDirector(id, usuarioId));
+    }
+
+    @PatchMapping("/{orgId}/usuarios/{usuarioId}/rol")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> asignarRolEnOrg(
+            @PathVariable Long orgId,
+            @PathVariable Long usuarioId,
+            @RequestParam Roles rol) {
+        log.info("Asignando rol {} al usuario {} en org {}", rol, usuarioId, orgId);
+        service.asignarRolEnOrg(orgId, usuarioId, rol);
+        return ResponseEntity.noContent().build();
     }
 }

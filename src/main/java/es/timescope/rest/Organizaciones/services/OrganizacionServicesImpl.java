@@ -10,6 +10,8 @@ import es.timescope.rest.Proyectos.repositories.ProyectosRepository;
 import es.timescope.rest.Usuarios.exceptions.UsuarioNotFound;
 import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
+import es.timescope.rest.Usuarios.models.UsuarioOrgRol;
+import es.timescope.rest.Usuarios.repositories.UsuarioOrgRolRepository;
 import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
 
 import jakarta.transaction.Transactional;
@@ -32,6 +34,7 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
     private final OrganizacionesRepository repository;
     private final ProyectosRepository proyectosRepository;
     private final UsuariosRepository usuariosRepository;
+    private final UsuarioOrgRolRepository usuarioOrgRolRepository;
     private final AuthUtils authUtils;
 
     private Organizacion getEntity(Long id) {
@@ -74,7 +77,15 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
         org.setAdmin(admin);
         org.getDirectores().add(admin);
 
-        return OrganizacionesMapper.toDto(repository.save(org));
+        Organizacion saved = repository.save(org);
+
+        usuarioOrgRolRepository.save(UsuarioOrgRol.builder()
+                .usuario(admin)
+                .organizacion(saved)
+                .rol(Roles.DIRECTOR)
+                .build());
+
+        return OrganizacionesMapper.toDto(saved);
     }
 
     @Override
@@ -172,6 +183,34 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
         }
 
         return OrganizacionesMapper.toDto(repository.save(org));
+    }
+
+    @Override
+    @Transactional
+    public void asignarRolEnOrg(Long orgId, Long usuarioId, Roles rol) {
+        Organizacion org = getEntity(orgId);
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+
+        boolean esAdmin = org.getAdmin().getId().equals(caller.getId());
+        boolean esDirectorEnOrg = usuarioOrgRolRepository
+                .existsByUsuarioIdAndOrganizacionIdAndRol(caller.getId(), orgId, Roles.DIRECTOR);
+
+        if (!esAdmin && !esDirectorEnOrg) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Solo un director de esta organización puede asignar roles");
+        }
+
+        Usuario usuario = usuariosRepository.findById(usuarioId)
+                .orElseThrow(() -> new UsuarioNotFound(usuarioId.toString()));
+
+        usuarioOrgRolRepository.deleteByUsuarioIdAndOrganizacionId(usuarioId, orgId);
+        usuarioOrgRolRepository.save(UsuarioOrgRol.builder()
+                .usuario(usuario)
+                .organizacion(org)
+                .rol(rol)
+                .build());
+
+        log.info("Rol {} asignado al usuario {} en org {}", rol, usuarioId, orgId);
     }
 
     @Override

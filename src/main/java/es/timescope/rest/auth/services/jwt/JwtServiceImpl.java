@@ -32,7 +32,22 @@ public class JwtServiceImpl implements JwtService {
   @Override
   public String generateToken(UserDetails userDetails) {
     log.info("Generating token for user " + userDetails.getUsername());
-    return generateToken(new HashMap<>(), userDetails);
+    return generateToken(new HashMap<>(), userDetails, null);
+  }
+
+  @Override
+  public String generateToken(UserDetails userDetails, Long orgId) {
+    log.info("Generating token for user {} with orgId {}", userDetails.getUsername(), orgId);
+    return generateToken(new HashMap<>(), userDetails, orgId);
+  }
+
+  @Override
+  public Long extractOrgId(String token) {
+    try {
+      return JWT.decode(token).getClaim("orgId").asLong();
+    } catch (Exception e) {
+      return null;
+    }
   }
 
   @Override
@@ -48,18 +63,23 @@ public class JwtServiceImpl implements JwtService {
     return claimsResolvers.apply(decodedJWT);
   }
 
-  private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+  private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails, Long orgId) {
     Algorithm algorithm = Algorithm.HMAC512(getSigningKey());
     Date now = new Date();
     Date expirationDate = new Date(now.getTime() + (1000 * jwtExpiration));
 
-    return JWT.create()
+    var builder = JWT.create()
         .withHeader(createHeader())
         .withSubject(userDetails.getUsername())
         .withIssuedAt(now)
         .withExpiresAt(expirationDate)
-        .withClaim("extraClaims", extraClaims)
-        .sign(algorithm);
+        .withClaim("extraClaims", extraClaims);
+
+    if (orgId != null) {
+      builder = builder.withClaim("orgId", orgId);
+    }
+
+    return builder.sign(algorithm);
   }
 
   private boolean isTokenExpired(String token) {

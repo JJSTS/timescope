@@ -7,6 +7,8 @@ import es.timescope.rest.Organizaciones.models.Organizacion;
 import es.timescope.rest.Organizaciones.repositories.OrganizacionesRepository;
 import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
+import es.timescope.rest.Usuarios.models.UsuarioOrgRol;
+import es.timescope.rest.Usuarios.repositories.UsuarioOrgRolRepository;
 import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
 import es.timescope.rest.auth.dto.ChangePasswordDto;
 import es.timescope.rest.auth.dto.JwtAuthResponse;
@@ -41,7 +43,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private final AuthenticationManager authenticationManager;
   private final UsuarioEmailService usuarioEmailService;
   private final AuthUtils authUtils;
-  private final UsuariosRepository  usuariosRepository;
+  private final UsuariosRepository usuariosRepository;
+  private final UsuarioOrgRolRepository usuarioOrgRolRepository;
 
   @Override
   public JwtAuthResponse signUp(UserSignUpRequest request) {
@@ -57,27 +60,39 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           .build();
       try {
         var userStored = authUsersRepository.save(user);
+        Long orgIdCreada = null;
 
-         // Si el usuario quiere crear una organización
-         if (request.getOrganizacion() != null && request.getOrganizacion().getNombre() != null &&
-             !request.getOrganizacion().getNombre().isBlank()) {
-           log.info("Creando organización: {}", request.getOrganizacion().getNombre());
+        // Si el usuario quiere crear una organización
+        if (request.getOrganizacion() != null && request.getOrganizacion().getNombre() != null &&
+            !request.getOrganizacion().getNombre().isBlank()) {
+          log.info("Creando organización: {}", request.getOrganizacion().getNombre());
 
-           Organizacion org = Organizacion.builder()
-               .nombre(request.getOrganizacion().getNombre())
-               .admin(userStored)
-               .build();
+          Organizacion org = Organizacion.builder()
+              .nombre(request.getOrganizacion().getNombre())
+              .admin(userStored)
+              .build();
+          org.getDirectores().add(userStored);
 
-           Organizacion orgCreated = organizacionesRepository.save(org);
-           userStored.setOrganizacion(orgCreated);
-           authUsersRepository.save(userStored);
+          Organizacion orgCreated = organizacionesRepository.save(org);
+          userStored.setOrganizacion(orgCreated);
+          authUsersRepository.save(userStored);
 
-           log.info("Organización creada exitosamente con ID: {} y nombre: {} con admin: {}",
-               orgCreated.getId(), orgCreated.getNombre(), userStored.getUsername());
-         }
+          // Rol DIRECTOR acotado a esta organización
+          usuarioOrgRolRepository.save(UsuarioOrgRol.builder()
+              .usuario(userStored)
+              .organizacion(orgCreated)
+              .rol(Roles.DIRECTOR)
+              .build());
+
+          orgIdCreada = orgCreated.getId();
+          log.info("Organización creada con ID: {}, admin: {}", orgIdCreada, userStored.getUsername());
+        }
 
         usuarioEmailService.enviarConfirmacionCreacion(request);
-        return JwtAuthResponse.builder().token(jwtService.generateToken(userStored)).build();
+        String token = orgIdCreada != null
+            ? jwtService.generateToken(userStored, orgIdCreada)
+            : jwtService.generateToken(userStored);
+        return JwtAuthResponse.builder().token(token).orgId(orgIdCreada).build();
       } catch (DataIntegrityViolationException ex) {
         throw new AuthExistingUsernameOrEmail("El usuario con username " + request.getUsername() + " o email " + request.getEmail() + " ya existe");
       }
@@ -94,8 +109,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
     var user = authUsersRepository.findByUsername(request.getUsername())
         .orElseThrow(() -> new AuthSignInNotValid("Usuario o contraseña incorrectos"));
-    var jwt = jwtService.generateToken(user);
-    return JwtAuthResponse.builder().token(jwt).build();
+
+    Long orgId = request.getOrgId();
+    String jwt = orgId != null
+        ? jwtService.generateToken(user, orgId)
+        : jwtService.generateToken(user);
+
+    return JwtAuthResponse.builder().token(jwt).orgId(orgId).build();
   }
 
   @Override

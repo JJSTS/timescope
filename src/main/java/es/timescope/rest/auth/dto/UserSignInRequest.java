@@ -18,4 +18,7 @@ public class UserSignInRequest {
   @NotBlank(message = "Password no puede estar vacío")
   @Length(min = 5, message = "Password debe tener al menos 5 caracteres")
   private String password;
+
+  /** ID de la organización activa. Si se provee, el JWT incluirá roles acotados a esa org. */
+  private Long orgId;
 }

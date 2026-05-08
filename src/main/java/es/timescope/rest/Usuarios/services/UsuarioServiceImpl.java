@@ -121,20 +121,16 @@ public class UsuarioServiceImpl implements UsuariosService {
         Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
         Usuario usuario = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
 
-        validarJerarquiaRol(caller, role);
+        validarJerarquiaRol(role);
 
         usuario.getRoles().clear();
         usuario.getRoles().add(role);
         usuariosRepository.save(usuario);
     }
 
-    private void validarJerarquiaRol(Usuario caller, Roles rolObjetivo) {
-        Set<Roles> rolesCalller = caller.getRoles();
-
-        if (rolesCalller.contains(Roles.DIRECTOR)) {
-            return;
-        }
-        if (rolesCalller.contains(Roles.LIDER)) {
+    private void validarJerarquiaRol(Roles rolObjetivo) {
+        if (authUtils.callerHasRole(Roles.DIRECTOR)) return;
+        if (authUtils.callerHasRole(Roles.LIDER)) {
             if (rolObjetivo != Roles.LIDER) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                         "Un LIDER solo puede asignar el rol LIDER");

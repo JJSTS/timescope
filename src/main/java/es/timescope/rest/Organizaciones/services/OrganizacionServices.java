@@ -28,4 +28,6 @@ public interface OrganizacionServices {
     OrganizacionResponseDto addDirector(Long orgId, Long usuarioId);
 
     OrganizacionResponseDto removeDirector(Long orgId, Long usuarioId);
+
+    void asignarRolEnOrg(Long orgId, Long usuarioId, es.timescope.rest.Usuarios.models.Roles rol);
 }

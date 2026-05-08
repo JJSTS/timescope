@@ -97,3 +97,10 @@ DELETE http://localhost:8080/api/v1/organizaciones/1/directores/3
 Authorization: Bearer {{auth_token}}
 
 ###
+
+### PATCH - Asignar rol a usuario dentro de una organización concreta
+### Requiere: ser DIRECTOR en esa org. Roles válidos: DIRECTOR, LIDER, DESARROLLADOR
+PATCH http://localhost:8080/api/v1/organizaciones/1/usuarios/1/rol?rol=LIDER
+Authorization: Bearer {{auth_token}}
+
+###
