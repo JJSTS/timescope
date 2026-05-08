@@ -3,6 +3,7 @@ package es.timescope.rest.Proyectos.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import es.timescope.rest.Organizaciones.models.Organizacion;
+import es.timescope.rest.Tareas.models.Tarea;
 import es.timescope.rest.Usuarios.models.Usuario;
 import jakarta.persistence.*;
 import lombok.*;
@@ -49,4 +50,9 @@ public class Proyecto {
     @JoinColumn(name = "organizacion_id")
     @JsonIgnore
     private Organizacion organizacion;
+
+    @OneToMany(mappedBy = "proyecto")
+    @JsonIgnoreProperties("proyecto")
+    @ToString.Exclude
+    private List<Tarea> tareas;
 }

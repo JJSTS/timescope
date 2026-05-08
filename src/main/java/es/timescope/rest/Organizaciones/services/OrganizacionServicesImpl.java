@@ -72,6 +72,7 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
         Organizacion org = new Organizacion();
         org.setNombre(dto.getNombre());
         org.setAdmin(admin);
+        org.getDirectores().add(admin);
 
         return OrganizacionesMapper.toDto(repository.save(org));
     }
@@ -89,11 +90,13 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
         Usuario nuevoAdmin = usuariosRepository.findByUsername(username)
                 .orElseThrow(() -> new UsuarioNotFound(username));
 
-        // El nuevo admin recibe el rol DIRECTOR si no lo tiene
         nuevoAdmin.getRoles().add(Roles.DIRECTOR);
         usuariosRepository.save(nuevoAdmin);
 
         org.setAdmin(nuevoAdmin);
+        if (!org.getDirectores().contains(nuevoAdmin)) {
+            org.getDirectores().add(nuevoAdmin);
+        }
         return OrganizacionesMapper.toDto(repository.save(org));
     }
 
@@ -146,6 +149,46 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
         usuario.setOrganizacion(org);
         org.getUsuarios().add(usuario);
 
+        return OrganizacionesMapper.toDto(repository.save(org));
+    }
+
+    @Override
+    @Transactional
+    public OrganizacionResponseDto addDirector(Long orgId, Long usuarioId) {
+        Organizacion org = getEntity(orgId);
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+
+        if (!org.getAdmin().getId().equals(caller.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo el admin principal puede añadir directores");
+        }
+
+        Usuario nuevoDirector = usuariosRepository.findById(usuarioId)
+                .orElseThrow(() -> new UsuarioNotFound(usuarioId.toString()));
+
+        if (!org.getDirectores().contains(nuevoDirector)) {
+            nuevoDirector.getRoles().add(Roles.DIRECTOR);
+            usuariosRepository.save(nuevoDirector);
+            org.getDirectores().add(nuevoDirector);
+        }
+
+        return OrganizacionesMapper.toDto(repository.save(org));
+    }
+
+    @Override
+    @Transactional
+    public OrganizacionResponseDto removeDirector(Long orgId, Long usuarioId) {
+        Organizacion org = getEntity(orgId);
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+
+        if (!org.getAdmin().getId().equals(caller.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo el admin principal puede eliminar directores");
+        }
+
+        if (org.getAdmin().getId().equals(usuarioId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes eliminar al admin principal de la lista de directores");
+        }
+
+        org.getDirectores().removeIf(u -> u.getId().equals(usuarioId));
         return OrganizacionesMapper.toDto(repository.save(org));
     }
 }

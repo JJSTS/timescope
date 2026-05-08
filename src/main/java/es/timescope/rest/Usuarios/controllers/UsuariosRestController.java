@@ -35,9 +35,8 @@ public class UsuariosRestController {
         return ResponseEntity.ok(usuariosService.getMe());
     }
 
-    // Solo DIRECTOR, COORDINADOR y LIDER pueden listar todos los usuarios
     @GetMapping
-    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR','LIDER')")
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
     public ResponseEntity<PageResponse<UsuarioResponseDto>> findAll(
             @RequestParam(required = false) Optional<String> username,
             @RequestParam(required = false) Optional<String> email,
@@ -60,7 +59,7 @@ public class UsuariosRestController {
     }
 
     @PatchMapping("/{id}/asingRol")
-    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR','LIDER')")
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
     public ResponseEntity<?> assingRol(@PathVariable Long id, @RequestParam Roles role) {
         log.info("Asignado un Rol al usuario {}", id);
         usuariosService.asignarRol(id, role);
@@ -68,7 +67,7 @@ public class UsuariosRestController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR','LIDER','DESARROLLADOR')")
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER','DESARROLLADOR')")
     public ResponseEntity<UsuarioResponseDto> updatePartial(@PathVariable Long id, @RequestBody UsuarioUpdateDto usuarioUpdateDto) {
         log.info("Actualizando parcialmente usuario con id: {}", id);
         UsuarioResponseDto usuarioActualizado = usuariosService.updatePartial(id, usuarioUpdateDto);

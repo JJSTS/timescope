@@ -1,5 +1,7 @@
 package es.timescope.rest.Tareas.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import es.timescope.rest.Proyectos.models.Proyecto;
 import es.timescope.rest.Usuarios.models.Usuario;
 import jakarta.persistence.*;
 import lombok.*;
@@ -35,7 +37,12 @@ public class Tarea {
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime fechaCreacion = LocalDateTime.now();
 
-    @ManyToOne(fetch =  FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "proyecto_id")
+    @JsonIgnore
+    private Proyecto proyecto;
 }

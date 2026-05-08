@@ -33,7 +33,6 @@ import java.util.Set;
 @CacheConfig(cacheNames = {"usuarios"})
 @RequiredArgsConstructor
 public class UsuarioServiceImpl implements UsuariosService {
-    private final UsuarioEmailService usuarioEmailService;
     private final UsuariosRepository usuariosRepository;
     private final UsuariosMapper usuarioMapper;
     private final AuthUtils authUtils;
@@ -133,13 +132,6 @@ public class UsuarioServiceImpl implements UsuariosService {
         Set<Roles> rolesCalller = caller.getRoles();
 
         if (rolesCalller.contains(Roles.DIRECTOR)) {
-            return;
-        }
-        if (rolesCalller.contains(Roles.COORDINADOR)) {
-            if (rolObjetivo == Roles.DIRECTOR) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                        "Un COORDINADOR no puede asignar el rol DIRECTOR");
-            }
             return;
         }
         if (rolesCalller.contains(Roles.LIDER)) {

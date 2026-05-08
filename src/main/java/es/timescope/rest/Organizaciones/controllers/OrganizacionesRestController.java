@@ -103,4 +103,22 @@ public class OrganizacionesRestController {
             @PathVariable Long usuarioId) {
         return ResponseEntity.ok(service.addUsuario(id, usuarioId));
     }
+
+    @PostMapping("/{id}/directores/{usuarioId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<OrganizacionResponseDto> addDirector(
+            @PathVariable Long id,
+            @PathVariable Long usuarioId) {
+        log.info("Añadiendo director {} a org {}", usuarioId, id);
+        return ResponseEntity.ok(service.addDirector(id, usuarioId));
+    }
+
+    @DeleteMapping("/{id}/directores/{usuarioId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<OrganizacionResponseDto> removeDirector(
+            @PathVariable Long id,
+            @PathVariable Long usuarioId) {
+        log.info("Eliminando director {} de org {}", usuarioId, id);
+        return ResponseEntity.ok(service.removeDirector(id, usuarioId));
+    }
 }

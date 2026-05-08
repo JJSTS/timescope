@@ -42,8 +42,7 @@ public class ProyectoServicesImpl implements ProyectoServices {
     private final AuthUtils authUtils;
 
     private boolean tieneAccesoTotal(Usuario usuario) {
-        return usuario.getRoles().contains(Roles.DIRECTOR)
-                || usuario.getRoles().contains(Roles.COORDINADOR);
+        return usuario.getRoles().contains(Roles.DIRECTOR);
     }
 
     @Override

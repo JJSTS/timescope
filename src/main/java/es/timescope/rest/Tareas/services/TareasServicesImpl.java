@@ -3,6 +3,7 @@ package es.timescope.rest.Tareas.services;
 import es.timescope.config.auth.AuthUtils;
 import es.timescope.rest.Notificacion.models.Tipo;
 import es.timescope.rest.Notificacion.service.NotificacionService;
+import es.timescope.rest.Proyectos.models.Proyecto;
 import es.timescope.rest.Proyectos.repositories.ProyectosRepository;
 import es.timescope.rest.Tareas.dto.TareaAddDto;
 import es.timescope.rest.Tareas.dto.TareaCreateDto;
@@ -97,8 +98,17 @@ public class TareasServicesImpl implements TareasServices {
     public TareaResponseDto createTarea(TareaCreateDto tareaCreateDto){
         log.info("Creando tarea: {}", tareaCreateDto);
         try {
-            Tarea tarea = tareasRepository.save(tareasMapper.toTarea(tareaCreateDto));
-            return tareasMapper.toTareaResponseDto(tarea);
+            Tarea tarea;
+            if (tareaCreateDto.getProyectoId() != null) {
+                Proyecto proyecto = proyectosRepository.findById(tareaCreateDto.getProyectoId())
+                        .orElseThrow(() -> new TareaCreateException("Proyecto con id " + tareaCreateDto.getProyectoId() + " no encontrado"));
+                tarea = tareasMapper.toTarea(tareaCreateDto, proyecto);
+            } else {
+                tarea = tareasMapper.toTarea(tareaCreateDto);
+            }
+            return tareasMapper.toTareaResponseDto(tareasRepository.save(tarea));
+        } catch (TareaCreateException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error al crear la tarea: {}", e.getMessage());
             throw new TareaCreateException("No fue posible crear la tarea: " + e.getMessage());
@@ -114,7 +124,6 @@ public class TareasServicesImpl implements TareasServices {
 
         // DESARROLLADOR solo puede editar sus propias tareas
         boolean soloDesarrollador = !caller.getRoles().contains(Roles.DIRECTOR)
-                && !caller.getRoles().contains(Roles.COORDINADOR)
                 && !caller.getRoles().contains(Roles.LIDER);
         if (soloDesarrollador) {
             boolean esSuTarea = tareaOpt.getUsuario() != null
@@ -128,6 +137,18 @@ public class TareasServicesImpl implements TareasServices {
         log.info("Usuario asociado a la tarea: {}", usuario);
         Tarea tarea = tareasRepository.save(tareasMapper.toTarea(tareaUpdateDto, tareaOpt, usuario));
         return tareasMapper.toTareaResponseDto(tarea);
+    }
+
+    @Override
+    public List<TareaResponseDto> findByProyectoId(Long proyectoId) {
+        log.info("Buscando tareas del proyecto con id: {}", proyectoId);
+        return tareasMapper.toTareaResponseDtoList(tareasRepository.findByProyectoId(proyectoId));
+    }
+
+    @Override
+    public Page<TareaResponseDto> findByProyectoId(Long proyectoId, Pageable pageable) {
+        log.info("Buscando tareas del proyecto con id: {} (paginado)", proyectoId);
+        return tareasRepository.findByProyectoId(proyectoId, pageable).map(tareasMapper::toTareaResponseDto);
     }
 
     @Override

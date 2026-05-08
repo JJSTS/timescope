@@ -1,5 +1,6 @@
 package es.timescope.rest.Tareas.mappers;
 
+import es.timescope.rest.Proyectos.models.Proyecto;
 import es.timescope.rest.Tareas.dto.TareaCreateDto;
 import es.timescope.rest.Tareas.dto.TareaResponseDto;
 import es.timescope.rest.Tareas.dto.TareaUpdateDto;
@@ -33,7 +34,16 @@ public class TareasMapper {
                 .descripcion(tareaCreateDto.getDescripcion())
                 .fechaCreacion(LocalDateTime.now())
                 .build();
+    }
 
+    public Tarea toTarea(TareaCreateDto tareaCreateDto, Proyecto proyecto) {
+        return Tarea.builder()
+                .id(null)
+                .nombre(tareaCreateDto.getNombre())
+                .descripcion(tareaCreateDto.getDescripcion())
+                .fechaCreacion(LocalDateTime.now())
+                .proyecto(proyecto)
+                .build();
     }
 
     public Tarea toTarea(TareaUpdateDto tareaUpdateDto, Tarea tarea, Usuario usuario) {
@@ -44,6 +54,7 @@ public class TareasMapper {
                 .estado(tareaUpdateDto.getEstado() != null ? tareaUpdateDto.getEstado() : tarea.getEstado())
                 .fechaCreacion(tarea.getFechaCreacion())
                 .usuario(usuario != null ? usuario : tarea.getUsuario())
+                .proyecto(tarea.getProyecto())
                 .build();
     }
 
@@ -55,6 +66,8 @@ public class TareasMapper {
                 .estado(tarea.getEstado())
                 .fechaCreacion(tarea.getFechaCreacion())
                 .usuario(tarea.getUsuario() != null ? tarea.getUsuario().getNombres() : null)
+                .proyectoId(tarea.getProyecto() != null ? tarea.getProyecto().getId() : null)
+                .proyectoNombre(tarea.getProyecto() != null ? tarea.getProyecto().getNombre() : null)
                 .build();
     }
 

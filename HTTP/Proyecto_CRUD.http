@@ -32,3 +32,11 @@ Authorization: Bearer {{auth_token}}
 PUT http://localhost:8080/api/v1/proyectos/usuario/8?username=mmartinez
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
+
+### PATCH - Cambiar estado de proyecto (DIRECTOR → cualquier proyecto)
+PATCH http://localhost:8080/api/v1/proyectos/1/estado?estado=ACTIVO
+Authorization: Bearer {{auth_token}}
+
+### PATCH - LIDER cambia estado (solo proyectos donde está asignado)
+PATCH http://localhost:8080/api/v1/proyectos/1/estado?estado=SUSPENDIDO
+Authorization: Bearer {{auth_token}}

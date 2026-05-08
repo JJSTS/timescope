@@ -17,5 +17,7 @@ public class TareaResponseDto {
     private Estado estado;
     private LocalDateTime fechaCreacion;
     private String usuario;
+    private Long proyectoId;
+    private String proyectoNombre;
 
 }

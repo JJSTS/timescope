@@ -24,4 +24,8 @@ public interface OrganizacionServices {
     OrganizacionResponseDto addUsuario(Long orgId, Long usuarioId);
 
     OrganizacionResponseDto cederAdmin(Long orgId, String username);
+
+    OrganizacionResponseDto addDirector(Long orgId, Long usuarioId);
+
+    OrganizacionResponseDto removeDirector(Long orgId, Long usuarioId);
 }

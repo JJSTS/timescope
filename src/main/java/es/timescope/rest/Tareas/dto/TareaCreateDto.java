@@ -16,8 +16,6 @@ public class TareaCreateDto {
     @NotBlank(message = "La Tarea debe tener una descripción")
     private final String descripcion;
 
-//    @NotBlank(message = "La tarea debe tener un usuario")
-//    @Pattern(regexp = "^[a-zA-Z0-9]+$", message = "El usuario solo puede contener letras y números")
-//    private final String usuario;
+    private final Long proyectoId;
 
 }

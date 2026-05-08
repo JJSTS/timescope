@@ -17,18 +17,17 @@ INSERT INTO USUARIOS (nombres, apellidos, username, email, password, is_deleted)
 -- USUARIO_ROLES
 INSERT INTO USUARIO_ROLES (user_id, roles) VALUES
 (1, 'DESARROLLADOR'),
-(2, 'COORDINADOR'),
+(2, 'DESARROLLADOR'),
 (3, 'LIDER'),
 (4, 'DIRECTOR'),
 (5, 'DESARROLLADOR'),
-(6, 'COORDINADOR'),
 (6, 'LIDER'),
 (6, 'DIRECTOR'),
 (6, 'DESARROLLADOR');
 
 -- ORGANIZACIONES CON ADMINS
 INSERT INTO ORGANIZACION (nombre, admin_id, is_deleted) VALUES
-('TechCorpSolutions', 2, false),           -- Admin: María (COORDINADOR)
+('TechCorpSolutions', 2, false),           -- Admin: María (DESARROLLADOR)
 ('InnovatechDigital', 3, false),           -- Admin: Juan (LIDER)
 ('CloudSystemPro', 4, false),              -- Admin: Laura (DIRECTOR)
 ('DataDriveAnalytics', 5, false),          -- Admin: Andrés (LIDER)
@@ -36,6 +35,17 @@ INSERT INTO ORGANIZACION (nombre, admin_id, is_deleted) VALUES
 ('SecureNetSecurity', 6, false),           -- Admin: admin (DIRECTOR)
 ('StreamFlowStartup', 6, false),           -- Admin: admin (DIRECTOR)
 ('CoreTechEnterprise', 6, false);          -- Admin: admin (DIRECTOR)
+
+-- DIRECTORES POR ORGANIZACIÓN
+INSERT INTO ORGANIZACION_DIRECTORES (org_id, user_id) VALUES
+(1, 2),  -- TechCorp → mmartinez
+(2, 3),  -- Innovatech → jperez
+(3, 4),  -- CloudSystem → lfernandez
+(4, 5),  -- DataDrive → alopez
+(5, 6),  -- WebMaster → admin
+(6, 6),  -- SecureNet → admin
+(7, 6),  -- StreamFlow → admin
+(8, 6);  -- CoreTech → admin
 
 -- RELACIÓN USUARIOS - ORGANIZACIONES
 UPDATE USUARIOS SET organizacion_id = 1 WHERE id = 1;  -- Carlos → TechCorp
@@ -127,3 +137,19 @@ INSERT INTO TAREAS (nombre, descripcion, estado, usuario_id) VALUES
 ('Revisión UX Final', 'Aplicar ajustes visuales de alto impacto.', 'ABIERTO', 6),
 ('Microcopy UI', 'Pulir textos de interfaz y estados del sistema.', 'COMPLETADO', 6),
 ('Integración Correo', 'Conectar proveedor SMTP para notificaciones.', 'ACTIVO', 6);
+
+-- ASIGNACIÓN DE TAREAS A PROYECTOS
+UPDATE TAREAS SET proyecto_id = 1 WHERE id IN (1, 2, 3);   -- cgarcia/mmartinez → TimeScope v1
+UPDATE TAREAS SET proyecto_id = 2 WHERE id IN (4, 5);       -- mmartinez/lfernandez → App Móvil
+UPDATE TAREAS SET proyecto_id = 6 WHERE id = 6;             -- jperez → QA Automatizada
+UPDATE TAREAS SET proyecto_id = 3 WHERE id = 7;             -- alopez → Portal Admin
+UPDATE TAREAS SET proyecto_id = 5 WHERE id IN (8, 9, 10, 11, 12, 25, 28, 30, 31); -- admin → Refactor Backend
+UPDATE TAREAS SET proyecto_id = 6 WHERE id IN (13, 14, 15); -- admin → QA Automatizada
+UPDATE TAREAS SET proyecto_id = 7 WHERE id IN (16, 29);     -- admin → DevOps Pipeline
+UPDATE TAREAS SET proyecto_id = 14 WHERE id IN (17, 18);    -- admin → Seguridad App
+UPDATE TAREAS SET proyecto_id = 16 WHERE id IN (19, 20, 26);-- admin → Optimizacion SQL
+UPDATE TAREAS SET proyecto_id = 9 WHERE id = 21;            -- admin → Gestor Incidencias
+UPDATE TAREAS SET proyecto_id = 8 WHERE id = 22;            -- admin → Analytics BI
+UPDATE TAREAS SET proyecto_id = 15 WHERE id IN (23, 24);    -- admin → Soporte Clientes
+UPDATE TAREAS SET proyecto_id = 13 WHERE id = 27;           -- admin → Onboarding Web
+UPDATE TAREAS SET proyecto_id = 11 WHERE id = 32;           -- admin → Notificaciones Push

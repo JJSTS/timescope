@@ -79,7 +79,7 @@ public class ProyectosRestController {
                 .body(PageResponse.of(pageResult, sortBy, direction));
     }
 
-    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
+    @PreAuthorize("hasRole('DIRECTOR')")
     @PostMapping
     public ResponseEntity<ProyectoResponseDto> createProyecto(@RequestBody ProyectoCreateDto proyectoCreateDto) {
         log.info("Recibiendo solicitud para crear proyecto: {}", proyectoCreateDto);
@@ -89,7 +89,7 @@ public class ProyectosRestController {
 
 
     @PutMapping("/usuario/{id}")
-    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
+    @PreAuthorize("hasRole('DIRECTOR')")
     public ResponseEntity<ProyectoResponseDto> addUsuario(
             @PathVariable Long id,
             @RequestParam String username
@@ -126,7 +126,7 @@ public class ProyectosRestController {
     }
 
     @PatchMapping("/{id}/estado")
-    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR','LIDER')")
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
     public ResponseEntity<ProyectoResponseDto> cambiarEstado(
             @PathVariable Long id,
             @RequestParam Estado estado) {
@@ -135,7 +135,7 @@ public class ProyectosRestController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
+    @PreAuthorize("hasRole('DIRECTOR')")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
         log.info("Eliminando proyecto con id: {}", id);
 

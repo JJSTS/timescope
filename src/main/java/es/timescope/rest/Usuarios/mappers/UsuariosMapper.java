@@ -11,17 +11,6 @@ import java.util.List;
 
 @Component
 public class UsuariosMapper {
-    public Usuario toUsuario(UsuarioCreateDto usuario) {
-        return Usuario.builder()
-                .nombres(usuario.getNombres())
-                .apellidos(usuario.getApellidos())
-                .email(usuario.getEmail())
-                .password(usuario.getPassword())
-                .username(usuario.getUsername())
-                .roles(usuario.getRoles())
-                .isDeleted(usuario.getIsDeleted())
-                .build();
-    }
     
     public Usuario toUsuario(UsuarioCreateDto usuario, Long id) {
         return Usuario.builder()
