@@ -1,5 +1,6 @@
 package es.timescope.rest.Usuarios.controllers;
 
+import es.timescope.rest.Usuarios.dto.UsuarioInfoResponse;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 import es.timescope.rest.Usuarios.dto.UsuarioUpdateDto;
 import es.timescope.rest.Usuarios.models.Roles;
@@ -33,6 +34,13 @@ public class UsuariosRestController {
     public ResponseEntity<UsuarioResponseDto> getMe() {
         log.info("Obteniendo datos del usuario autenticado");
         return ResponseEntity.ok(usuariosService.getMe());
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UsuarioInfoResponse> findById(@PathVariable Long id) {
+        log.info("Obteniendo usuario con id: {}", id);
+        return ResponseEntity.ok(usuariosService.findById(id));
     }
 
     @GetMapping

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import TaskCalendar from './TaskCalendar';
-import ChangePasswordModal from './ChangePasswordModal';
 import '../styles/UserProfile.css';
 
 interface Task {
@@ -33,6 +32,17 @@ interface TeamMember {
   roles?: string[];
 }
 
+interface MemberDetail {
+  id: number;
+  nombres: string;
+  apellidos: string;
+  username: string;
+  email: string;
+  roles?: string[];
+  proyectos?: string[];
+  tareas?: string[];
+}
+
 const UserProfile: React.FC = () => {
   const { username } = useAuth();
   const [user, setUser] = useState<User | null>(null);
@@ -40,8 +50,9 @@ const UserProfile: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showChangePassword, setShowChangePassword] = useState(false);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+  const [selectedMember, setSelectedMember] = useState<MemberDetail | null>(null);
+  const [memberLoading, setMemberLoading] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -157,6 +168,19 @@ const UserProfile: React.FC = () => {
   // Tareas visibles (máximo 5 por página)
   const visibleTasks = pendingTasks.slice(currentTaskIndex, currentTaskIndex + 5);
 
+  const handleMemberClick = async (memberId: number) => {
+    const token = localStorage.getItem('token');
+    setMemberLoading(true);
+    try {
+      const res = await fetch(`http://localhost:8080/api/v1/usuarios/${memberId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) setSelectedMember(await res.json());
+    } finally {
+      setMemberLoading(false);
+    }
+  };
+
   return (
     <>
     <div className="profile-container">
@@ -186,14 +210,6 @@ const UserProfile: React.FC = () => {
           </div>
         </div>
 
-        <div className="header-right-actions">
-          <button className="header-btn-secondary" title="Cambiar contraseña" onClick={() => setShowChangePassword(true)}>
-            🔐 Contraseña
-          </button>
-          <button className="header-btn-primary">
-            ✏️ Editar perfil
-          </button>
-        </div>
       </div>
 
       <div className="profile-main-layout">
@@ -307,7 +323,11 @@ const UserProfile: React.FC = () => {
               {teamMembers.length > 0 ? (
                 teamMembers.map((member) => (
                   <div key={member.id} className="team-member-item">
-                    <div className={`team-member-avatar role-${member.roles?.[0]?.toLowerCase() || 'miembro'}`}>
+                    <div
+                      className={`team-member-avatar role-${member.roles?.[0]?.toLowerCase() || 'miembro'} team-member-avatar--clickable`}
+                      onClick={() => handleMemberClick(member.id)}
+                      title={`Ver perfil de ${member.nombres}`}
+                    >
                       {member.nombres?.charAt(0)}{member.apellidos?.charAt(0)}
                     </div>
                     <div className="team-member-info">
@@ -329,8 +349,64 @@ const UserProfile: React.FC = () => {
       </div>
     </div>
 
-    {showChangePassword && (
-      <ChangePasswordModal onClose={() => setShowChangePassword(false)} />
+    {(selectedMember || memberLoading) && (
+      <div className="member-modal-overlay" onClick={() => setSelectedMember(null)}>
+        <div className="member-modal" onClick={e => e.stopPropagation()}>
+          <button className="member-modal-close" onClick={() => setSelectedMember(null)}>✕</button>
+
+          {memberLoading && <div className="member-modal-loading">Cargando…</div>}
+
+          {selectedMember && !memberLoading && (
+            <>
+              <div className="member-modal-header">
+                <div className={`member-modal-avatar role-${selectedMember.roles?.[0]?.toLowerCase() || 'miembro'}`}>
+                  {selectedMember.nombres?.charAt(0)}{selectedMember.apellidos?.charAt(0)}
+                </div>
+                <div>
+                  <h3 className="member-modal-name">
+                    {selectedMember.nombres} {selectedMember.apellidos}
+                  </h3>
+                  <span className="member-modal-username">@{selectedMember.username}</span>
+                  <div className="member-modal-roles">
+                    {selectedMember.roles?.map(r => (
+                      <span key={r} className={`role-badge role-${r.toLowerCase()}`}>{r}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="member-modal-body">
+                <div className="member-modal-row">
+                  <span className="member-modal-label">Email</span>
+                  <span className="member-modal-value">{selectedMember.email}</span>
+                </div>
+
+                {selectedMember.proyectos && selectedMember.proyectos.length > 0 && (
+                  <div className="member-modal-row">
+                    <span className="member-modal-label">Proyectos ({selectedMember.proyectos.length})</span>
+                    <div className="member-modal-tags">
+                      {selectedMember.proyectos.map(p => (
+                        <span key={p} className="member-modal-tag member-modal-tag--proyecto">{p}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {selectedMember.tareas && selectedMember.tareas.length > 0 && (
+                  <div className="member-modal-row">
+                    <span className="member-modal-label">Tareas ({selectedMember.tareas.length})</span>
+                    <div className="member-modal-tags">
+                      {selectedMember.tareas.map(t => (
+                        <span key={t} className="member-modal-tag member-modal-tag--tarea">{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     )}
     </>
   );

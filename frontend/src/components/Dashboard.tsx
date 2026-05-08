@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import UserProfile from './UserProfile';
+import ChangePasswordModal from './ChangePasswordModal';
 import UsuariosList from './UsuariosList';
 import TareasList from './TareasList';
 import ProyectosList from './ProyectosList';
@@ -35,11 +36,13 @@ const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'perfil' | 'tareas' | 'proyectos' | 'equipo'>('perfil');
   const [notifOpen, setNotifOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const [pendientesCount, setPendientesCount] = useState(0);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [userInitials, setUserInitials] = useState('');
   const [highlightedId, setHighlightedId] = useState<number | null>(null);
   const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
+  const [orgNombre, setOrgNombre] = useState<string | null>(null);
   const toastIdRef = useRef(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -60,16 +63,34 @@ const Dashboard: React.FC = () => {
     };
   }, []);
 
-  // Obtener iniciales del usuario
+  // Obtener iniciales del usuario + nombre de organización
   useEffect(() => {
-    if (username) {
-      const initials = username
-        .split(' ')
-        .slice(0, 2)
-        .map(word => word.charAt(0).toUpperCase())
-        .join('');
-      setUserInitials(initials || username.charAt(0).toUpperCase());
-    }
+    if (!username) return;
+    const initials = username
+      .split(' ')
+      .slice(0, 2)
+      .map(word => word.charAt(0).toUpperCase())
+      .join('');
+    setUserInitials(initials || username.charAt(0).toUpperCase());
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    fetch('http://localhost:8080/api/v1/usuarios/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(async userData => {
+        if (!userData?.organizacionId) return;
+        const orgRes = await fetch(
+          `http://localhost:8080/api/v1/organizaciones?id=${userData.organizacionId}&size=1`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!orgRes.ok) return;
+        const orgData = await orgRes.json();
+        const nombre = orgData?.content?.[0]?.nombre;
+        if (nombre) setOrgNombre(nombre);
+      })
+      .catch(() => {});
   }, [username]);
 
   const handlePendientesChange = useCallback((count: number) => {
@@ -146,6 +167,13 @@ const Dashboard: React.FC = () => {
           </nav>
         </div>
 
+        {/* Center Section: Org name */}
+        {orgNombre && (
+          <div className="header-center-section">
+            <span className="header-org-name">{orgNombre}</span>
+          </div>
+        )}
+
         {/* Right Section: Search, Notifications, Avatar */}
         <div className="header-right-section">
           <SearchBar 
@@ -183,7 +211,14 @@ const Dashboard: React.FC = () => {
               {userInitials}
             </button>
             <div className="user-dropdown">
-              <button className="dropdown-item" onClick={handleLogout}>
+              <button className="dropdown-item" onClick={() => { setIsDropdownOpen(false); setShowChangePassword(true); }}>
+                🔐 Cambiar contraseña
+              </button>
+              <button className="dropdown-item" onClick={() => { setIsDropdownOpen(false); setActiveTab('perfil'); }}>
+                ✏️ Editar perfil
+              </button>
+              <div className="dropdown-divider" />
+              <button className="dropdown-item dropdown-item--danger" onClick={handleLogout}>
                 Cerrar sesión
               </button>
             </div>
@@ -200,6 +235,10 @@ const Dashboard: React.FC = () => {
 
       {selectedOrgId !== null && (
         <OrganizacionModal orgId={selectedOrgId} onClose={() => setSelectedOrgId(null)} />
+      )}
+
+      {showChangePassword && (
+        <ChangePasswordModal onClose={() => setShowChangePassword(false)} />
       )}
     </div>
   );
