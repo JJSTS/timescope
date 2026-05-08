@@ -405,6 +405,7 @@
 .tasks-list {
   display: flex;
   flex-direction: column;
+    gap: 0.3rem;
 }
 
 .task-list-item {

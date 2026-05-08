@@ -1,9 +1,13 @@
 package es.timescope.rest.Tareas.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Builder
 @AllArgsConstructor
@@ -17,5 +21,8 @@ public class TareaCreateDto {
     private final String descripcion;
 
     private final Long proyectoId;
+    private BigDecimal horasEstimadas;
 
+    @NotNull(message = "La Tarea debe tener una fecha límite")
+    private LocalDateTime fechaLimite;
 }

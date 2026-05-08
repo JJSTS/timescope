@@ -7,7 +7,9 @@ interface Task {
   descripcion: string;
   estado: string;
   proyecto?: string;
+  horasEstimadas?: number;
   fechaLimite?: string;
+  fechaCreacion?: string;
 }
 
 interface TaskCalendarProps {
@@ -121,19 +123,24 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ tasks }) => {
                 <>
                   <div className="day-number">{day}</div>
                   {dayTasks.length > 0 && (
-                    <div className="day-tasks">
-                      {dayTasks.slice(0, 2).map((task) => (
-                        <div
-                          key={task.id}
-                          className={`task-dot task-${task.estado.toLowerCase()}`}
-                          title={task.nombre}
-                        >
-                          •
-                        </div>
-                      ))}
-                      {dayTasks.length > 2 && (
-                        <span className="task-count">+{dayTasks.length - 2}</span>
-                      )}
+                    <div className="day-tasks-list">
+                      {dayTasks.map((task) => {
+                        const taskDate = task.fechaLimite ? new Date(task.fechaLimite) : null;
+                        const formattedDate = taskDate ?
+                          taskDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })
+                          : '';
+
+                        return (
+                          <div
+                            key={task.id}
+                            className={`task-item task-${task.estado?.toLowerCase() || 'pendiente'}`}
+                            title={`${task.nombre} - ${formattedDate}`}
+                          >
+                            <span className="task-name">{task.nombre}</span>
+                            {formattedDate && <span className="task-date">{formattedDate}</span>}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </>

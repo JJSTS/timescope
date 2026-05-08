@@ -10,7 +10,9 @@ interface Task {
   descripcion: string;
   estado: string;
   proyecto?: string;
+  horasEstimadas?: number;
   fechaLimite?: string;
+  fechaCreacion?: string;
 }
 
 interface User {

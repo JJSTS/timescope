@@ -7,6 +7,9 @@ interface Tarea {
   nombre: string;
   descripcion: string;
   estado: string;
+  horasEstimadas?: number;
+  fechaLimite?: string;
+  fechaCreacion?: string;
   usuarioId: number;
 }
 

@@ -6,6 +6,7 @@ import es.timescope.rest.Usuarios.models.Usuario;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Builder
@@ -32,6 +33,12 @@ public class Tarea {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private Estado estado = Estado.ACTIVO;
+
+    @Column(precision = 5, scale = 2)
+    private BigDecimal horasEstimadas;
+
+    @Column(nullable = false)
+    private LocalDateTime fechaLimite;
 
     @Builder.Default
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")

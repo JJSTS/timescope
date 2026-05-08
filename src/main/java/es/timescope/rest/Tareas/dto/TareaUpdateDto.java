@@ -1,7 +1,6 @@
 package es.timescope.rest.Tareas.dto;
 
 import es.timescope.rest.Tareas.models.Estado;
-import es.timescope.rest.Usuarios.models.Usuario;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -10,6 +9,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Builder
 @Data
@@ -23,6 +25,10 @@ public class TareaUpdateDto {
     private String descripcion;
 
     private Estado estado;
+
+    private BigDecimal horasEstimadas;
+
+    private LocalDateTime fechaLimite;
 
     private String usuario;
 }

@@ -21,6 +21,8 @@ public class TareasMapper {
                 .id(null)
                 .nombre(tareaCreateDto.getNombre())
                 .descripcion(tareaCreateDto.getDescripcion())
+                .horasEstimadas(tareaCreateDto.getHorasEstimadas())
+                .fechaLimite(tareaCreateDto.getFechaLimite())
                 .fechaCreacion(LocalDateTime.now())
                 .usuario(usuario)
                 .build();
@@ -32,6 +34,8 @@ public class TareasMapper {
                 .id(null)
                 .nombre(tareaCreateDto.getNombre())
                 .descripcion(tareaCreateDto.getDescripcion())
+                .horasEstimadas(tareaCreateDto.getHorasEstimadas())
+                .fechaLimite(tareaCreateDto.getFechaLimite())
                 .fechaCreacion(LocalDateTime.now())
                 .build();
     }
@@ -52,6 +56,8 @@ public class TareasMapper {
                 .nombre(tareaUpdateDto.getNombre() != null ? tareaUpdateDto.getNombre() : tarea.getNombre())
                 .descripcion(tareaUpdateDto.getDescripcion() != null ? tareaUpdateDto.getDescripcion() : tarea.getDescripcion())
                 .estado(tareaUpdateDto.getEstado() != null ? tareaUpdateDto.getEstado() : tarea.getEstado())
+                .horasEstimadas(tareaUpdateDto.getHorasEstimadas() != null ? tareaUpdateDto.getHorasEstimadas() : tarea.getHorasEstimadas())
+                .fechaLimite(tareaUpdateDto.getFechaLimite() != null ? tareaUpdateDto.getFechaLimite() : tarea.getFechaLimite())
                 .fechaCreacion(tarea.getFechaCreacion())
                 .usuario(usuario != null ? usuario : tarea.getUsuario())
                 .proyecto(tarea.getProyecto())
@@ -64,6 +70,8 @@ public class TareasMapper {
                 .nombre(tarea.getNombre())
                 .descripcion(tarea.getDescripcion())
                 .estado(tarea.getEstado())
+                .horasEstimadas(tarea.getHorasEstimadas())
+                .fechaLimite(tarea.getFechaLimite())
                 .fechaCreacion(tarea.getFechaCreacion())
                 .usuario(tarea.getUsuario() != null ? tarea.getUsuario().getNombres() : null)
                 .proyectoId(tarea.getProyecto() != null ? tarea.getProyecto().getId() : null)
