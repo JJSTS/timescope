@@ -3,6 +3,7 @@ package es.timescope.rest.Organizaciones.controllers;
 import es.timescope.rest.Organizaciones.dto.OrganizacionCreateDto;
 import es.timescope.rest.Organizaciones.dto.OrganizacionResponseDto;
 import es.timescope.rest.Organizaciones.services.OrganizacionServices;
+import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.utils.pagination.PaginationLinksUtils;
 import es.timescope.utils.pagination.PageResponse;
@@ -19,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -121,6 +123,12 @@ public class OrganizacionesRestController {
             @PathVariable Long usuarioId) {
         log.info("Eliminando director {} de org {}", usuarioId, id);
         return ResponseEntity.ok(service.removeDirector(id, usuarioId));
+    }
+
+    @GetMapping("/{id}/miembros")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<UsuarioResponseDto>> getMiembros(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getMiembros(id));
     }
 
     @PatchMapping("/{orgId}/usuarios/{usuarioId}/rol")

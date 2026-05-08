@@ -7,7 +7,9 @@ import es.timescope.rest.Organizaciones.mappers.OrganizacionesMapper;
 import es.timescope.rest.Organizaciones.models.Organizacion;
 import es.timescope.rest.Organizaciones.repositories.OrganizacionesRepository;
 import es.timescope.rest.Proyectos.repositories.ProyectosRepository;
+import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 import es.timescope.rest.Usuarios.exceptions.UsuarioNotFound;
+import es.timescope.rest.Usuarios.mappers.UsuariosMapper;
 import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.Usuarios.models.UsuarioOrgRol;
@@ -17,6 +19,7 @@ import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -27,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrganizacionServicesImpl implements OrganizacionServices {
@@ -36,6 +40,7 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
     private final UsuariosRepository usuariosRepository;
     private final UsuarioOrgRolRepository usuarioOrgRolRepository;
     private final AuthUtils authUtils;
+    private final UsuariosMapper usuariosMapper;
 
     private Organizacion getEntity(Long id) {
         return repository.findById(id)
@@ -211,6 +216,14 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
                 .build());
 
         log.info("Rol {} asignado al usuario {} en org {}", rol, usuarioId, orgId);
+    }
+
+    @Override
+    public List<UsuarioResponseDto> getMiembros(Long orgId) {
+        return getEntity(orgId).getUsuarios()
+                .stream()
+                .map(usuariosMapper::toUsuarioResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override

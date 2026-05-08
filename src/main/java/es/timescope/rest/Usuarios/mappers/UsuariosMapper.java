@@ -34,6 +34,7 @@ public class UsuariosMapper {
                 .email(usuario.getEmail())
                 .roles(usuario.getRoles())
                 .isDeleted(usuario.getIsDeleted())
+                .organizacionId(usuario.getOrganizacion() != null ? usuario.getOrganizacion().getId() : null)
                 .build();
     }
 

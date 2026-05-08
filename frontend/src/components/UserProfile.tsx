@@ -21,7 +21,8 @@ interface User {
   apellidos: string;
   username: string;
   email: string;
-  roles?: string[];  // Array de roles
+  roles?: string[];
+  organizacionId?: number;
 }
 
 interface TeamMember {
@@ -90,19 +91,15 @@ const UserProfile: React.FC = () => {
           console.error('Detalle del error:', errorText);
         }
 
-        // Obtener miembros del equipo
-        const teamUrl = `http://localhost:8080/api/v1/usuarios?size=50`;
-        const teamResponse = await fetch(teamUrl, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (teamResponse.ok) {
-          const teamData = await teamResponse.json();
-          const teamArray = Array.isArray(teamData) ? teamData : (teamData.content || []);
-          setTeamMembers(teamArray);
+        // Obtener miembros de la organización del usuario
+        if (userData.organizacionId) {
+          const teamResponse = await fetch(
+            `http://localhost:8080/api/v1/organizaciones/${userData.organizacionId}/miembros`,
+            { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+          );
+          if (teamResponse.ok) {
+            setTeamMembers(await teamResponse.json());
+          }
         }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
