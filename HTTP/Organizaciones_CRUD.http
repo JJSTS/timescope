@@ -1,0 +1,81 @@
+### =============================================
+### ORGANIZACIONES - CRUD
+### Base URL: http://localhost:8080/api/v1/organizaciones
+### =============================================
+
+### GET ALL - Obtener todas las organizaciones (paginado)
+GET http://localhost:8080/api/v1/organizaciones
+    ?page=0
+    &size=10
+    &sortBy=id
+    &direction=asc
+
+###
+
+### GET ALL - Filtrar por nombre
+GET http://localhost:8080/api/v1/organizaciones
+    ?nombre=TimeScope Corp
+    &page=0
+    &size=10
+
+###
+
+### GET ALL - Filtrar por isDeleted
+GET http://localhost:8080/api/v1/organizaciones
+    ?isDeleted=false
+    &page=0
+    &size=10
+
+###
+
+### GET ALL - Filtrar por id
+GET http://localhost:8080/api/v1/organizaciones
+    ?id=1
+
+###
+
+### POST - Crear nueva organización
+POST http://localhost:8080/api/v1/organizaciones
+Content-Type: application/json
+
+{
+  "nombre": "Nueva Organización",
+  "empresaMatrizId": 1
+}
+
+###
+
+### POST - Crear organización matriz
+POST http://localhost:8080/api/v1/organizaciones
+Content-Type: application/json
+
+{
+  "nombre": "Organización Matriz"
+}
+
+###
+
+### DELETE - Eliminar organización por ID
+DELETE http://localhost:8080/api/v1/organizaciones/1
+
+###
+
+### GET - Obtener filiales de una organización
+GET http://localhost:8080/api/v1/organizaciones/1/filiales
+
+###
+
+### GET - Obtener empresa matriz de una organización
+GET http://localhost:8080/api/v1/organizaciones/2/matriz
+
+###
+
+### POST - Añadir proyecto a organización
+POST http://localhost:8080/api/v1/organizaciones/1/proyectos/1
+
+###
+
+### POST - Añadir usuario a organización
+POST http://localhost:8080/api/v1/organizaciones/1/usuarios/1
+
+###

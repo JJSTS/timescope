@@ -1,6 +1,8 @@
 package es.timescope.rest.Usuarios.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import es.timescope.rest.Organizaciones.models.Organizacion;
 import es.timescope.rest.Proyectos.models.Proyecto;
 import es.timescope.rest.Tareas.models.Tarea;
 import jakarta.persistence.*;
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Builder
 @Entity
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
@@ -72,11 +75,19 @@ public class Usuario implements UserDetails {
     @ToString.Exclude
     private List<Proyecto> proyectos;
 
-//    Spring Security
+    @ManyToOne
+    @JoinColumn(name = "organizacion_id")
+    @JsonIgnore
+    @ToString.Exclude
+    private Organizacion organizacion;
+
     @Override
     public String getUsername() {
-        return username;
+        return this.username;
     }
+
+    @Override
+    public String getPassword() { return this.password; }
 
     @Override
     public boolean isAccountNonExpired() {

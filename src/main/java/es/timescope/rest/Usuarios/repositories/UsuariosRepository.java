@@ -42,5 +42,7 @@ public interface UsuariosRepository extends JpaRepository<Usuario, Long>, JpaSpe
     @Modifying
     void asingRolUsuario(Long id, Roles rol);
 
+    Usuario findByUsernameIgnoreCase (String username);
+
     Usuario findByNombres(String nombres);
 }

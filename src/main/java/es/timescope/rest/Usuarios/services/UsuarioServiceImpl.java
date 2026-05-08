@@ -5,7 +5,6 @@ import es.timescope.rest.Emails.services.UsuarioEmailService;
 import es.timescope.rest.Usuarios.dto.UsuarioCreateDto;
 import es.timescope.rest.Usuarios.dto.UsuarioInfoResponse;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
-import es.timescope.rest.Usuarios.dto.UsuarioUpdateDto;
 import es.timescope.rest.Usuarios.exceptions.UsuarioNombreOrEmailExists;
 import es.timescope.rest.Usuarios.exceptions.UsuarioNotFound;
 import es.timescope.rest.Usuarios.mappers.UsuariosMapper;
@@ -73,22 +72,6 @@ public class UsuarioServiceImpl implements UsuariosService {
     }
 
     @Override
-    @CachePut(key = "#result.id")
-    public UsuarioResponseDto save(UsuarioCreateDto usuarioCreateDto) {
-        log.info("Guardando usuario: {}", usuarioCreateDto);
-        Usuario usuario = usuarioMapper.toUsuario(usuarioCreateDto);
-        usuario.setRoles(Set.of(Roles.DESARROLLADOR));
-        usuario.setIsDeleted(false);
-
-        usuariosRepository.findByUsernameEqualsIgnoreCaseOrEmailEqualsIgnoreCase(usuarioCreateDto.getUsername(), usuarioCreateDto.getEmail())
-                .ifPresent(u -> {
-                    throw new UsuarioNombreOrEmailExists("Ya existe un usuario con ese username o email");
-                });
-        usuarioEmailService.enviarConfirmacionCreacion(usuario);
-        return usuarioMapper.toUsuarioResponseDto(usuariosRepository.save(usuario));
-    }
-
-    @Override
     public UsuarioResponseDto update(Long id, UsuarioCreateDto userRequest) {
         log.info("Buscando el usuario con id: {}", id);
         usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
@@ -103,30 +86,6 @@ public class UsuarioServiceImpl implements UsuariosService {
     }
 
     @Override
-    @CachePut(key = "#id")
-    public UsuarioResponseDto updatePartial(Long id, UsuarioUpdateDto userRequest) {
-        log.info("Actualizando parcialmente el usuario con id: {}", id);
-        Usuario usuario = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
-
-        // Validar que username o email no existan (si se están actualizando)
-        if ((userRequest.getUsername() != null && !userRequest.getUsername().isBlank()) ||
-            (userRequest.getEmail() != null && !userRequest.getEmail().isBlank())) {
-            usuariosRepository.findByUsernameEqualsIgnoreCaseOrEmailEqualsIgnoreCase(
-                    userRequest.getUsername() != null ? userRequest.getUsername() : usuario.getUsername(),
-                    userRequest.getEmail() != null ? userRequest.getEmail() : usuario.getEmail())
-                    .ifPresent(u -> {
-                        if (!u.getId().equals(id)) {
-                            throw new UsuarioNombreOrEmailExists("Ya existe un usuario con ese username o email");
-                        }
-                    });
-        }
-
-        // Actualizar solo los campos que no sean null
-        usuarioMapper.updateUsuarioFromDto(userRequest, usuario);
-        return usuarioMapper.toUsuarioResponseDto(usuariosRepository.save(usuario));
-    }
-
-    @Override
     @Transactional
     public void asignarRol(Long id, Roles role) {
         log.info("Asignando un rol al usuario con id: {}", id);
@@ -134,35 +93,5 @@ public class UsuarioServiceImpl implements UsuariosService {
         usuario.getRoles().clear();
         usuario.getRoles().add(role);
         usuariosRepository.save(usuario);
-    }
-
-    @Override
-    @Transactional
-    public void deleteById(Long id) {
-        log.info("Borrando usuario por id: {}", id);
-        Usuario user = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
-        if (usuariosRepository.existsProyectosByUsuarioId(id) && usuariosRepository.existsTareasByUsuarioId(id)) {
-            log.info("Borrado lógico de usuario por id: {}", id);
-            usuariosRepository.updateIsDeletedToTrueById(id);
-        } else {
-            log.info("Borrado físico de usuario por id: {}", id);
-            usuariosRepository.delete(user);
-        }
-    }
-
-    @Override
-    public List<Usuario> findAllActiveUsuarios() {
-        log.info("Buscando todos los usuarios activos");
-        return usuariosRepository.findAllByIsDeletedFalse();
-    }
-
-    @Override
-    public Optional<Usuario> findByUsuarioname(String username) {
-        return usuariosRepository.findByUsername(username);
-    }
-
-    @Override
-    public void save(Usuario user) {
-        usuariosRepository.save(user);
     }
 }

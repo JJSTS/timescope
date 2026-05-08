@@ -1,6 +1,6 @@
 package es.timescope.rest.Proyectos.controllers;
 
-import es.timescope.rest.Proyectos.dto.ProyectoResponseDto;
+import es.timescope.rest.Proyectos.dto.*;
 import es.timescope.rest.Proyectos.models.Estado;
 import es.timescope.rest.Proyectos.services.ProyectoServices;
 import es.timescope.utils.pagination.PageResponse;
@@ -39,12 +39,14 @@ public class ProyectosRestController {
             @RequestParam(defaultValue = "asc") String direction,
             HttpServletRequest request
     ){
-        log.info("findAll: id: {}, nombre: {}, isDeleted: {}, page: {}, size: {}, sortBy: {}, direction: {}",
-                id, nombre, isDeleted, page, size, sortBy, direction);
         Sort sort = Sort.by(sortBy).ascending();
-        if ("desc".equalsIgnoreCase(direction)) sort = Sort.by(sortBy).descending();
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(request.getRequestURL().toString());
         Page<ProyectoResponseDto> pageResult = proyectoServices.findAll(id, nombre, isDeleted, PageRequest.of(page, size, sort));
+
+        log.info("findAll: id: {}, nombre: {}, isDeleted: {}, page: {}, size: {}, sortBy: {}, direction: {}",
+                id, nombre, isDeleted, page, size, sortBy, direction);
+        if ("desc".equalsIgnoreCase(direction)) sort = Sort.by(sortBy).descending();
+
         return ResponseEntity.ok()
                 .header("link", paginationLinksUtils.createLinkHeader(pageResult, uriBuilder))
                 .body(PageResponse.of(pageResult, sortBy, direction));
@@ -78,7 +80,16 @@ public class ProyectosRestController {
     }
 
     @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
-    @PostMapping("/usuario/{id}")
+    @PostMapping
+    public ResponseEntity<ProyectoResponseDto> createProyecto(@RequestBody ProyectoCreateDto proyectoCreateDto) {
+        log.info("Recibiendo solicitud para crear proyecto: {}", proyectoCreateDto);
+        ProyectoResponseDto proyecto = proyectoServices.save(proyectoCreateDto);
+        return ResponseEntity.ok(proyecto);
+    }
+
+
+    @PutMapping("/usuario/{id}")
+    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
     public ResponseEntity<ProyectoResponseDto> addUsuario(
             @PathVariable Long id,
             @RequestParam String username

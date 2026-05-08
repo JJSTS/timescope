@@ -1,6 +1,7 @@
 package es.timescope.rest.Tareas.repositories;
 
 import es.timescope.rest.Tareas.models.Tarea;
+import es.timescope.rest.Tareas.models.Estado;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +19,7 @@ public interface TareasRepository extends JpaRepository<Tarea, Long>, JpaSpecifi
 
     @Query("SELECT t FROM Tarea t WHERE t.usuario.id = :usuarioId")
     Page<Tarea> findByUsuarioId(Long usuarioId, Pageable pageable);
+    
+    @Query("SELECT t FROM Tarea t WHERE t.usuario.id = :usuarioId AND t.estado = :estado")
+    List<Tarea> findByUsuarioIdAndEstado(Long usuarioId, Estado estado);
 }
