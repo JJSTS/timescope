@@ -5,93 +5,56 @@ interface AuthContextType {
   logout: () => void;
   login: (username: string, token: string) => void;
   username?: string;
-  setIsAuthenticated: (value: boolean) => void;
-  setUsername: (value: string | undefined) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState<string>();
-
-  // Al cargar el componente, verificar si hay sesión guardada
-  useEffect(() => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    // Inicializa el estado directamente desde localStorage
     const token = localStorage.getItem('token');
-    const storedUsername = localStorage.getItem('username');
-    console.log('AuthProvider inicializado. Token:', !!token, 'Username:', storedUsername);
+    return !!token;
+  });
+  const [username, setUsername] = useState<string | undefined>(() => {
+    // Inicializa el username directamente desde localStorage
+    return localStorage.getItem('username') || undefined;
+  });
 
-    if (token && storedUsername) {
-      setIsAuthenticated(true);
-      setUsername(storedUsername);
-      console.log('Sesión restaurada desde localStorage:', storedUsername);
-    }
-  }, []);
-
-  // Monitorear cambios en localStorage (cuando otro tab hace cambios)
+  // Efecto para escuchar cambios en otras pestañas
   useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      console.log('Storage cambió. Event:', e.key);
-      const token = localStorage.getItem('token');
-      const storedUsername = localStorage.getItem('username');
-
-      if (token && storedUsername) {
-        setIsAuthenticated(true);
-        setUsername(storedUsername);
-        console.log('Usuario actualizado desde storage:', storedUsername);
-      } else {
-        setIsAuthenticated(false);
-        setUsername(undefined);
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'token') {
+        const token = event.newValue;
+        setIsAuthenticated(!!token);
+      }
+      if (event.key === 'username') {
+        setUsername(event.newValue || undefined);
       }
     };
 
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
-  // Monitorear cambios manuales en localStorage desde la misma ventana
-  // Esto se llama cuando LoginForm guarda el username
-  useEffect(() => {
-    const checkLocalStorage = () => {
-      const token = localStorage.getItem('token');
-      const storedUsername = localStorage.getItem('username');
-
-      if (token && storedUsername && storedUsername !== username) {
-        console.log('Username cambió en localStorage:', storedUsername);
-        setIsAuthenticated(true);
-        setUsername(storedUsername);
-        console.log('Username actualizado en AuthContext:', storedUsername);
-      }
-    };
-
-    // Verificar inmediatamente
-    checkLocalStorage();
-
-    // Y también crear un intervalo de chequeo frecuente (para la misma ventana)
-    const interval = setInterval(checkLocalStorage, 100);
-    return () => clearInterval(interval);
-  }, [username]);
-
-  const logout = () => {
-    console.log('Logout ejecutado');
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
-    setIsAuthenticated(false);
-    setUsername(undefined);
-  };
-
   const login = (newUsername: string, token: string) => {
-    console.log('Login ejecutado para usuario:', newUsername);
     localStorage.setItem('token', token);
     localStorage.setItem('username', newUsername);
-    setIsAuthenticated(true);
     setUsername(newUsername);
+    setIsAuthenticated(true);
   };
 
-  console.log('AuthContext render. Username:', username, 'IsAuth:', isAuthenticated);
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    setUsername(undefined);
+    setIsAuthenticated(false);
+  };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, logout, login, username, setUsername, setIsAuthenticated }}>
+    <AuthContext.Provider value={{ isAuthenticated, username, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -99,9 +62,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth debe ser usado dentro de AuthProvider');
+  if (context === undefined) {
+    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
   }
   return context;
 };
-

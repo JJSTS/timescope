@@ -34,16 +34,31 @@ const Dashboard: React.FC = () => {
   const { isAuthenticated, logout, username } = useAuth();
   const [activeTab, setActiveTab] = useState<'perfil' | 'tareas' | 'proyectos' | 'equipo'>('perfil');
   const [notifOpen, setNotifOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [pendientesCount, setPendientesCount] = useState(0);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [userInitials, setUserInitials] = useState('');
   const [highlightedId, setHighlightedId] = useState<number | null>(null);
   const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
   const toastIdRef = useRef(0);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isAuthenticated) navigate('/');
   }, [isAuthenticated, navigate]);
+
+  // Efecto para cerrar el dropdown si se hace clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Obtener iniciales del usuario
   useEffect(() => {
@@ -158,10 +173,15 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* User Avatar with Dropdown */}
-          <div className="user-avatar-menu">
-            <div className="user-avatar" title={username}>
+          <div className={`user-avatar-menu ${isDropdownOpen ? 'open' : ''}`} ref={dropdownRef}>
+            <button
+              type="button"
+              className="user-avatar"
+              title={username}
+              onClick={() => setIsDropdownOpen(prev => !prev)}
+            >
               {userInitials}
-            </div>
+            </button>
             <div className="user-dropdown">
               <button className="dropdown-item" onClick={handleLogout}>
                 Cerrar sesión

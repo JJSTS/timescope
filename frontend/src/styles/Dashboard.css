@@ -194,6 +194,7 @@
 /* User Avatar with Dropdown */
 .user-avatar-menu {
   position: relative;
+  z-index: 200; /* Asegura que esté por encima de otros elementos */
 }
 
 .user-avatar {
@@ -231,10 +232,17 @@
   overflow: hidden;
   display: none;
   z-index: 150;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
 }
 
-.user-avatar-menu:hover .user-dropdown {
+.user-avatar-menu.open .user-dropdown {
   display: block;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .dropdown-item {

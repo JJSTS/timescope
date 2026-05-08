@@ -219,7 +219,10 @@ const UserProfile: React.FC = () => {
                 {/* Tasks List */}
                 <div className="tasks-list">
                   {visibleTasks.map((task) => (
-                    <div key={task.id} className="task-list-item">
+                    <div
+                      key={task.id}
+                      className={`task-list-item status-${task.estado?.toLowerCase() || 'pendiente'}`}
+                    >
                       <div className="task-list-left">
                         <div className="task-list-title-row">
                           <h3 className="task-list-title">{task.nombre}</h3>
