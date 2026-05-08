@@ -4,7 +4,7 @@
 /*al encho de la pantalla */
 .profile-container {
   min-height: 100%;
-  background: #fafbfc;
+  background: var(--ts-bg);
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   color: #1a1a1a;
@@ -28,7 +28,7 @@
   width: 40px;
   height: 40px;
   border: 2px solid #e5e7eb;
-  border-top: 2px solid #5850b8;
+  border-top: 2px solid var(--ts-navy);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -102,7 +102,7 @@
   width: 60px;
   height: 60px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #5850b8 0%, #6d5acd 100%);
+  background: linear-gradient(135deg, var(--ts-navy) 0%, var(--ts-navy-light) 100%);
   color: white;
   display: flex;
   align-items: center;
@@ -110,7 +110,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(88, 80, 184, 0.15);
+  box-shadow: 0 2px 8px rgba(45, 74, 107, 0.18);
 }
 
 .user-info-expanded {
@@ -159,7 +159,7 @@
   width: 56px;
   height: 56px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #5850b8 0%, #6d5acd 100%);
+  background: linear-gradient(135deg, var(--ts-navy) 0%, var(--ts-navy-light) 100%);
   color: white;
   display: flex;
   align-items: center;
@@ -289,12 +289,12 @@
 }
 
 .header-btn-primary {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  background: linear-gradient(135deg, var(--ts-navy) 0%, var(--ts-navy-dark) 100%);
   color: white;
 }
 
 .header-btn-primary:hover {
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+  box-shadow: 0 4px 12px rgba(45, 74, 107, 0.28);
   transform: translateY(-1px);
 }
 
@@ -381,8 +381,8 @@
 
 .tasks-filter-btn:hover {
   background: white;
-  border-color: #5850b8;
-  color: #5850b8;
+  border-color: var(--ts-navy);
+  color: var(--ts-navy);
 }
 
 .count-badge {
@@ -395,7 +395,7 @@
   border-radius: 50%;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #5850b8;
+  color: var(--ts-navy);
 }
 
 /* ============================================
@@ -413,7 +413,7 @@
   padding: 0.55rem;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
-  border-left: 4px solid #5850b8;
+  border-left: 4px solid var(--ts-navy);
   border-radius: 6px;
   transition: all 0.2s ease;
   gap: 1rem;
@@ -421,8 +421,8 @@
 
 .task-list-item:hover {
   background: white;
-  border-left-color: #7c3aed;
-  box-shadow: 0 4px 12px rgba(88, 80, 184, 0.1);
+  border-left-color: var(--ts-navy);
+  box-shadow: 0 4px 12px rgba(45, 74, 107, 0.12);
 }
 
 /* Left Section - Title & Description */
@@ -490,7 +490,7 @@
 .task-list-date {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #5850b8;
+  color: var(--ts-navy);
 }
 
 /* Status Badge - Removed from right side (now in title row) */
@@ -560,8 +560,8 @@
 
 .pagination-btn:hover:not(:disabled) {
   background: white;
-  border-color: #5850b8;
-  color: #5850b8;
+  border-color: var(--ts-navy);
+  color: var(--ts-navy);
 }
 
 .pagination-btn:disabled {
@@ -581,7 +581,7 @@
 }
 
 .meta-value {
-  color: #5850b8;
+  color: var(--ts-navy);
   font-weight: 600;
 }
 
@@ -708,7 +708,7 @@
 .metric-number {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #5850b8;
+  color: var(--ts-navy);
 }
 
 /* ============================================
@@ -735,25 +735,25 @@
 }
 
 .action-btn.primary {
-  background: linear-gradient(135deg, #5850b8 0%, #6d5acd 100%);
+  background: linear-gradient(135deg, var(--ts-navy) 0%, var(--ts-navy-light) 100%);
   color: white;
   border: 1px solid transparent;
 }
 
 .action-btn.primary:hover {
-  box-shadow: 0 4px 12px rgba(88, 80, 184, 0.25);
+  box-shadow: 0 4px 12px rgba(45, 74, 107, 0.28);
   transform: translateY(-1px);
 }
 
 .action-btn.secondary {
   background: #f3f4f6;
-  color: #5850b8;
+  color: var(--ts-navy);
   border: 1px solid #e5e7eb;
 }
 
 .action-btn.secondary:hover {
   background: #e5e7eb;
-  border-color: #5850b8;
+  border-color: var(--ts-navy);
 }
 
 /* ============================================
@@ -821,7 +821,7 @@
 }
 
 .team-member-avatar.role-supervisor {
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  background: linear-gradient(135deg, var(--ts-orange) 0%, var(--ts-orange-dark) 100%);
 }
 
 .team-member-avatar.role-empleado {

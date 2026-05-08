@@ -201,9 +201,9 @@
   color: white;
 }
 
-.sb-badge--proyecto     { background: #5850b8; }
-.sb-badge--tarea        { background: #0891b2; }
-.sb-badge--organizacion { background: #059669; }
+.sb-badge--proyecto     { background: var(--ts-navy); }
+.sb-badge--tarea        { background: var(--ts-blue); }
+.sb-badge--organizacion { background: var(--ts-green); }
 
 .sb-result-name {
   flex: 1;

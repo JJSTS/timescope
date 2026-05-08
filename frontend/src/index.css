@@ -16,8 +16,13 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #fafbfc;
-  color: #1a1a1a;
+  background: #f5f7fa;
+  color: #1e293b;
+}
+
+::selection {
+  background: rgba(42, 141, 203, 0.22);
+  color: #1e293b;
 }
 
 code {

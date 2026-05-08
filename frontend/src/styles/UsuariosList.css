@@ -25,7 +25,7 @@
 }
 
 .usuarios-table thead {
-  background: #f9fafb;
+  background: var(--ts-surface-soft);
 }
 
 .usuarios-table th {
@@ -51,7 +51,7 @@
 }
 
 .usuarios-table tbody tr:nth-child(even) {
-  background: #fcfcfd;
+  background: #fafbfc;
 }
 
 /* Buttons */
@@ -78,23 +78,24 @@
 }
 
 .btn-save {
-  background: #374151;
+  background: var(--ts-green);
   color: white;
 }
 
 .btn-save:hover {
-  background: #1f2937;
+  background: var(--ts-green-dark);
   transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(125, 178, 62, 0.28);
 }
 
 .btn-cancel {
-  background: #f3f4f6;
+  background: var(--ts-surface-soft);
   color: var(--ts-text);
   border: 1px solid var(--ts-border);
 }
 
 .btn-cancel:hover {
-  background: #e5e7eb;
+  background: var(--ts-border);
   transform: translateY(-1px);
 }
 
@@ -111,8 +112,8 @@
 
 .usuarios-table input:focus {
   outline: none;
-  border-color: var(--ts-accent);
-  box-shadow: 0 0 0 3px rgba(88, 80, 184, 0.12);
+  border-color: var(--ts-blue);
+  box-shadow: 0 0 0 3px rgba(42, 141, 203, 0.18);
 }
 
 /* Loading & Error */
@@ -128,9 +129,9 @@
 }
 
 .error-message {
-  background: #fff5f5;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
+  background: var(--ts-danger-soft);
+  color: var(--ts-danger);
+  border: 1px solid #f4c4c4;
 }
 
 .loading {

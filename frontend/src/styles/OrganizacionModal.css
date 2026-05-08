@@ -39,7 +39,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem 1.75rem;
-  background: linear-gradient(135deg, #5850b8 0%, #6d5acd 100%);
+  background: linear-gradient(135deg, var(--ts-navy) 0%, var(--ts-blue) 100%);
 }
 
 .org-modal-title-row {
@@ -114,7 +114,7 @@
   width: 28px;
   height: 28px;
   border: 3px solid var(--ts-border);
-  border-top-color: #5850b8;
+  border-top-color: var(--ts-navy);
   border-radius: 50%;
   animation: orgSpin 0.7s linear infinite;
 }
@@ -124,9 +124,9 @@
 }
 
 .org-error {
-  color: #dc2626;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  color: var(--ts-danger);
+  background: var(--ts-danger-soft);
+  border: 1px solid #f4c4c4;
   border-radius: 6px;
   padding: 0.75rem 1rem;
   font-size: 0.9rem;
@@ -154,7 +154,7 @@
 .org-stat-number {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #5850b8;
+  color: var(--ts-navy);
   line-height: 1;
 }
 
@@ -227,7 +227,7 @@
 .org-solicitud-btn {
   width: 100%;
   padding: 0.875rem;
-  background: linear-gradient(135deg, #5850b8 0%, #6d5acd 100%);
+  background: linear-gradient(135deg, var(--ts-navy) 0%, var(--ts-blue) 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -242,7 +242,7 @@
 }
 
 .org-solicitud-btn:hover:not(:disabled) {
-  box-shadow: 0 4px 14px rgba(88, 80, 184, 0.3);
+  box-shadow: 0 4px 14px rgba(45, 74, 107, 0.32);
   transform: translateY(-1px);
 }
 
@@ -267,10 +267,10 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.875rem;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
+  background: var(--ts-green-soft);
+  border: 1px solid rgba(125, 178, 62, 0.4);
   border-radius: 8px;
-  color: #15803d;
+  color: var(--ts-green-dark);
   font-size: 0.9rem;
   font-weight: 600;
 }
@@ -282,9 +282,9 @@
 
 .org-solicitud-error {
   font-size: 0.82rem;
-  color: #dc2626;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  color: var(--ts-danger);
+  background: var(--ts-danger-soft);
+  border: 1px solid #f4c4c4;
   border-radius: 6px;
   padding: 0.6rem 0.875rem;
   margin: 0;
