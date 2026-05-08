@@ -1,0 +1,280 @@
+/* ============================================
+   NOTIFICACIONES PANEL
+   ============================================ */
+
+.notif-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 360px;
+  max-height: 520px;
+  background: var(--ts-surface);
+  border: 1px solid var(--ts-border);
+  border-radius: 12px;
+  box-shadow: var(--ts-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  animation: notifSlideIn 0.18s ease;
+  overflow: hidden;
+}
+
+@keyframes notifSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.notif-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--ts-border-soft);
+  flex-shrink: 0;
+}
+
+.notif-panel-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ts-text);
+}
+
+.notif-marcar-todas {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.78rem;
+  color: var(--ts-accent);
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.notif-marcar-todas:hover {
+  background: var(--ts-accent-soft);
+}
+
+/* Tabs */
+.notif-tabs {
+  display: flex;
+  padding: 0 1.25rem;
+  gap: 0;
+  border-bottom: 1px solid var(--ts-border);
+  flex-shrink: 0;
+}
+
+.notif-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.6rem 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--ts-muted);
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.notif-tab.active {
+  color: var(--ts-accent);
+  border-bottom-color: var(--ts-accent);
+}
+
+.notif-tab:hover:not(.active) {
+  color: var(--ts-text);
+}
+
+.notif-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--ts-accent);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  border-radius: 99px;
+  line-height: 1;
+}
+
+/* List */
+.notif-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem 0;
+}
+
+.notif-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.notif-list::-webkit-scrollbar-thumb {
+  background: var(--ts-muted-2);
+  border-radius: 4px;
+}
+
+/* Estado vacío / cargando / error */
+.notif-estado {
+  padding: 2rem 1.25rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--ts-muted);
+}
+
+.notif-error {
+  color: var(--ts-danger);
+}
+
+.notif-vacia {
+  color: var(--ts-muted-2);
+}
+
+/* Notificación individual */
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--ts-border-soft);
+}
+
+.notif-item:last-child {
+  border-bottom: none;
+}
+
+.notif-item:hover {
+  background: var(--ts-surface-soft);
+}
+
+.notif-item-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+  line-height: 1;
+}
+
+.notif-item-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.notif-tipo {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ts-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.notif-mensaje {
+  font-size: 0.85rem;
+  color: var(--ts-text);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.notif-fecha {
+  font-size: 0.73rem;
+  color: var(--ts-muted-2);
+}
+
+/* Botón marcar leída */
+.notif-leer-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ts-border);
+  background: none;
+  cursor: pointer;
+  color: var(--ts-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: all 0.15s;
+  margin-top: 2px;
+}
+
+.notif-leer-btn:hover:not(:disabled) {
+  border-color: var(--ts-accent);
+  background: var(--ts-accent-soft);
+  color: var(--ts-accent);
+}
+
+.notif-leer-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ── Botones Aceptar / Rechazar dentro de la tarjeta de notificación ── */
+.notif-solicitud-acciones {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.solicitud-btn {
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  border: 1.5px solid transparent;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.solicitud-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.solicitud-btn-aceptar {
+  background: var(--ts-green-soft);
+  border-color: rgba(125, 178, 62, 0.45);
+  color: var(--ts-green-dark);
+}
+
+.solicitud-btn-aceptar:hover:not(:disabled) {
+  background: rgba(125, 178, 62, 0.18);
+  border-color: var(--ts-green);
+}
+
+.solicitud-btn-rechazar {
+  background: var(--ts-danger-soft);
+  border-color: rgba(201, 62, 62, 0.35);
+  color: var(--ts-danger);
+}
+
+.solicitud-btn-rechazar:hover:not(:disabled) {
+  background: rgba(201, 62, 62, 0.14);
+  border-color: var(--ts-danger);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .notif-panel {
+    width: calc(100vw - 1rem);
+    right: -0.5rem;
+  }
+}

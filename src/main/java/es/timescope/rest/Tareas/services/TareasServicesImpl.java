@@ -1,5 +1,6 @@
 package es.timescope.rest.Tareas.services;
 
+import es.timescope.config.auth.AuthUtils;
 import es.timescope.rest.Notificacion.models.Tipo;
 import es.timescope.rest.Notificacion.service.NotificacionService;
 import es.timescope.rest.Proyectos.repositories.ProyectosRepository;
@@ -14,8 +15,11 @@ import es.timescope.rest.Usuarios.exceptions.UsuarioNotFound;
 import es.timescope.rest.Tareas.mappers.TareasMapper;
 import es.timescope.rest.Tareas.models.Tarea;
 import es.timescope.rest.Tareas.repositories.TareasRepository;
+import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import jakarta.persistence.criteria.Join;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +43,7 @@ public class TareasServicesImpl implements TareasServices {
     private final UsuariosRepository usuariosRepository;
     private final ProyectosRepository proyectosRepository;
     private final NotificacionService notificacionService;
+    private final AuthUtils authUtils;
 
     @Override
     public Page<TareaResponseDto> findAll(Optional<String> usuario, Optional<String> estado, Pageable pageable){
@@ -103,8 +108,22 @@ public class TareasServicesImpl implements TareasServices {
     @Override
     public TareaResponseDto updateTarea(Long id, TareaUpdateDto tareaUpdateDto) {
         log.info("Actualizando tarea con id: {}", id);
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
         Tarea tareaOpt = tareasRepository.findById(id)
                 .orElseThrow(() -> new TareaNotFound(id));
+
+        // DESARROLLADOR solo puede editar sus propias tareas
+        boolean soloDesarrollador = !caller.getRoles().contains(Roles.DIRECTOR)
+                && !caller.getRoles().contains(Roles.COORDINADOR)
+                && !caller.getRoles().contains(Roles.LIDER);
+        if (soloDesarrollador) {
+            boolean esSuTarea = tareaOpt.getUsuario() != null
+                    && tareaOpt.getUsuario().getId().equals(caller.getId());
+            if (!esSuTarea) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo puedes editar tus propias tareas");
+            }
+        }
+
         Usuario usuario = usuariosRepository.findByNombres(tareaUpdateDto.getUsuario());
         log.info("Usuario asociado a la tarea: {}", usuario);
         Tarea tarea = tareasRepository.save(tareasMapper.toTarea(tareaUpdateDto, tareaOpt, usuario));

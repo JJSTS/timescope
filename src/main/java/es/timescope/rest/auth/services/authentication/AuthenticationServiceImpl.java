@@ -3,6 +3,8 @@ package es.timescope.rest.auth.services.authentication;
 import es.timescope.config.auth.AuthUtils;
 import es.timescope.rest.Emails.services.EmailService;
 import es.timescope.rest.Emails.services.UsuarioEmailService;
+import es.timescope.rest.Organizaciones.models.Organizacion;
+import es.timescope.rest.Organizaciones.repositories.OrganizacionesRepository;
 import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
@@ -23,6 +25,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,6 +35,7 @@ import java.util.stream.Stream;
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
   private final AuthUsersRepository authUsersRepository;
+  private final OrganizacionesRepository organizacionesRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final AuthenticationManager authenticationManager;
@@ -53,6 +57,25 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           .build();
       try {
         var userStored = authUsersRepository.save(user);
+
+         // Si el usuario quiere crear una organización
+         if (request.getOrganizacion() != null && request.getOrganizacion().getNombre() != null &&
+             !request.getOrganizacion().getNombre().isBlank()) {
+           log.info("Creando organización: {}", request.getOrganizacion().getNombre());
+
+           Organizacion org = Organizacion.builder()
+               .nombre(request.getOrganizacion().getNombre())
+               .admin(userStored)
+               .build();
+
+           Organizacion orgCreated = organizacionesRepository.save(org);
+           userStored.setOrganizacion(orgCreated);
+           authUsersRepository.save(userStored);
+
+           log.info("Organización creada exitosamente con ID: {} y nombre: {} con admin: {}",
+               orgCreated.getId(), orgCreated.getNombre(), userStored.getUsername());
+         }
+
         usuarioEmailService.enviarConfirmacionCreacion(request);
         return JwtAuthResponse.builder().token(jwtService.generateToken(userStored)).build();
       } catch (DataIntegrityViolationException ex) {

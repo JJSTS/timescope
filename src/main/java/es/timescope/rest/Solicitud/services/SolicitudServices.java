@@ -15,4 +15,6 @@ public interface SolicitudServices {
     void cancelarSolicitud(Long id);
 
     List<SolicitudResponseDto> solicitudesPendientes(Long organizacionId);
+
+    List<SolicitudResponseDto> misSolicitudesPendientes();
 }

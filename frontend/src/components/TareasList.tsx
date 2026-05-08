@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import '../styles/TareasList.css';
 
@@ -22,15 +22,39 @@ interface PageResponse {
   totalPages: number;
 }
 
-const TareasList: React.FC = () => {
+interface Props {
+  highlightedId?: number | null;
+}
+
+const TareasList: React.FC<Props> = ({ highlightedId }) => {
   const [tareas, setTareas] = useState<Tarea[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeHighlight, setActiveHighlight] = useState<number | null>(null);
+  const rowRefs = useRef<Record<number, HTMLTableRowElement | null>>({});
   const token = localStorage.getItem('token');
 
   useEffect(() => {
     fetchTareas();
   }, []);
+
+  useEffect(() => {
+    if (!highlightedId) return;
+    setActiveHighlight(highlightedId);
+
+    const tryScroll = () => {
+      const row = rowRefs.current[highlightedId];
+      if (row) {
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    };
+
+    // pequeño delay para que el render termine
+    const t = setTimeout(tryScroll, 100);
+    // limpia el resaltado tras 3s
+    const clear = setTimeout(() => setActiveHighlight(null), 3000);
+    return () => { clearTimeout(t); clearTimeout(clear); };
+  }, [highlightedId]);
 
   const fetchTareas = async () => {
     setLoading(true);
@@ -43,15 +67,12 @@ const TareasList: React.FC = () => {
         }
       });
 
-      console.log('Respuesta del servidor:', response.data);
-
       const tareasData = Array.isArray(response.data)
         ? response.data
         : response.data.content || [];
 
       setTareas(tareasData);
     } catch (error: any) {
-      console.error('Error al obtener tareas:', error);
       const errorMsg = error.response?.data?.message || error.message || 'Error al cargar tareas';
       setError(errorMsg);
     } finally {
@@ -59,15 +80,13 @@ const TareasList: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="loading">⏳ Cargando tareas...</div>;
-
-  if (error) return <div className="error-message">❌ {error}</div>;
-
-  if (tareas.length === 0) return <div className="loading">📭 No hay tareas disponibles</div>;
+  if (loading) return <div className="loading">Cargando tareas...</div>;
+  if (error) return <div className="error-message">{error}</div>;
+  if (tareas.length === 0) return <div className="loading">No hay tareas disponibles</div>;
 
   return (
     <div className="tareas-container">
-      <h2>✓ Gestión de Tareas ({tareas.length})</h2>
+      <h2>Gestión de Tareas ({tareas.length})</h2>
       <table className="tareas-table">
         <thead>
           <tr>
@@ -80,7 +99,11 @@ const TareasList: React.FC = () => {
         </thead>
         <tbody>
           {tareas.map((tarea) => (
-            <tr key={tarea.id}>
+            <tr
+              key={tarea.id}
+              ref={el => { rowRefs.current[tarea.id] = el; }}
+              className={activeHighlight === tarea.id ? 'row-highlighted' : ''}
+            >
               <td>{tarea.id}</td>
               <td>{tarea.nombre}</td>
               <td>{tarea.descripcion}</td>
@@ -95,4 +118,3 @@ const TareasList: React.FC = () => {
 };
 
 export default TareasList;
-

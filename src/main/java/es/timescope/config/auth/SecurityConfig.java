@@ -91,6 +91,7 @@ public class SecurityConfig {
     http
       .authorizeHttpRequests(auth -> auth
               .requestMatchers("/error/**").permitAll()
+              .requestMatchers("/ws/**").permitAll()
               .requestMatchers("/public/**","/", "/auth/**", "/webjars/**", "/css/**", "/images/**").permitAll()
               .anyRequest().authenticated())
             .formLogin(form -> form

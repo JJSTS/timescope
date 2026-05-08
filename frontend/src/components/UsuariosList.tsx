@@ -93,15 +93,15 @@ const UsuariosList: React.FC = () => {
     setEditForm({});
   };
 
-  if (loading) return <div className="loading">⏳ Cargando usuarios...</div>;
+  if (loading) return <div className="loading">Cargando usuarios...</div>;
 
-  if (error) return <div className="error-message">❌ {error}</div>;
+  if (error) return <div className="error-message">{error}</div>;
 
-  if (usuarios.length === 0) return <div className="loading">📭 No hay usuarios disponibles</div>;
+  if (usuarios.length === 0) return <div className="loading">No hay usuarios disponibles</div>;
 
   return (
     <div className="usuarios-container">
-      <h2>👥 Gestión de Usuarios ({usuarios.length})</h2>
+      <h2>Gestión de Usuarios ({usuarios.length})</h2>
       <table className="usuarios-table">
         <thead>
           <tr>
@@ -156,11 +156,11 @@ const UsuariosList: React.FC = () => {
               <td>
                 {editingId === usuario.id ? (
                   <>
-                    <button onClick={handleSaveEdit} className="btn-save">💾 Guardar</button>
-                    <button onClick={handleCancel} className="btn-cancel">❌ Cancelar</button>
+                    <button onClick={handleSaveEdit} className="btn-save">Guardar</button>
+                    <button onClick={handleCancel} className="btn-cancel">Cancelar</button>
                   </>
                 ) : (
-                  <button onClick={() => handleEdit(usuario)} className="btn-edit">✏️ Editar</button>
+                  <button onClick={() => handleEdit(usuario)} className="btn-edit">Editar</button>
                 )}
               </td>
             </tr>

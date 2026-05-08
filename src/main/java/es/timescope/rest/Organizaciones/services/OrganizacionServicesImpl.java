@@ -7,17 +7,20 @@ import es.timescope.rest.Organizaciones.mappers.OrganizacionesMapper;
 import es.timescope.rest.Organizaciones.models.Organizacion;
 import es.timescope.rest.Organizaciones.repositories.OrganizacionesRepository;
 import es.timescope.rest.Proyectos.repositories.ProyectosRepository;
+import es.timescope.rest.Usuarios.exceptions.UsuarioNotFound;
 import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,46 +42,74 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
     @Override
     public Page<OrganizacionResponseDto> findAll(Optional<Long> id, Optional<String> nombre, Optional<Boolean> isDeleted, Pageable pageable) {
 
-        // Filtro por ID
         Specification<Organizacion> specId = (root, query, criteriaBuilder) ->
                 id.map(i -> criteriaBuilder.equal(root.get("id"), i))
                         .orElseGet(() -> criteriaBuilder.isTrue(criteriaBuilder.literal(true)));
 
-        // Filtro por nombre
         Specification<Organizacion> specNombre = (root, query, criteriaBuilder) ->
                 nombre.map(n -> criteriaBuilder.like(
                                 criteriaBuilder.lower(root.get("nombre")),
                                 "%" + n.toLowerCase() + "%"))
                         .orElseGet(() -> criteriaBuilder.isTrue(criteriaBuilder.literal(true)));
 
-        // Filtro por isDeleted
         Specification<Organizacion> specIsDeleted = (root, query, criteriaBuilder) ->
                 isDeleted.map(d -> criteriaBuilder.equal(root.get("isDeleted"), d))
                         .orElseGet(() -> criteriaBuilder.isTrue(criteriaBuilder.literal(true)));
 
-        // Combinar criterios
         Specification<Organizacion> criterio = Specification.where(specId).and(specNombre).and(specIsDeleted);
 
         return repository.findAll(criterio, pageable).map(OrganizacionesMapper::toDto);
     }
 
     @Override
+    @Transactional
     public OrganizacionResponseDto create(OrganizacionCreateDto dto) {
         Usuario admin = authUtils.getUsuarioAuthentication(usuariosRepository);
+
+        admin.getRoles().add(Roles.DIRECTOR);
+        usuariosRepository.save(admin);
 
         Organizacion org = new Organizacion();
         org.setNombre(dto.getNombre());
         org.setAdmin(admin);
 
-        if (dto.getEmpresaMatrizId() != null) {
-            org.setEmpresaMatriz(getEntity(dto.getEmpresaMatrizId()));
-        }
-
         return OrganizacionesMapper.toDto(repository.save(org));
     }
 
     @Override
+    @Transactional
+    public OrganizacionResponseDto cederAdmin(Long orgId, String username) {
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+        Organizacion org = getEntity(orgId);
+
+        if (!org.getAdmin().getId().equals(caller.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo el ADMIN puede ceder su puesto");
+        }
+
+        Usuario nuevoAdmin = usuariosRepository.findByUsername(username)
+                .orElseThrow(() -> new UsuarioNotFound(username));
+
+        // El nuevo admin recibe el rol DIRECTOR si no lo tiene
+        nuevoAdmin.getRoles().add(Roles.DIRECTOR);
+        usuariosRepository.save(nuevoAdmin);
+
+        org.setAdmin(nuevoAdmin);
+        return OrganizacionesMapper.toDto(repository.save(org));
+    }
+
+    @Override
+    @Transactional
     public void delete(Long id) {
+        Organizacion org = getEntity(id);
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+
+        boolean isAdmin = org.getAdmin() != null && org.getAdmin().getId().equals(caller.getId());
+        boolean isDirector = caller.getRoles().contains(Roles.DIRECTOR);
+
+        if (!isAdmin && !isDirector) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permisos para eliminar esta organización");
+        }
+
         repository.deleteById(id);
     }
 

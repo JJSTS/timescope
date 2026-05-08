@@ -1,3 +1,4 @@
+-- =====================
 -- USUARIOS
 INSERT INTO USUARIOS (nombres, apellidos, username, email, password, is_deleted) VALUES
 --Contraseña: UsuarioGarcia
@@ -90,37 +91,39 @@ INSERT INTO PROYECTO_USUARIO (proyecto_id, usuario_id) VALUES
 (16, 4),
 (16, 6);
 
+-- =====================
 -- TAREAS
+-- =====================
 INSERT INTO TAREAS (nombre, descripcion, estado, usuario_id) VALUES
 ('Diseño BD',   'Diseñar el esquema relacional de la base de datos.',   'COMPLETADO', 1),
-('Modelos JPA', 'Crear las entidades JPA con sus relaciones.','COMPLETADO', 1),
-('Endpoints REST','Implementar los controladores REST del módulo usuarios.','ACTIVO', 2),
+('Modelos JPA', 'Crear las entidades JPA con sus relaciones.','ABIERTO', 1),
+('Endpoints REST','Implementar los controladores REST del módulo usuarios.','ABIERTO', 2),
 ('Autenticación JWT', 'Integrar Spring Security con JWT para login y registro.','ACTIVO', 2),
 ('UI Login','Diseñar pantallas de inicio de sesión en la app móvil.', 'ACTIVO', 4),
-('Pruebas API', 'Ejecutar pruebas de integración sobre los endpoints.', 'SUSPENDIDO', 3),
+('Pruebas API', 'Ejecutar pruebas de integración sobre los endpoints.', 'ABIERTO', 3),
 ('Documentación', 'Documentar los endpoints con Swagger/OpenAPI.',  'ACTIVO', 5),
 ('Maquetar Dashboard', 'Ajustar grid y componentes del dashboard corporativo.', 'ACTIVO', 6),
-('Perfil Usuario UX', 'Mejorar experiencia visual y responsiva del perfil.', 'ACTIVO', 6),
+('Perfil Usuario UX', 'Mejorar experiencia visual y responsiva del perfil.', 'ABIERTO', 6),
 ('Refactor CSS Global', 'Unificar variables, espacios y tipografías en toda la app.', 'ACTIVO', 6),
-('Tabla Usuarios', 'Optimizar tabla de usuarios con estilos consistentes.', 'COMPLETADO', 6),
+('Tabla Usuarios', 'Optimizar tabla de usuarios con estilos consistentes.', 'ABIERTO', 6),
 ('Tabla Proyectos', 'Añadir filtros y ordenar columnas de proyectos.', 'ACTIVO', 6),
 ('Tabla Tareas', 'Mejorar estados visuales y mensajes vacíos.', 'ACTIVO', 6),
 ('Calendario Mensual', 'Corregir navegación y densidad visual del calendario.', 'ACTIVO', 6),
-('Integrar Favicon', 'Incorporar favicon de marca en cabecera principal.', 'COMPLETADO', 6),
+('Integrar Favicon', 'Incorporar favicon de marca en cabecera principal.', 'ABIERTO', 6),
 ('Test Login', 'Validar flujo de autenticación con credenciales inválidas.', 'SUSPENDIDO', 6),
 ('Roles Permisos', 'Revisar permisos por rol en endpoints críticos.', 'ACTIVO', 6),
-('Auditoria Seguridad', 'Registrar trazas de acceso y cambios sensibles.', 'ACTIVO', 6),
+('Auditoria Seguridad', 'Registrar trazas de acceso y cambios sensibles.', 'ABIERTO', 6),
 ('Limpieza Datos', 'Eliminar registros inconsistentes en staging.', 'COMPLETADO', 6),
 ('Backups Nocturnos', 'Configurar política de backups nocturnos.', 'ACTIVO', 6),
-('Monitoreo API', 'Activar alertas de latencia y errores HTTP 5xx.', 'ACTIVO', 6),
+('Monitoreo API', 'Activar alertas de latencia y errores HTTP 5xx.', 'ABIERTO', 6),
 ('Cobertura Unit Tests', 'Subir cobertura mínima del servicio de tareas.', 'ACTIVO', 6),
 ('Soporte Incidencia #214', 'Resolver problema de login en móvil iOS.', 'COMPLETADO', 6),
-('Soporte Incidencia #227', 'Corregir desfase horario en fecha límite.', 'ACTIVO', 6),
+('Soporte Incidencia #227', 'Corregir desfase horario en fecha límite.', 'ABIERTO', 6),
 ('Reporte Semanal', 'Preparar resumen semanal para dirección.', 'COMPLETADO', 6),
 ('Mantenimiento DB', 'Ejecutar mantenimiento preventivo de la base.', 'ACTIVO', 6),
 ('Onboarding Junior', 'Acompañar incorporación de nuevo desarrollador.', 'ACTIVO', 6),
 ('Review Sprint', 'Revisión y cierre de objetivos del sprint actual.', 'ACTIVO', 6),
 ('Roadmap Q3', 'Definir roadmap técnico para el tercer trimestre.', 'ACTIVO', 6),
-('Revisión UX Final', 'Aplicar ajustes visuales de alto impacto.', 'ACTIVO', 6),
+('Revisión UX Final', 'Aplicar ajustes visuales de alto impacto.', 'ABIERTO', 6),
 ('Microcopy UI', 'Pulir textos de interfaz y estados del sistema.', 'COMPLETADO', 6),
 ('Integración Correo', 'Conectar proveedor SMTP para notificaciones.', 'ACTIVO', 6);

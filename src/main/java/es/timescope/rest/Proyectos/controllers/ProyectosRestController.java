@@ -125,6 +125,15 @@ public class ProyectosRestController {
                 .body(PageResponse.of(pageResult, sortBy, direction));
     }
 
+    @PatchMapping("/{id}/estado")
+    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR','LIDER')")
+    public ResponseEntity<ProyectoResponseDto> cambiarEstado(
+            @PathVariable Long id,
+            @RequestParam Estado estado) {
+        log.info("Cambiando estado del proyecto {} a {}", id, estado);
+        return ResponseEntity.ok(proyectoServices.cambiarEstado(id, estado));
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
