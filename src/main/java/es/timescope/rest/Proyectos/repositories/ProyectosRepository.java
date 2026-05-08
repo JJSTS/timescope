@@ -15,6 +15,6 @@ public interface ProyectosRepository extends JpaRepository<Proyecto, Long>, JpaS
     @Query("SELECT p FROM Proyecto p WHERE p.estado = :estado")
     Page<Proyecto> findByEstado(Estado estado, Pageable pageable);
 
-    @Query("SELECT p FROM Proyecto p JOIN Usuario u WHERE u.id = :usuarioId")
+    @Query("SELECT p FROM Proyecto p JOIN p.usuarios u WHERE u.id = :usuarioId")
     Page<Proyecto> findByUsuarioId(Long usuarioId, Pageable pageable);
 }

@@ -51,9 +51,7 @@ const UserProfile: React.FC = () => {
           return;
         }
 
-        const userUrl = `http://localhost:8080/api/v1/usuarios?username=${username}`;
-
-        const userResponse = await fetch(userUrl, {
+        const userResponse = await fetch('http://localhost:8080/api/v1/usuarios/me', {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -64,15 +62,8 @@ const UserProfile: React.FC = () => {
           throw new Error('No fue posible cargar el perfil de usuario');
         }
 
-        const userPageResponse = await userResponse.json();
-
-        let userData = null;
-        if (userPageResponse.content && userPageResponse.content.length > 0) {
-          userData = userPageResponse.content[0];
-          setUser(userData);
-        } else {
-          throw new Error('Usuario no encontrado');
-        }
+        const userData = await userResponse.json();
+        setUser(userData);
 
         // Obtener tareas del usuario autenticado (solo ACTIVAS)
         const tasksUrl = `http://localhost:8080/api/v1/tareas/me/activo`;

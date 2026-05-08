@@ -1,6 +1,6 @@
 package es.timescope.rest.Usuarios.services;
 
-import es.timescope.rest.Emails.Impl.UsuarioEmailServiceImpl;
+import es.timescope.config.auth.AuthUtils;
 import es.timescope.rest.Emails.services.UsuarioEmailService;
 import es.timescope.rest.Usuarios.dto.UsuarioCreateDto;
 import es.timescope.rest.Usuarios.dto.UsuarioInfoResponse;
@@ -21,9 +21,10 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -35,6 +36,7 @@ public class UsuarioServiceImpl implements UsuariosService {
     private final UsuarioEmailService usuarioEmailService;
     private final UsuariosRepository usuariosRepository;
     private final UsuariosMapper usuarioMapper;
+    private final AuthUtils authUtils;
 
     @Override
     public Page<UsuarioResponseDto> findAll(Optional<String> username, Optional<String> email, Optional<Boolean> isDeleted, Pageable pageable) {
@@ -66,10 +68,10 @@ public class UsuarioServiceImpl implements UsuariosService {
         log.info("Buscando el usuario con id: {}", id);
 
         var usuario = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
-        var proyectos =  usuariosRepository.findProyectoByUsuarioId(id).stream().map(p -> p.getNombre()).toList();
+        var proyectos = usuariosRepository.findProyectoByUsuarioId(id).stream().map(p -> p.getNombre()).toList();
         var tareas = usuariosRepository.findTareaByUsuarioId(id).stream().map(p -> p.getNombre()).toList();
 
-        return  usuarioMapper.toUsuarioInfoResponse(usuario, proyectos, tareas);
+        return usuarioMapper.toUsuarioInfoResponse(usuario, proyectos, tareas);
     }
 
     @Override
@@ -79,7 +81,6 @@ public class UsuarioServiceImpl implements UsuariosService {
         usuariosRepository.findByUsernameEqualsIgnoreCaseOrEmailEqualsIgnoreCase(userRequest.getUsername(), userRequest.getEmail())
                 .ifPresent(u -> {
                     if (!u.getId().equals(id)) {
-                        System.out.println("usuario encontrado: " + u.getId() + " Mi id: " + id);
                         throw new UsuarioNombreOrEmailExists("Ya existe un usuario con ese username o email");
                     }
                 });
@@ -92,7 +93,6 @@ public class UsuarioServiceImpl implements UsuariosService {
         log.info("Actualizando parcialmente el usuario con id: {}", id);
         Usuario usuario = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
 
-        // Validar que username o email no existan (si se están actualizando)
         if ((userRequest.getUsername() != null && !userRequest.getUsername().isBlank()) ||
             (userRequest.getEmail() != null && !userRequest.getEmail().isBlank())) {
             usuariosRepository.findByUsernameEqualsIgnoreCaseOrEmailEqualsIgnoreCase(
@@ -105,18 +105,50 @@ public class UsuarioServiceImpl implements UsuariosService {
                     });
         }
 
-        // Actualizar solo los campos que no sean null
         usuarioMapper.updateUsuarioFromDto(userRequest, usuario);
         return usuarioMapper.toUsuarioResponseDto(usuariosRepository.save(usuario));
+    }
+
+    @Override
+    public UsuarioResponseDto getMe() {
+        Usuario usuario = authUtils.getUsuarioAuthentication(usuariosRepository);
+        return usuarioMapper.toUsuarioResponseDto(usuario);
     }
 
     @Override
     @Transactional
     public void asignarRol(Long id, Roles role) {
         log.info("Asignando un rol al usuario con id: {}", id);
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
         Usuario usuario = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
+
+        validarJerarquiaRol(caller, role);
+
         usuario.getRoles().clear();
         usuario.getRoles().add(role);
         usuariosRepository.save(usuario);
+    }
+
+    private void validarJerarquiaRol(Usuario caller, Roles rolObjetivo) {
+        Set<Roles> rolesCalller = caller.getRoles();
+
+        if (rolesCalller.contains(Roles.DIRECTOR)) {
+            return;
+        }
+        if (rolesCalller.contains(Roles.COORDINADOR)) {
+            if (rolObjetivo == Roles.DIRECTOR) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "Un COORDINADOR no puede asignar el rol DIRECTOR");
+            }
+            return;
+        }
+        if (rolesCalller.contains(Roles.LIDER)) {
+            if (rolObjetivo != Roles.LIDER) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "Un LIDER solo puede asignar el rol LIDER");
+            }
+            return;
+        }
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permisos para asignar roles");
     }
 }

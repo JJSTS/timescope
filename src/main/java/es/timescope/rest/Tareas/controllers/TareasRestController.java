@@ -27,6 +27,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -117,7 +118,8 @@ public class TareasRestController {
         return ResponseEntity.ok(tareasServices.updateTarea(id, tareaUpdateDto));
     }
 
-    @PostMapping("/add")
+    @PostMapping("/addTarea")
+    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR','LIDER')")
     public ResponseEntity<TareaResponseDto> addTarea(@Valid @RequestBody TareaAddDto tareaAddDto) {
         log.info("Asignando tarea id: {} al usuario: {}", tareaAddDto.getTareaId(), tareaAddDto.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body(tareasServices.addTarea(tareaAddDto));
