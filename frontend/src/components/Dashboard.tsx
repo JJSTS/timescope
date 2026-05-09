@@ -40,7 +40,6 @@ const Dashboard: React.FC = () => {
   const [pendientesCount, setPendientesCount] = useState(0);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [userInitials, setUserInitials] = useState('');
-  const [highlightedId, setHighlightedId] = useState<number | null>(null);
   const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
   const [orgNombre, setOrgNombre] = useState<string | null>(null);
   const toastIdRef = useRef(0);
@@ -114,11 +113,8 @@ const Dashboard: React.FC = () => {
 
   useWebSocketNotif(username, handleNuevaNotificacion);
 
-  const handleTabClick = (tab: 'perfil' | 'tareas' | 'proyectos' | 'equipo', highlightId?: number) => {
+  const handleTabClick = (tab: 'perfil' | 'tareas' | 'proyectos' | 'equipo') => {
     setActiveTab(tab);
-    if (highlightId !== undefined) {
-      setHighlightedId(highlightId);
-    }
   };
 
   const handleLogout = () => {
@@ -231,12 +227,12 @@ const Dashboard: React.FC = () => {
         </div>
       </header>
 
-      <main className="dashboard-content">
-        {activeTab === 'perfil' && <UserProfile />}
-        {activeTab === 'tareas' && <TareasList highlightedId={highlightedId} />}
-        {activeTab === 'proyectos' && <ProyectosList highlightedId={highlightedId} />}
-        {activeTab === 'equipo' && <UsuariosList />}
-      </main>
+       <main className="dashboard-content">
+         {activeTab === 'perfil' && <UserProfile />}
+         {activeTab === 'tareas' && <TareasList />}
+         {activeTab === 'proyectos' && <ProyectosList />}
+         {activeTab === 'equipo' && <UsuariosList />}
+       </main>
 
       {selectedOrgId !== null && (
         <OrganizacionModal orgId={selectedOrgId} onClose={() => setSelectedOrgId(null)} />

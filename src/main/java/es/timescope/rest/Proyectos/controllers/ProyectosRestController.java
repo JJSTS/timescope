@@ -52,6 +52,12 @@ public class ProyectosRestController {
                 .body(PageResponse.of(pageResult, sortBy, direction));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ProyectoResponseDto> findById(@PathVariable Long id) {
+        log.info("Buscando proyecto por id: {}", id);
+        return ResponseEntity.ok(proyectoServices.findById(id));
+    }
+
     @GetMapping("/estado/{estado}")
     public ResponseEntity<PageResponse<ProyectoResponseDto>> findByEstado(
             @PathVariable Estado estado,

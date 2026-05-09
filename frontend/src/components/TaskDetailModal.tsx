@@ -1,6 +1,13 @@
 import React from 'react';
 import '../styles/TaskDetailModal.css';
 
+interface Usuario {
+  id: number;
+  username: string;
+  nombres: string;
+  apellidos: string;
+}
+
 interface Task {
   id: number;
   nombre: string;
@@ -10,6 +17,7 @@ interface Task {
   horasEstimadas?: number;
   fechaLimite?: string;
   fechaCreacion?: string;
+  usuario?: Usuario;
 }
 
 interface Props {
@@ -40,6 +48,12 @@ const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
             <div className="task-modal-row">
               <span className="task-modal-label">Descripción</span>
               <p className="task-modal-value">{task.descripcion}</p>
+            </div>
+          )}
+          {task.usuario && (
+            <div className="task-modal-row">
+              <span className="task-modal-label">Asignado a</span>
+              <span className="task-modal-value">{task.usuario.nombres} {task.usuario.apellidos}</span>
             </div>
           )}
           {task.proyecto && (

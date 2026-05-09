@@ -30,22 +30,27 @@ const UsuariosList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<Partial<Usuario>>({});
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    fetchUsuarios();
-  }, []);
+    fetchUsuarios(currentPage);
+  }, [currentPage]);
 
-  const fetchUsuarios = async () => {
+  const fetchUsuarios = async (page: number) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get<PageResponse>('http://localhost:8080/api/v1/usuarios', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      const response = await axios.get<PageResponse>(
+        `http://localhost:8080/api/v1/usuarios?page=${page}&size=10`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         }
-      });
+      );
 
       console.log('Respuesta del servidor:', response.data);
 
@@ -55,6 +60,11 @@ const UsuariosList: React.FC = () => {
         : response.data.content || [];
 
       setUsuarios(usuariosData);
+
+      // Guardar total de páginas
+      if (!Array.isArray(response.data)) {
+        setTotalPages(response.data.totalPages);
+      }
     } catch (error: any) {
       console.error('Error al obtener usuarios:', error);
       const errorMsg = error.response?.data?.message || error.message || 'Error al cargar usuarios';
@@ -79,7 +89,7 @@ const UsuariosList: React.FC = () => {
         );
         setEditingId(null);
         setEditForm({});
-        fetchUsuarios();
+        fetchUsuarios(currentPage);
       } catch (error: any) {
         console.error('Error al actualizar usuario:', error);
         const errorMsg = error.response?.data?.message || error.message || 'Error al actualizar usuario';
@@ -91,6 +101,18 @@ const UsuariosList: React.FC = () => {
   const handleCancel = () => {
     setEditingId(null);
     setEditForm({});
+  };
+
+  const nextPage = () => {
+    if (currentPage < totalPages - 1) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const previousPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1);
+    }
   };
 
   if (loading) return <div className="loading">Cargando usuarios...</div>;
@@ -106,8 +128,7 @@ const UsuariosList: React.FC = () => {
         <thead>
           <tr>
             <th>ID</th>
-            <th>Nombres</th>
-            <th>Apellidos</th>
+            <th>Nombre Completo</th>
             <th>Usuario</th>
             <th>Email</th>
             <th>Roles</th>
@@ -120,24 +141,22 @@ const UsuariosList: React.FC = () => {
               <td>{usuario.id}</td>
               <td>
                 {editingId === usuario.id ? (
-                  <input
-                    type="text"
-                    value={editForm.nombres || ''}
-                    onChange={(e) => setEditForm({ ...editForm, nombres: e.target.value })}
-                  />
+                  <div className="edit-names">
+                    <input
+                      type="text"
+                      placeholder="Nombres"
+                      value={editForm.nombres || ''}
+                      onChange={(e) => setEditForm({ ...editForm, nombres: e.target.value })}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Apellidos"
+                      value={editForm.apellidos || ''}
+                      onChange={(e) => setEditForm({ ...editForm, apellidos: e.target.value })}
+                    />
+                  </div>
                 ) : (
-                  usuario.nombres
-                )}
-              </td>
-              <td>
-                {editingId === usuario.id ? (
-                  <input
-                    type="text"
-                    value={editForm.apellidos || ''}
-                    onChange={(e) => setEditForm({ ...editForm, apellidos: e.target.value })}
-                  />
-                ) : (
-                  usuario.apellidos
+                  `${usuario.nombres} ${usuario.apellidos}`
                 )}
               </td>
               <td>{usuario.username}</td>
@@ -152,13 +171,21 @@ const UsuariosList: React.FC = () => {
                   usuario.email
                 )}
               </td>
-              <td>{usuario.roles?.join(', ') || '-'}</td>
+              <td>
+                <span className="roles-badge">
+                  {usuario.roles?.map((role, idx) => (
+                    <span key={idx} className={`role ${role.toLowerCase()}`}>
+                      {role}
+                    </span>
+                  )) || '-'}
+                </span>
+              </td>
               <td>
                 {editingId === usuario.id ? (
-                  <>
+                  <div className="action-buttons">
                     <button onClick={handleSaveEdit} className="btn-save">Guardar</button>
                     <button onClick={handleCancel} className="btn-cancel">Cancelar</button>
-                  </>
+                  </div>
                 ) : (
                   <button onClick={() => handleEdit(usuario)} className="btn-edit">Editar</button>
                 )}
@@ -167,6 +194,27 @@ const UsuariosList: React.FC = () => {
           ))}
         </tbody>
       </table>
+
+      {/* PAGINACIÓN */}
+      <div className="pagination">
+        <button
+          onClick={previousPage}
+          disabled={currentPage === 0}
+        >
+          ← Anterior
+        </button>
+
+        <span>
+          Página {currentPage + 1} de {totalPages}
+        </span>
+
+        <button
+          onClick={nextPage}
+          disabled={currentPage >= totalPages - 1}
+        >
+          Siguiente →
+        </button>
+      </div>
     </div>
   );
 };

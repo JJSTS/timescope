@@ -51,7 +51,7 @@ public class TareasRestController {
             @RequestParam(required = false) Optional<String> usuario,
             @RequestParam(required = false) Optional<String> estado,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String direction,
             HttpServletRequest request

@@ -78,6 +78,14 @@ public class ProyectoServicesImpl implements ProyectoServices {
     }
 
     @Override
+    public ProyectoResponseDto findById(Long id) {
+        log.info("Buscando proyecto por id: {}", id);
+        Proyecto proyecto = proyectosRepository.findById(id)
+                .orElseThrow(() -> new ProyectoNotFoundException(id));
+        return proyectoMapper.toProyectoResponseDto(proyecto);
+    }
+
+    @Override
     public Page<ProyectoResponseDto> findByEstado(Estado estado, Pageable pageable) {
         log.info("Buscando proyectos por estado: {}", estado);
         Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Login from './components/LoginForm';
 import Dashboard from './components/Dashboard';
+import ProyectoDetail from './components/ProyectoDetail';
 import './styles/App.css';
 
 const App: React.FC = () => {
@@ -12,6 +13,7 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/proyecto/:id" element={<ProyectoDetail />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
