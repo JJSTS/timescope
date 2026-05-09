@@ -5,6 +5,8 @@ import es.timescope.rest.Emails.services.EmailService;
 import es.timescope.rest.Emails.services.UsuarioEmailService;
 import es.timescope.rest.Organizaciones.models.Organizacion;
 import es.timescope.rest.Organizaciones.repositories.OrganizacionesRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.Usuarios.models.UsuarioOrgRol;
@@ -110,7 +112,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     var user = authUsersRepository.findByUsername(request.getUsername())
         .orElseThrow(() -> new AuthSignInNotValid("Usuario o contraseña incorrectos"));
 
-    Long orgId = request.getOrgId();
+    Long orgId = null;
+    if (request.getOrgNombre() != null && !request.getOrgNombre().isBlank()) {
+      Organizacion org = organizacionesRepository.findByNombreIgnoreCase(request.getOrgNombre())
+          .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+              "Organización '" + request.getOrgNombre() + "' no encontrada"));
+      orgId = org.getId();
+    }
+
     String jwt = orgId != null
         ? jwtService.generateToken(user, orgId)
         : jwtService.generateToken(user);

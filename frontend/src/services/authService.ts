@@ -13,11 +13,12 @@ interface OrganizationData {
 }
 
 export const authService = {
-  async login(username: string, password: string): Promise<LoginResponse> {
+  async login(username: string, password: string, orgNombre: string): Promise<LoginResponse> {
     try {
       const response = await axios.post(`${API_URL}/auth/signin`, {
         username,
-        password
+        password,
+        orgNombre
       });
       return response.data;
     } catch (error: any) {

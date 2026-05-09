@@ -8,6 +8,7 @@ import '../styles/LoginForm.css';
 interface LoginFormData {
   username: string;
   password: string;
+  orgNombre: string;
 }
 
 interface RegisterFormData {
@@ -52,7 +53,8 @@ export const Login: React.FC = () => {
   // Login state
   const [loginData, setLoginData] = useState<LoginFormData>({
     username: '',
-    password: ''
+    password: '',
+    orgNombre: ''
   });
 
   // Register state
@@ -89,8 +91,8 @@ export const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await authService.login(loginData.username, loginData.password);
-      await login(loginData.username, response.token); // Espera a que el login termine
+      const response = await authService.login(loginData.username, loginData.password, loginData.orgNombre);
+      await login(loginData.username, response.token);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Error al iniciar sesión');
@@ -257,6 +259,23 @@ export const Login: React.FC = () => {
                     <EyeIcon visible={showPasswords.login} />
                   </button>
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="login-org" className="form-label">
+                  Organización
+                </label>
+                <input
+                  id="login-org"
+                  name="orgNombre"
+                  type="text"
+                  value={loginData.orgNombre}
+                  onChange={handleLoginChange}
+                  className="form-input"
+                  placeholder="Nombre de tu organización"
+                  required
+                  disabled={loading}
+                />
               </div>
 
               <button
