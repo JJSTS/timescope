@@ -74,6 +74,11 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
     public OrganizacionResponseDto create(OrganizacionCreateDto dto) {
         Usuario admin = authUtils.getUsuarioAuthentication(usuariosRepository);
 
+        if (admin.getOrganizacion() != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Ya perteneces a una organización y no puedes crear otra");
+        }
+
         admin.getRoles().add(Roles.DIRECTOR);
         usuariosRepository.save(admin);
 
