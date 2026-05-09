@@ -9,6 +9,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Component
 @RequiredArgsConstructor
 public class AuthUtils {
@@ -27,6 +31,16 @@ public class AuthUtils {
         if (auth == null) return false;
         return auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_" + rol.name()));
+    }
+
+    /** Devuelve los roles del caller tal como están en el SecurityContext (globales o acotados a org). */
+    public Set<Roles> getCallerRoles() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return Set.of();
+        return auth.getAuthorities().stream()
+                .map(a -> a.getAuthority().replace("ROLE_", ""))
+                .flatMap(name -> Arrays.stream(Roles.values()).filter(r -> r.name().equals(name)))
+                .collect(Collectors.toSet());
     }
 
     /** Devuelve el orgId embebido en el JWT activo, o null si no hay org activa. */

@@ -4,10 +4,12 @@ import es.timescope.rest.Usuarios.dto.UsuarioCreateDto;
 import es.timescope.rest.Usuarios.dto.UsuarioInfoResponse;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 import es.timescope.rest.Usuarios.dto.UsuarioUpdateDto;
+import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class UsuariosMapper {
@@ -26,13 +28,17 @@ public class UsuariosMapper {
     }
     
     public UsuarioResponseDto toUsuarioResponseDto(Usuario usuario) {
+        return toUsuarioResponseDto(usuario, usuario.getRoles());
+    }
+
+    public UsuarioResponseDto toUsuarioResponseDto(Usuario usuario, Set<Roles> roles) {
         return UsuarioResponseDto.builder()
                 .id(usuario.getId())
                 .nombres(usuario.getNombres())
                 .apellidos(usuario.getApellidos())
                 .username(usuario.getUsername())
                 .email(usuario.getEmail())
-                .roles(usuario.getRoles())
+                .roles(roles)
                 .isDeleted(usuario.getIsDeleted())
                 .organizacionId(usuario.getOrganizacion() != null ? usuario.getOrganizacion().getId() : null)
                 .build();

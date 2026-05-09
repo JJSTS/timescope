@@ -111,7 +111,7 @@ public class UsuarioServiceImpl implements UsuariosService {
     @Override
     public UsuarioResponseDto getMe() {
         Usuario usuario = authUtils.getUsuarioAuthentication(usuariosRepository);
-        return usuarioMapper.toUsuarioResponseDto(usuario);
+        return usuarioMapper.toUsuarioResponseDto(usuario, authUtils.getCallerRoles());
     }
 
     @Override
