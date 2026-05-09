@@ -7,8 +7,16 @@
   border: 1px solid #e5e7eb;
 }
 
-.tareas-container h2 {
+.tareas-container .list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.tareas-container h2 {
+  margin: 0;
   color: #1f2937;
   font-size: 1.3rem;
   font-weight: 700;

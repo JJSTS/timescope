@@ -45,6 +45,8 @@ public class TareasMapper {
                 .id(null)
                 .nombre(tareaCreateDto.getNombre())
                 .descripcion(tareaCreateDto.getDescripcion())
+                .horasEstimadas(tareaCreateDto.getHorasEstimadas())
+                .fechaLimite(tareaCreateDto.getFechaLimite())
                 .fechaCreacion(LocalDateTime.now())
                 .proyecto(proyecto)
                 .build();

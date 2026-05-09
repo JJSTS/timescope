@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import ProyectoCreateModal from './ProyectoCreateModal';
 import '../styles/ProyectosList.css';
 
 interface Proyecto {
@@ -27,15 +29,16 @@ interface PageResponse {
 const ProyectosList: React.FC = () => {
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);
   const [loading, setLoading] = useState(false);
-
   const [error, setError] = useState<string | null>(null);
-
-  // NUEVOS ESTADOS DE PAGINACIÓN
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
+  const { userRole } = useAuth();
+
+  const canCreate = userRole?.toUpperCase() === 'DIRECTOR';
 
   useEffect(() => {
     fetchProyectos(currentPage);
@@ -110,11 +113,17 @@ const ProyectosList: React.FC = () => {
   }
 
   return (
+      <>
       <div className="proyectos-container">
 
-        <h2>
-          Gestión de Proyectos
-        </h2>
+        <div className="list-header">
+          <h2>Gestión de Proyectos</h2>
+          {canCreate && (
+            <button className="btn-create" onClick={() => setShowCreateModal(true)}>
+              + Nuevo proyecto
+            </button>
+          )}
+        </div>
 
         <table className="proyectos-table">
           <thead>
@@ -180,6 +189,14 @@ const ProyectosList: React.FC = () => {
 
         </div>
       </div>
+
+      {showCreateModal && (
+        <ProyectoCreateModal
+          onClose={() => setShowCreateModal(false)}
+          onCreated={() => fetchProyectos(currentPage)}
+        />
+      )}
+      </>
   );
 };
 
