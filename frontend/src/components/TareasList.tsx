@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import '../styles/TareasList.css';
+
+// Interfaz para el objeto de usuario anidado
+interface UsuarioSimple {
+  id: number;
+  username: string;
+  nombres: string;
+  apellidos: string;
+}
 
 interface Tarea {
   id: number;
@@ -10,7 +19,7 @@ interface Tarea {
   horasEstimadas?: number;
   fechaLimite?: string;
   fechaCreacion?: string;
-  usuarioId: number;
+  usuario: UsuarioSimple; // Cambiado de usuarioId a un objeto anidado
 }
 
 interface PageResponse {
@@ -36,10 +45,13 @@ const TareasList: React.FC<Props> = ({ highlightedId }) => {
   const [activeHighlight, setActiveHighlight] = useState<number | null>(null);
   const rowRefs = useRef<Record<number, HTMLTableRowElement | null>>({});
   const token = localStorage.getItem('token');
+  const { userRole } = useAuth();
 
   useEffect(() => {
-    fetchTareas();
-  }, []);
+    if (userRole) {
+      fetchTareas();
+    }
+  }, [userRole]);
 
   useEffect(() => {
     if (!highlightedId) return;
@@ -52,9 +64,7 @@ const TareasList: React.FC<Props> = ({ highlightedId }) => {
       }
     };
 
-    // pequeño delay para que el render termine
     const t = setTimeout(tryScroll, 100);
-    // limpia el resaltado tras 3s
     const clear = setTimeout(() => setActiveHighlight(null), 3000);
     return () => { clearTimeout(t); clearTimeout(clear); };
   }, [highlightedId]);
@@ -62,38 +72,29 @@ const TareasList: React.FC<Props> = ({ highlightedId }) => {
   const fetchTareas = async () => {
     setLoading(true);
     setError(null);
+
+    const isDeveloper = userRole?.toLowerCase() === 'desarrollador';
+    const endpoint = isDeveloper 
+      ? 'http://localhost:8080/api/v1/tareas/me' 
+      : 'http://localhost:8080/api/v1/tareas';
+
     try {
-      // Primero intenta obtener tareas del usuario actual (/me)
-      // Si falla (Desarrollador), carga todas las tareas (/)
-      try {
-        const responseMe = await axios.get<Tarea[]>('http://localhost:8080/api/v1/tareas/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        const tareasData = Array.isArray(responseMe.data) ? responseMe.data : [];
-        setTareas(tareasData);
-      } catch (meError: any) {
-        // Si falla el endpoint /me, intenta con / (para otros roles)
-        if (meError.response?.status === 403 || meError.response?.status === 401) {
-          const responseAll = await axios.get<PageResponse>('http://localhost:8080/api/v1/tareas', {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          });
-
-          const tareasData = Array.isArray(responseAll.data)
-            ? responseAll.data
-            : responseAll.data.content || [];
-
-          setTareas(tareasData);
-        } else {
-          throw meError;
+      const response = await axios.get(endpoint, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
+      });
+
+      const tareasData = Array.isArray(response.data)
+        ? response.data
+        : response.data.content || [];
+      
+      if (tareasData.length > 0) {
+        console.log('Estructura de la primera tarea recibida:', tareasData[0]);
       }
+
+      setTareas(tareasData);
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || error.message || 'Error al cargar tareas';
       setError(errorMsg);
@@ -116,7 +117,7 @@ const TareasList: React.FC<Props> = ({ highlightedId }) => {
             <th>Nombre</th>
             <th>Descripción</th>
             <th>Estado</th>
-            <th>Usuario ID</th>
+            <th>Fecha Límite</th> 
           </tr>
         </thead>
         <tbody>
@@ -130,7 +131,7 @@ const TareasList: React.FC<Props> = ({ highlightedId }) => {
               <td>{tarea.nombre}</td>
               <td>{tarea.descripcion}</td>
               <td>{tarea.estado}</td>
-              <td>{tarea.usuarioId}</td>
+              <td>{tarea.fechaLimite ? new Date(tarea.fechaLimite).toLocaleDateString() : 'N/A'}</td>
             </tr>
           ))}
         </tbody>

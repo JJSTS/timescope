@@ -421,11 +421,11 @@
 }
 
 .task-list-item.status-activo {
-  border-left-color: #3b82f6; /* Azul para Activo */
+  border-left-color: #22c55e; /* Verde para Activo */
 }
 
 .task-list-item.status-abierto {
-  border-left-color: #22c55e; /* Verde para Abierto */
+  border-left-color: #3b82f6; /* Azul para Abierto */
 }
 
 /* Left Section - Title & Description */

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import TaskCalendar from './TaskCalendar';
+import TaskDetailModal from './TaskDetailModal'; // Importar el modal reutilizable
 import '../styles/UserProfile.css';
 
 interface Task {
@@ -52,13 +53,13 @@ const UserProfile: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [selectedMember, setSelectedMember] = useState<MemberDetail | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [memberLoading, setMemberLoading] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem('token');
-
         if (!token || !username) {
           setError('Sesión expirada. Por favor, inicia sesión nuevamente.');
           setLoading(false);
@@ -66,108 +67,41 @@ const UserProfile: React.FC = () => {
         }
 
         const userResponse = await fetch('http://localhost:8080/api/v1/usuarios/me', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
-
-        if (!userResponse.ok) {
-          throw new Error('No fue posible cargar el perfil de usuario');
-        }
-
+        if (!userResponse.ok) throw new Error('No fue posible cargar el perfil de usuario');
         const userData = await userResponse.json();
         setUser(userData);
 
-        // Obtener tareas del usuario autenticado (solo ACTIVAS)
         const tasksUrl = `http://localhost:8080/api/v1/tareas/me/activo`;
-
-        const tasksResponse = await fetch(tasksUrl, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
+        const tasksResponse = await fetch(tasksUrl, { headers: { Authorization: `Bearer ${token}` } });
         if (tasksResponse.ok) {
           const tasksData = await tasksResponse.json();
-
-          // El endpoint /tareas/me/activo retorna un array directo
-          const tasksArray = Array.isArray(tasksData) ? tasksData : (tasksData.content || []);
-          console.log('Tareas recibidas:', tasksArray);
-          setTasks(tasksArray);
-        } else {
-          console.error('Error en tasksResponse:', tasksResponse.status);
-          const errorText = await tasksResponse.text();
-          console.error('Detalle del error:', errorText);
+          setTasks(Array.isArray(tasksData) ? tasksData : tasksData.content || []);
         }
 
-        // Obtener miembros de la organización del usuario
         if (userData.organizacionId) {
           const teamResponse = await fetch(
             `http://localhost:8080/api/v1/organizaciones/${userData.organizacionId}/miembros`,
-            { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+            { headers: { Authorization: `Bearer ${token}` } }
           );
-          if (teamResponse.ok) {
-            setTeamMembers(await teamResponse.json());
-          }
+          if (teamResponse.ok) setTeamMembers(await teamResponse.json());
         }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
-        setError(errorMessage);
+        setError(err instanceof Error ? err.message : 'Error desconocido');
       } finally {
         setLoading(false);
       }
     };
 
-    if (username) {
-      fetchUserData();
-    } else {
+    if (username) fetchUserData();
+    else {
       setError('No se pudo identificar el usuario. Por favor, inicia sesión.');
       setLoading(false);
     }
   }, [username]);
 
-  if (loading) {
-    return (
-      <div className="profile-container">
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="profile-container">
-        <div className="error-state">
-          <h2>Error</h2>
-          <p>{error}</p>
-        </div>
-      </div>
-    );
-  }
-
-  const pendingTasks = tasks; // Ya están filtradas como ACTIVAS desde el endpoint
-  const completedTasks = tasks.filter(t => t.estado === 'COMPLETADO');
-
-  // Funciones para el carousel
-  const handleNextTasks = () => {
-    if (currentTaskIndex + 5 < pendingTasks.length) {
-      setCurrentTaskIndex(currentTaskIndex + 5);
-    }
-  };
-
-  const handlePrevTasks = () => {
-    if (currentTaskIndex > 0) {
-      setCurrentTaskIndex(Math.max(0, currentTaskIndex - 5));
-    }
-  };
-
-  // Tareas visibles (máximo 5 por página)
-  const visibleTasks = pendingTasks.slice(currentTaskIndex, currentTaskIndex + 5);
-
+  const handleTaskClick = (task: Task) => setSelectedTask(task);
   const handleMemberClick = async (memberId: number) => {
     const token = localStorage.getItem('token');
     setMemberLoading(true);
@@ -181,147 +115,87 @@ const UserProfile: React.FC = () => {
     }
   };
 
+  if (loading) return <div className="profile-container"><div className="loading-state"><div className="loading-spinner"></div></div></div>;
+  if (error) return <div className="profile-container"><div className="error-state"><h2>Error</h2><p>{error}</p></div></div>;
+
+  const pendingTasks = tasks;
+  const visibleTasks = pendingTasks.slice(currentTaskIndex, currentTaskIndex + 5);
+
   return (
     <>
-    <div className="profile-container">
-      {/* Header Section */}
-      <div className="profile-header">
-        <div className="header-left-content">
-          <div className="header-main">
-            <div className="user-avatar-large">
-              {user?.nombres?.charAt(0)}{user?.apellidos?.charAt(0)}
-            </div>
-            <div className="user-info-expanded">
-              <h1 className="user-name-large">{user?.nombres} {user?.apellidos}</h1>
-              <div className="user-meta">
-                <span className="user-email-header">{user?.email}</span>
-              </div>
-              <div className="user-roles">
-                {user?.roles && user.roles.length > 0
-                  ? user.roles.map(r => (
-                      <span key={r} className={`role-badge role-${r.toLowerCase()}`}>
-                        {r.toUpperCase()}
-                      </span>
-                    ))
-                  : <span className="role-badge role-miembro">MIEMBRO</span>
-                }
+      <div className="profile-container">
+        <div className="profile-header">
+          <div className="header-left-content">
+            <div className="header-main">
+              <div className="user-avatar-large">{user?.nombres?.charAt(0)}{user?.apellidos?.charAt(0)}</div>
+              <div className="user-info-expanded">
+                <h1 className="user-name-large">{user?.nombres} {user?.apellidos}</h1>
+                <div className="user-meta"><span className="user-email-header">{user?.email}</span></div>
+                <div className="user-roles">
+                  {user?.roles?.map(r => <span key={r} className={`role-badge role-${r.toLowerCase()}`}>{r.toUpperCase()}</span>) || <span className="role-badge role-miembro">MIEMBRO</span>}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-      </div>
-
-      <div className="profile-main-layout">
-
-        <div className="profile-main-content">
-
-          <section className="content-section">
-            <div className="section-header">
-              <div className="tasks-header-left">
-                <h2>Tareas pendientes</h2>
-                <p className="tasks-subtitle">
-                  {pendingTasks.length} abiertas · ordenadas por vencimiento
-                </p>
-              </div>
-              <button className="tasks-filter-btn">
-                Filtrar
-              </button>
-            </div>
-
-            {pendingTasks.length > 0 ? (
-              <div>
-                {/* Tasks List */}
-                <div className="tasks-list">
-                  {visibleTasks.map((task) => (
-                    <div
-                      key={task.id}
-                      className={`task-list-item status-${task.estado?.toLowerCase() || 'pendiente'}`}
-                    >
-                      <div className="task-list-left">
-                        <div className="task-list-title-row">
-                          <h3 className="task-list-title">{task.nombre}</h3>
-                          <span className={`status-badge status-${task.estado?.toLowerCase()}`}>
-                            {task.estado === 'ACTIVO' ? 'Activo' : 
-                             task.estado === 'ABIERTO' ? 'Abierto' :
-                             task.estado === 'COMPLETADO' ? 'Completado' : 
-                             task.estado}
-                          </span>
-                        </div>
-                        <p className="task-list-description">{task.descripcion}</p>
-                      </div>
-                      
-                      <div className="task-list-right">
-                        {task.proyecto && (
-                          <div className="task-list-category">
-                            <span className="category-label">PROYECTO</span>
-                            <span className="category-value">{task.proyecto}</span>
-                          </div>
-                        )}
-                        
-                        {task.fechaLimite && (
-                          <div className="task-list-date">
-                            {new Date(task.fechaLimite).toLocaleDateString('es-ES', {
-                              day: '2-digit',
-                              month: 'short'
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+        <div className="profile-main-layout">
+          <div className="profile-main-content">
+            <section className="content-section">
+              <div className="section-header">
+                <div className="tasks-header-left">
+                  <h2>Tareas pendientes</h2>
+                  <p className="tasks-subtitle">{pendingTasks.length} abiertas · ordenadas por vencimiento</p>
                 </div>
-
-                {/* Pagination controls */}
-                {pendingTasks.length > 5 && (
-                  <div className="tasks-pagination">
-                    <button
-                      className="pagination-btn"
-                      onClick={handlePrevTasks}
-                      disabled={currentTaskIndex === 0}
-                    >
-                      ◀ Anteriores
-                    </button>
-                    <span className="pagination-info">
-                      Tareas {currentTaskIndex + 1}-{Math.min(currentTaskIndex + 5, pendingTasks.length)} de {pendingTasks.length}
-                    </span>
-                    <button
-                      className="pagination-btn"
-                      onClick={handleNextTasks}
-                      disabled={currentTaskIndex + 5 >= pendingTasks.length}
-                    >
-                      Siguientes ▶
-                    </button>
+                <button className="tasks-filter-btn">Filtrar</button>
+              </div>
+              {pendingTasks.length > 0 ? (
+                <div>
+                  <div className="tasks-list">
+                    {visibleTasks.map((task) => (
+                      <div
+                        key={task.id}
+                        className={`task-list-item status-${task.estado?.toLowerCase() || 'pendiente'}`}
+                        onClick={() => handleTaskClick(task)}
+                      >
+                        <div className="task-list-left">
+                          <div className="task-list-title-row">
+                            <h3 className="task-list-title">{task.nombre}</h3>
+                            <span className={`status-badge status-${task.estado?.toLowerCase()}`}>{task.estado}</span>
+                          </div>
+                          <p className="task-list-description">{task.descripcion}</p>
+                        </div>
+                        <div className="task-list-right">
+                          {task.proyecto && (
+                            <div className="task-list-category">
+                              <span className="category-label">PROYECTO</span>
+                              <span className="category-value">{task.proyecto}</span>
+                            </div>
+                          )}
+                          {task.fechaLimite && (
+                            <div className="task-list-date">
+                              {new Date(task.fechaLimite).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                )}
-              </div>
-            ) : (
-              <div className="empty-placeholder">
-                <p>No hay tareas pendientes en este momento.</p>
-              </div>
-            )}
-          </section>
-
-          <section className="content-section calendar-section-wrapper">
-            <div className="section-header">
-              <h2>Calendario</h2>
-            </div>
-            <TaskCalendar tasks={tasks} />
-          </section>
-        </div>
-
-        {/* Right Column - Sidebar (Equipo) */}
-        <aside className="profile-sidebar">
-
-          {/* Team Members Card */}
-          <div className="sidebar-card team-card">
-            <h3 className="sidebar-card-title">
-              Equipo
-              <span className="team-count">{teamMembers.length}</span>
-            </h3>
-            <div className="team-members-list">
-              {teamMembers.length > 0 ? (
-                teamMembers.map((member) => (
+                </div>
+              ) : (
+                <div className="empty-placeholder"><p>No hay tareas pendientes.</p></div>
+              )}
+            </section>
+            <section className="content-section calendar-section-wrapper">
+              <div className="section-header"><h2>Calendario</h2></div>
+              <TaskCalendar tasks={tasks} />
+            </section>
+          </div>
+          <aside className="profile-sidebar">
+            <div className="sidebar-card team-card">
+              <h3 className="sidebar-card-title">Equipo<span className="team-count">{teamMembers.length}</span></h3>
+              <div className="team-members-list">
+                {teamMembers.map(member => (
                   <div key={member.id} className="team-member-item">
                     <div
                       className={`team-member-avatar role-${member.roles?.[0]?.toLowerCase() || 'miembro'} team-member-avatar--clickable`}
@@ -331,86 +205,69 @@ const UserProfile: React.FC = () => {
                       {member.nombres?.charAt(0)}{member.apellidos?.charAt(0)}
                     </div>
                     <div className="team-member-info">
-                      <div className="team-member-name">
-                        {member.nombres} {member.apellidos}
-                      </div>
-                      <div className="team-member-role">
-                        {member.roles?.[0] ? member.roles[0].toUpperCase() : 'MIEMBRO'}
-                      </div>
+                      <div className="team-member-name">{member.nombres} {member.apellidos}</div>
+                      <div className="team-member-role">{member.roles?.[0]?.toUpperCase() || 'MIEMBRO'}</div>
                     </div>
                   </div>
-                ))
-              ) : (
-                <p className="team-empty">No hay miembros del equipo</p>
-              )}
+                ))}
+              </div>
             </div>
-          </div>
-        </aside>
-      </div>
-    </div>
-
-    {(selectedMember || memberLoading) && (
-      <div className="member-modal-overlay" onClick={() => setSelectedMember(null)}>
-        <div className="member-modal" onClick={e => e.stopPropagation()}>
-          <button className="member-modal-close" onClick={() => setSelectedMember(null)}>✕</button>
-
-          {memberLoading && <div className="member-modal-loading">Cargando…</div>}
-
-          {selectedMember && !memberLoading && (
-            <>
-              <div className="member-modal-header">
-                <div className={`member-modal-avatar role-${selectedMember.roles?.[0]?.toLowerCase() || 'miembro'}`}>
-                  {selectedMember.nombres?.charAt(0)}{selectedMember.apellidos?.charAt(0)}
-                </div>
-                <div>
-                  <h3 className="member-modal-name">
-                    {selectedMember.nombres} {selectedMember.apellidos}
-                  </h3>
-                  <span className="member-modal-username">@{selectedMember.username}</span>
-                  <div className="member-modal-roles">
-                    {selectedMember.roles?.map(r => (
-                      <span key={r} className={`role-badge role-${r.toLowerCase()}`}>{r}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="member-modal-body">
-                <div className="member-modal-row">
-                  <span className="member-modal-label">Email</span>
-                  <span className="member-modal-value">{selectedMember.email}</span>
-                </div>
-
-                {selectedMember.proyectos && selectedMember.proyectos.length > 0 && (
-                  <div className="member-modal-row">
-                    <span className="member-modal-label">Proyectos ({selectedMember.proyectos.length})</span>
-                    <div className="member-modal-tags">
-                      {selectedMember.proyectos.map(p => (
-                        <span key={p} className="member-modal-tag member-modal-tag--proyecto">{p}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {selectedMember.tareas && selectedMember.tareas.length > 0 && (
-                  <div className="member-modal-row">
-                    <span className="member-modal-label">Tareas ({selectedMember.tareas.length})</span>
-                    <div className="member-modal-tags">
-                      {selectedMember.tareas.map(t => (
-                        <span key={t} className="member-modal-tag member-modal-tag--tarea">{t}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
+          </aside>
         </div>
       </div>
-    )}
+
+      {/* Usar el componente de modal reutilizable */}
+      {selectedTask && (
+        <TaskDetailModal task={selectedTask} onClose={() => setSelectedTask(null)} />
+      )}
+
+      {(selectedMember || memberLoading) && (
+        <div className="member-modal-overlay" onClick={() => setSelectedMember(null)}>
+          <div className="member-modal" onClick={e => e.stopPropagation()}>
+            <button className="member-modal-close" onClick={() => setSelectedMember(null)}>✕</button>
+            {memberLoading ? <div className="member-modal-loading">Cargando…</div> : selectedMember && (
+              <>
+                <div className="member-modal-header">
+                  <div className={`member-modal-avatar role-${selectedMember.roles?.[0]?.toLowerCase() || 'miembro'}`}>
+                    {selectedMember.nombres?.charAt(0)}{selectedMember.apellidos?.charAt(0)}
+                  </div>
+                  <div>
+                    <h3 className="member-modal-name">{selectedMember.nombres} {selectedMember.apellidos}</h3>
+                    <span className="member-modal-username">@{selectedMember.username}</span>
+                    <div className="member-modal-roles">
+                      {selectedMember.roles?.map(r => <span key={r} className={`role-badge role-${r.toLowerCase()}`}>{r}</span>)}
+                    </div>
+                  </div>
+                </div>
+                <div className="member-modal-body">
+                  <div className="member-modal-row">
+                    <span className="member-modal-label">Email</span>
+                    <span className="member-modal-value">{selectedMember.email}</span>
+                  </div>
+                  {selectedMember.proyectos?.length && (
+                    <div className="member-modal-row">
+                      <span className="member-modal-label">Proyectos ({selectedMember.proyectos.length})</span>
+                      <div className="member-modal-tags">
+                        {selectedMember.proyectos.map(p => <span key={p} className="member-modal-tag member-modal-tag--proyecto">{p}</span>)}
+                      </div>
+                    </div>
+                  )}
+                  {selectedMember.tareas?.length && (
+                    <div className="member-modal-row">
+                      <span className="member-modal-label">Tareas ({selectedMember.tareas.length})</span>
+                      <div className="member-modal-tags">
+                        {selectedMember.tareas.map(t => <span key={t} className="member-modal-tag member-modal-tag--tarea">{t}</span>)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 };
 
 export default UserProfile;
-
