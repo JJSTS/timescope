@@ -63,18 +63,37 @@ const TareasList: React.FC<Props> = ({ highlightedId }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get<PageResponse>('http://localhost:8080/api/v1/tareas', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      // Primero intenta obtener tareas del usuario actual (/me)
+      // Si falla (Desarrollador), carga todas las tareas (/)
+      try {
+        const responseMe = await axios.get<Tarea[]>('http://localhost:8080/api/v1/tareas/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const tareasData = Array.isArray(responseMe.data) ? responseMe.data : [];
+        setTareas(tareasData);
+      } catch (meError: any) {
+        // Si falla el endpoint /me, intenta con / (para otros roles)
+        if (meError.response?.status === 403 || meError.response?.status === 401) {
+          const responseAll = await axios.get<PageResponse>('http://localhost:8080/api/v1/tareas', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          const tareasData = Array.isArray(responseAll.data)
+            ? responseAll.data
+            : responseAll.data.content || [];
+
+          setTareas(tareasData);
+        } else {
+          throw meError;
         }
-      });
-
-      const tareasData = Array.isArray(response.data)
-        ? response.data
-        : response.data.content || [];
-
-      setTareas(tareasData);
+      }
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || error.message || 'Error al cargar tareas';
       setError(errorMsg);

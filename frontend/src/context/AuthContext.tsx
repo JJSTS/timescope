@@ -1,60 +1,97 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import axios from 'axios';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   logout: () => void;
-  login: (username: string, token: string) => void;
+  login: (username: string, token: string) => void; // Ya no necesita el rol aquí
   username?: string;
+  userRole?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    // Inicializa el estado directamente desde localStorage
-    const token = localStorage.getItem('token');
-    return !!token;
-  });
-  const [username, setUsername] = useState<string | undefined>(() => {
-    // Inicializa el username directamente desde localStorage
-    return localStorage.getItem('username') || undefined;
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [username, setUsername] = useState<string | undefined>();
+  const [userRole, setUserRole] = useState<string | undefined>();
+  const [loading, setLoading] = useState<boolean>(true); // Estado para la carga inicial
 
-  // Efecto para escuchar cambios en otras pestañas
   useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'token') {
-        const token = event.newValue;
-        setIsAuthenticated(!!token);
+    const checkUserStatus = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          // Hay un token, vamos a verificarlo y obtener los datos del usuario
+          const response = await axios.get('http://localhost:8080/api/v1/usuarios/me', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          
+          const userData = response.data;
+          
+          if (userData) {
+            // Si todo está bien, establecemos el estado de autenticación
+            setIsAuthenticated(true);
+            setUsername(userData.username);
+            // Asumimos que el rol viene en un array 'roles' y tomamos el primero
+            const role = userData.roles && userData.roles.length > 0 ? userData.roles[0] : 'USER';
+            setUserRole(role);
+            localStorage.setItem('username', userData.username);
+            localStorage.setItem('userRole', role);
+          } else {
+            // El token es inválido o el usuario no existe
+            logout();
+          }
+        } catch (error) {
+          // El token expiró o hubo un error de red
+          logout();
+        }
       }
-      if (event.key === 'username') {
-        setUsername(event.newValue || undefined);
-      }
+      setLoading(false); // Terminamos la carga inicial
     };
 
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    checkUserStatus();
   }, []);
 
   const login = (newUsername: string, token: string) => {
+    // 1. Guardar el token
     localStorage.setItem('token', token);
-    localStorage.setItem('username', newUsername);
-    setUsername(newUsername);
-    setIsAuthenticated(true);
+    
+    // 2. Obtener datos del usuario (incluyendo el rol)
+    axios.get('http://localhost:8080/api/v1/usuarios/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then(response => {
+      const userData = response.data;
+      if (userData) {
+        const role = userData.roles && userData.roles.length > 0 ? userData.roles[0] : 'USER';
+        localStorage.setItem('username', userData.username);
+        localStorage.setItem('userRole', role);
+        setUsername(userData.username);
+        setUserRole(role);
+        setIsAuthenticated(true);
+      }
+    }).catch(() => {
+      // Si falla, limpiamos todo
+      logout();
+    });
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
+    localStorage.removeItem('userRole');
     setUsername(undefined);
+    setUserRole(undefined);
     setIsAuthenticated(false);
   };
 
+  // Muestra un loader mientras se verifica el estado de autenticación
+  if (loading) {
+    return <div>Verificando sesión...</div>;
+  }
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, username, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, username, userRole, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

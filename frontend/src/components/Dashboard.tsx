@@ -32,7 +32,7 @@ const BellIcon: React.FC<IconProps> = ({ className }) => (
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, logout, username } = useAuth();
+  const { isAuthenticated, logout, username, userRole } = useAuth();
   const [activeTab, setActiveTab] = useState<'perfil' | 'tareas' | 'proyectos' | 'equipo'>('perfil');
   const [notifOpen, setNotifOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -45,6 +45,9 @@ const Dashboard: React.FC = () => {
   const [orgNombre, setOrgNombre] = useState<string | null>(null);
   const toastIdRef = useRef(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Log para depurar el rol del usuario
+  console.log('Rol del usuario en Dashboard:', userRole);
 
   useEffect(() => {
     if (!isAuthenticated) navigate('/');
@@ -158,12 +161,14 @@ const Dashboard: React.FC = () => {
             >
               Proyectos
             </button>
-            <button
-              className={`nav-tab ${activeTab === 'equipo' ? 'active' : ''}`}
-              onClick={() => handleTabClick('equipo')}
-            >
-              Equipo
-            </button>
+            {userRole?.toLowerCase() !== 'desarrollador' && (
+              <button
+                className={`nav-tab ${activeTab === 'equipo' ? 'active' : ''}`}
+                onClick={() => handleTabClick('equipo')}
+              >
+                Equipo
+              </button>
+            )}
           </nav>
         </div>
 

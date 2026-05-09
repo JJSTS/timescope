@@ -4,6 +4,7 @@ const API_URL = 'http://localhost:8080/api/v1';
 
 interface LoginResponse {
   token: string;
+  role?: string; // Añadido el campo opcional para el rol
 }
 
 interface OrganizationData {
@@ -75,4 +76,3 @@ export const authService = {
     localStorage.removeItem('username');
   }
 };
-

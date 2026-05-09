@@ -90,7 +90,7 @@ export const Login: React.FC = () => {
 
     try {
       const response = await authService.login(loginData.username, loginData.password);
-      login(loginData.username, response.token);
+      login(loginData.username, response.token); // Corregido: solo 2 argumentos
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Error al iniciar sesión');
@@ -134,7 +134,7 @@ export const Login: React.FC = () => {
         registerData.passwordComprobacion,
         orgData
       );
-      login(registerData.username, response.token);
+      login(registerData.username, response.token); // Corregido: solo 2 argumentos
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Error al crear la cuenta');
