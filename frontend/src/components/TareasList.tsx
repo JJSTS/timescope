@@ -45,8 +45,19 @@ const TareasList: React.FC = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [selectedTask, setSelectedTask] = useState<Tarea | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [organizacionId, setOrganizacionId] = useState<number | undefined>(undefined);
   const token = localStorage.getItem('token');
   const { userRole } = useAuth();
+
+  useEffect(() => {
+    if (!token) return;
+    fetch('http://localhost:8080/api/v1/usuarios/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.organizacionId) setOrganizacionId(data.organizacionId); })
+      .catch(() => {});
+  }, [token]);
 
   const canCreate = ['DIRECTOR', 'COORDINADOR', 'LIDER'].includes(userRole?.toUpperCase() ?? '');
 
@@ -192,6 +203,7 @@ const TareasList: React.FC = () => {
         <TareaCreateModal
           onClose={() => setShowCreateModal(false)}
           onCreated={() => fetchTareas(currentPage)}
+          organizacionId={organizacionId}
         />
       )}
     </>

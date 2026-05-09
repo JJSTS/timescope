@@ -51,6 +51,8 @@ const UserProfile: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [orgNombre, setOrgNombre] = useState<string | null>(null);
+  const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [selectedMember, setSelectedMember] = useState<MemberDetail | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [memberLoading, setMemberLoading] = useState(false);
@@ -77,19 +79,30 @@ const UserProfile: React.FC = () => {
         const userData = await userResponse.json();
         setUser(userData);
 
-        const tasksUrl = `http://localhost:8080/api/v1/tareas/me/activo`;
-        const tasksResponse = await fetch(tasksUrl, { headers: { Authorization: `Bearer ${token}` } });
+        const [tasksResponse, allTasksResponse] = await Promise.all([
+          fetch('http://localhost:8080/api/v1/tareas/me/activo', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('http://localhost:8080/api/v1/tareas/me?size=100', { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
         if (tasksResponse.ok) {
           const tasksData = await tasksResponse.json();
           setTasks(Array.isArray(tasksData) ? tasksData : tasksData.content || []);
         }
+        if (allTasksResponse.ok) {
+          const allTasksData = await allTasksResponse.json();
+          setAllTasks(Array.isArray(allTasksData) ? allTasksData : allTasksData.content || []);
+        }
 
         if (userData.organizacionId) {
-          const teamResponse = await fetch(
-            `http://localhost:8080/api/v1/organizaciones/${userData.organizacionId}/miembros`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
+          const [teamResponse, orgResponse] = await Promise.all([
+            fetch(`http://localhost:8080/api/v1/organizaciones/${userData.organizacionId}/miembros`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`http://localhost:8080/api/v1/organizaciones?id=${userData.organizacionId}&size=1`, { headers: { Authorization: `Bearer ${token}` } }),
+          ]);
           if (teamResponse.ok) setTeamMembers(await teamResponse.json());
+          if (orgResponse.ok) {
+            const orgData = await orgResponse.json();
+            const nombre = orgData?.content?.[0]?.nombre;
+            if (nombre) setOrgNombre(nombre);
+          }
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -124,6 +137,46 @@ const UserProfile: React.FC = () => {
 
   const pendingTasks = tasks;
   
+  // --- PRODUCTIVITY CHART ---
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  const monthName = now.toLocaleString('es-ES', { month: 'long' });
+
+  // Calcular los lunes del mes actual para definir semanas reales (lun–dom)
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  const firstMonday = new Date(firstDay);
+  const dayOfWeek = firstDay.getDay(); // 0=dom, 1=lun...
+  const offsetToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  firstMonday.setDate(firstDay.getDate() + offsetToMonday);
+
+  const weekStarts: Date[] = [];
+  const d = new Date(firstMonday);
+  while (d.getMonth() <= currentMonth && d.getFullYear() <= currentYear) {
+    if (d.getMonth() === currentMonth || (d.getMonth() < currentMonth && new Date(d.getTime() + 6 * 86400000).getMonth() === currentMonth)) {
+      weekStarts.push(new Date(d));
+    }
+    d.setDate(d.getDate() + 7);
+    if (weekStarts.length >= 6) break;
+  }
+
+  const weekData = weekStarts.map((start, i) => {
+    const end = new Date(start.getTime() + 7 * 86400000);
+    return { completadas: 0, abiertas: 0, label: `S${i + 1}`, start, end };
+  });
+
+  allTasks.forEach(task => {
+    if (!task.fechaLimite) return;
+    const fecha = new Date(task.fechaLimite);
+    const wi = weekData.findIndex(w => fecha >= w.start && fecha < w.end);
+    if (wi === -1) return;
+    if (task.estado === 'COMPLETADO') weekData[wi].completadas++;
+    else weekData[wi].abiertas++;
+  });
+
+  const maxTotal = Math.max(...weekData.map(w => w.completadas + w.abiertas), 1);
+  // --------------------------
+
   // --- PAGINATION LOGIC ---
   const totalPages = Math.ceil(pendingTasks.length / tasksPerPage);
   const indexOfLastTask = currentPage * tasksPerPage;
@@ -152,13 +205,16 @@ const UserProfile: React.FC = () => {
               <div className="user-avatar-large">{user?.nombres?.charAt(0)}{user?.apellidos?.charAt(0)}</div>
               <div className="user-info-expanded">
                 <h1 className="user-name-large">{user?.nombres} {user?.apellidos}</h1>
-                <div className="user-meta"><span className="user-email-header">{user?.email}</span></div>
+                <div className="user-meta">
+                  <span className="user-email-header">{user?.email}</span>
+                </div>
                 <div className="user-roles">
                   {user?.roles?.map(r => <span key={r} className={`role-badge role-${r.toLowerCase()}`}>{r.toUpperCase()}</span>) || <span className="role-badge role-miembro">MIEMBRO</span>}
                 </div>
               </div>
             </div>
           </div>
+          {orgNombre && <span className="user-org-name">{orgNombre}</span>}
         </div>
 
         <div className="profile-main-layout">
@@ -236,8 +292,33 @@ const UserProfile: React.FC = () => {
             </section>
           </div>
           <aside className="profile-sidebar">
+            <div className="sidebar-card productivity-card">
+              <h3 className="sidebar-card-title">Productividad · {monthName}</h3>
+              <p className="productivity-subtitle">Tareas completadas vs abiertas por semana</p>
+              <div className="productivity-chart">
+                {weekData.map((w) => {
+                  const total = w.completadas + w.abiertas;
+                  const compPct = total > 0 ? (w.completadas / maxTotal) * 100 : 0;
+                  const abPct = total > 0 ? (w.abiertas / maxTotal) * 100 : 0;
+                  return (
+                    <div key={w.label} className="productivity-row">
+                      <span className="productivity-label">{w.label}</span>
+                      <div className="productivity-bars">
+                        <div className="productivity-bar productivity-bar--completadas" style={{ width: `${compPct}%` }} />
+                        <div className="productivity-bar productivity-bar--abiertas" style={{ width: `${abPct}%` }} />
+                      </div>
+                      <span className="productivity-count">{w.completadas}/{total}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="productivity-legend">
+                <span className="legend-item"><span className="legend-dot legend-dot--completadas" />Completadas</span>
+                <span className="legend-item"><span className="legend-dot legend-dot--abiertas" />Abiertas</span>
+              </div>
+            </div>
             <div className="sidebar-card team-card">
-              <h3 className="sidebar-card-title">Equipo<span className="team-count">{teamMembers.length}</span></h3>
+              <h3 className="sidebar-card-title">Miembros<span className="team-count">{teamMembers.length}</span></h3>
               <div className="team-members-list">
                 {teamMembers.map(member => (
                   <div key={member.id} className="team-member-item">

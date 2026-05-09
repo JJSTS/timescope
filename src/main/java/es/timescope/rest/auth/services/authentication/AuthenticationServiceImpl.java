@@ -31,6 +31,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.security.authentication.BadCredentialsException;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -107,8 +109,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   @Override
   public JwtAuthResponse signIn(UserSignInRequest request) {
     log.info("Autenticando usuario: {}", request);
-    authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+    try {
+      authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+    } catch (BadCredentialsException e) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario o contraseña incorrectos");
+    }
     var user = authUsersRepository.findByUsername(request.getUsername())
         .orElseThrow(() -> new AuthSignInNotValid("Usuario o contraseña incorrectos"));
 
@@ -117,6 +123,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       Organizacion org = organizacionesRepository.findByNombreIgnoreCase(request.getOrgNombre())
           .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
               "Organización '" + request.getOrgNombre() + "' no encontrada"));
+      if (user.getOrganizacion() == null || !user.getOrganizacion().getId().equals(org.getId())) {
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+            "No perteneces a la organización '" + request.getOrgNombre() + "'");
+      }
       orgId = org.getId();
     }
 

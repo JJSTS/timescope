@@ -147,6 +147,13 @@
   font-weight: 500;
 }
 
+.user-org-name {
+  font-size: 1.4rem;
+  color: #111827;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .user-intro {
   display: flex;
   align-items: center;
@@ -763,6 +770,99 @@
 /* ============================================
    TEAM CARD
    ============================================ */
+
+/* ============================================
+   PRODUCTIVITY CARD
+   ============================================ */
+
+.productivity-card {
+  padding: 1.5rem;
+}
+
+.productivity-subtitle {
+  font-size: 0.78rem;
+  color: #9ca3af;
+  margin: 0.15rem 0 1rem;
+}
+
+.productivity-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.productivity-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.productivity-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6b7280;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.productivity-bars {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.productivity-bar {
+  height: 8px;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.productivity-bar--completadas {
+  background: #5b21b6;
+}
+
+.productivity-bar--abiertas {
+  background: #ddd6fe;
+}
+
+.productivity-count {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #374151;
+  width: 32px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.productivity-legend {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.legend-dot--completadas {
+  background: #5b21b6;
+}
+
+.legend-dot--abiertas {
+  background: #ddd6fe;
+}
 
 .team-card {
   padding: 1.5rem;

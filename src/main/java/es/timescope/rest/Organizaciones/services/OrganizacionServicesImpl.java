@@ -6,6 +6,8 @@ import es.timescope.rest.Organizaciones.exceptions.OrganizacionNotFoundException
 import es.timescope.rest.Organizaciones.mappers.OrganizacionesMapper;
 import es.timescope.rest.Organizaciones.models.Organizacion;
 import es.timescope.rest.Organizaciones.repositories.OrganizacionesRepository;
+import es.timescope.rest.Proyectos.dto.ProyectoResponseDto;
+import es.timescope.rest.Proyectos.mappers.ProyectosMapper;
 import es.timescope.rest.Proyectos.repositories.ProyectosRepository;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 import es.timescope.rest.Usuarios.exceptions.UsuarioNotFound;
@@ -41,6 +43,7 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
     private final UsuarioOrgRolRepository usuarioOrgRolRepository;
     private final AuthUtils authUtils;
     private final UsuariosMapper usuariosMapper;
+    private final ProyectosMapper proyectosMapper;
 
     private Organizacion getEntity(Long id) {
         return repository.findById(id)
@@ -228,6 +231,15 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
         return getEntity(orgId).getUsuarios()
                 .stream()
                 .map(usuariosMapper::toUsuarioResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProyectoResponseDto> getProyectos(Long orgId) {
+        return getEntity(orgId).getProyectos()
+                .stream()
+                .filter(p -> !Boolean.TRUE.equals(p.getIsDeleted()))
+                .map(proyectosMapper::toProyectoResponseDto)
                 .collect(Collectors.toList());
     }
 

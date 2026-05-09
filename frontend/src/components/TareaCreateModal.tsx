@@ -1,19 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/TareaCreateModal.css';
+
+interface Proyecto {
+  id: number;
+  nombre: string;
+}
 
 interface Props {
   onClose: () => void;
   onCreated: () => void;
+  organizacionId?: number;
 }
 
-const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated }) => {
+const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId }) => {
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [fechaLimite, setFechaLimite] = useState('');
   const [horasEstimadas, setHorasEstimadas] = useState('');
   const [proyectoId, setProyectoId] = useState('');
+  const [proyectos, setProyectos] = useState<Proyecto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!organizacionId) return;
+    const token = localStorage.getItem('token');
+    fetch(`http://localhost:8080/api/v1/organizaciones/${organizacionId}/proyectos`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setProyectos(Array.isArray(data) ? data : []))
+      .catch(() => setProyectos([]));
+  }, [organizacionId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,16 +137,19 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated }) => {
             </div>
 
             <div className="tcm-field">
-              <label className="tcm-label">ID Proyecto</label>
-              <input
+              <label className="tcm-label">Proyecto <span className="tcm-required">*</span></label>
+              <select
                 className="tcm-input"
-                type="number"
-                min="1"
                 value={proyectoId}
                 onChange={(e) => setProyectoId(e.target.value)}
-                placeholder="ej. 3"
-                disabled={loading}
-              />
+                disabled={loading || proyectos.length === 0}
+                required
+              >
+                <option value="">Selecciona un proyecto</option>
+                {proyectos.map(p => (
+                  <option key={p.id} value={p.id}>{p.nombre}</option>
+                ))}
+              </select>
             </div>
           </div>
 

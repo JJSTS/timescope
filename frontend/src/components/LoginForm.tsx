@@ -149,31 +149,13 @@ export const Login: React.FC = () => {
         <div className="hero-content">
           <div className="hero-header">
             <h1 className="hero-title">
-              Accede a <span className="hero-brand">TimeScope</span> y organiza el tiempo de tu equipo
+              Todo tu equipo, cada proyecto, cada tarea en un solo lugar con <span className="hero-brand">TimeScope</span>
             </h1>
             <p className="hero-description">
-              Gestión de tiempo simplificada para equipos modernos. Rastrea proyectos, mide productividad y colabora en tiempo real.
+              Coordina equipos, asigna tareas y da seguimiento a proyectos con claridad. Notificaciones en tiempo real, roles por organización y una visión completa de tu trabajo.
             </p>
           </div>
 
-          {/* Stats Cards */}
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-icon stat-icon-orange">👥</div>
-              <div className="stat-value">+150</div>
-              <div className="stat-label">Equipos</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon stat-icon-sky">📈</div>
-              <div className="stat-value">2.5K</div>
-              <div className="stat-label">Proyectos</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon stat-icon-lime">📍</div>
-              <div className="stat-value">Madrid</div>
-              <div className="stat-label">España</div>
-            </div>
-          </div>
         </div>
       </div>
 

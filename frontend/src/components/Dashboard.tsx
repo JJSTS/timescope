@@ -168,13 +168,6 @@ const Dashboard: React.FC = () => {
           </nav>
         </div>
 
-        {/* Center Section: Org name */}
-        {orgNombre && (
-          <div className="header-center-section">
-            <span className="header-org-name">{orgNombre}</span>
-          </div>
-        )}
-
         {/* Right Section: Search, Notifications, Avatar */}
         <div className="header-right-section">
           <SearchBar 
