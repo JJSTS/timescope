@@ -90,7 +90,7 @@ export const Login: React.FC = () => {
 
     try {
       const response = await authService.login(loginData.username, loginData.password);
-      login(loginData.username, response.token); // Corregido: solo 2 argumentos
+      await login(loginData.username, response.token); // Espera a que el login termine
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Error al iniciar sesión');
@@ -105,24 +105,21 @@ export const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      // Validar que las contraseñas coincidan
       if (registerData.password !== registerData.passwordComprobacion) {
         setError('Las contraseñas no coinciden');
         setLoading(false);
         return;
       }
 
-      // Validar que el nombre de organización no esté vacío
       if (!registerData.organizacionNombre || !registerData.organizacionNombre.trim()) {
         setError('El nombre de la organización es obligatorio');
         setLoading(false);
         return;
       }
 
-      // Preparar datos de organización
       const orgData = {
         nombre: registerData.organizacionNombre,
-        crearNueva: registerData.crearOrganizacion  // ← FLAG: crear o unirse
+        crearNueva: registerData.crearOrganizacion
       };
 
       const response = await authService.register(
@@ -134,7 +131,7 @@ export const Login: React.FC = () => {
         registerData.passwordComprobacion,
         orgData
       );
-      login(registerData.username, response.token); // Corregido: solo 2 argumentos
+      await login(registerData.username, response.token); // Espera a que el login termine
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Error al crear la cuenta');

@@ -4,7 +4,7 @@ import axios from 'axios';
 interface AuthContextType {
   isAuthenticated: boolean;
   logout: () => void;
-  login: (username: string, token: string) => void; // Ya no necesita el rol aquí
+  login: (username: string, token: string) => Promise<void>; // Devuelve una promesa
   username?: string;
   userRole?: string;
 }
@@ -22,7 +22,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          // Hay un token, vamos a verificarlo y obtener los datos del usuario
           const response = await axios.get('http://localhost:8080/api/v1/usuarios/me', {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -30,37 +29,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           const userData = response.data;
           
           if (userData) {
-            // Si todo está bien, establecemos el estado de autenticación
             setIsAuthenticated(true);
             setUsername(userData.username);
-            // Asumimos que el rol viene en un array 'roles' y tomamos el primero
             const role = userData.roles && userData.roles.length > 0 ? userData.roles[0] : 'USER';
             setUserRole(role);
             localStorage.setItem('username', userData.username);
             localStorage.setItem('userRole', role);
           } else {
-            // El token es inválido o el usuario no existe
             logout();
           }
         } catch (error) {
-          // El token expiró o hubo un error de red
           logout();
         }
       }
-      setLoading(false); // Terminamos la carga inicial
+      setLoading(false);
     };
 
     checkUserStatus();
   }, []);
 
-  const login = (newUsername: string, token: string) => {
-    // 1. Guardar el token
+  const login = async (newUsername: string, token: string): Promise<void> => {
     localStorage.setItem('token', token);
     
-    // 2. Obtener datos del usuario (incluyendo el rol)
-    axios.get('http://localhost:8080/api/v1/usuarios/me', {
-      headers: { Authorization: `Bearer ${token}` },
-    }).then(response => {
+    try {
+      const response = await axios.get('http://localhost:8080/api/v1/usuarios/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const userData = response.data;
       if (userData) {
         const role = userData.roles && userData.roles.length > 0 ? userData.roles[0] : 'USER';
@@ -69,11 +63,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUsername(userData.username);
         setUserRole(role);
         setIsAuthenticated(true);
+      } else {
+        logout();
+        throw new Error("No se pudieron obtener los datos del usuario.");
       }
-    }).catch(() => {
-      // Si falla, limpiamos todo
+    } catch (error) {
       logout();
-    });
+      throw error; // Re-lanza el error para que el formulario de login lo pueda capturar
+    }
   };
 
   const logout = () => {
@@ -85,7 +82,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsAuthenticated(false);
   };
 
-  // Muestra un loader mientras se verifica el estado de autenticación
   if (loading) {
     return <div>Verificando sesión...</div>;
   }
