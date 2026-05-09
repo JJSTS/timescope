@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import TaskCalendar from './TaskCalendar';
-import TaskDetailModal from './TaskDetailModal'; // Importar el modal reutilizable
+import TaskDetailModal from './TaskDetailModal';
 import '../styles/UserProfile.css';
 
 interface Task {
@@ -51,10 +51,14 @@ const UserProfile: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [selectedMember, setSelectedMember] = useState<MemberDetail | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [memberLoading, setMemberLoading] = useState(false);
+
+  // --- PAGINATION STATE ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const tasksPerPage = 5;
+  // ------------------------
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -119,7 +123,25 @@ const UserProfile: React.FC = () => {
   if (error) return <div className="profile-container"><div className="error-state"><h2>Error</h2><p>{error}</p></div></div>;
 
   const pendingTasks = tasks;
-  const visibleTasks = pendingTasks.slice(currentTaskIndex, currentTaskIndex + 5);
+  
+  // --- PAGINATION LOGIC ---
+  const totalPages = Math.ceil(pendingTasks.length / tasksPerPage);
+  const indexOfLastTask = currentPage * tasksPerPage;
+  const indexOfFirstTask = indexOfLastTask - tasksPerPage;
+  const visibleTasks = pendingTasks.slice(indexOfFirstTask, indexOfLastTask);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+  // ------------------------
 
   return (
     <>
@@ -181,6 +203,28 @@ const UserProfile: React.FC = () => {
                       </div>
                     ))}
                   </div>
+                  
+                  {totalPages > 1 && (
+                    <div className="tasks-pagination">
+                      <button
+                        className="pagination-btn"
+                        onClick={handlePrevPage}
+                        disabled={currentPage === 1}
+                      >
+                        ◀ Anteriores
+                      </button>
+                      <span className="pagination-info">
+                        Página {currentPage} de {totalPages}
+                      </span>
+                      <button
+                        className="pagination-btn"
+                        onClick={handleNextPage}
+                        disabled={currentPage === totalPages}
+                      >
+                        Siguientes ▶
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="empty-placeholder"><p>No hay tareas pendientes.</p></div>
@@ -216,7 +260,6 @@ const UserProfile: React.FC = () => {
         </div>
       </div>
 
-      {/* Usar el componente de modal reutilizable */}
       {selectedTask && (
         <TaskDetailModal task={selectedTask} onClose={() => setSelectedTask(null)} />
       )}
