@@ -1,2 +1,2 @@
 [phases.setup]
-nixPkgs = ["jdk21"]
+nixPkgs = ["jdk21_headless"]
