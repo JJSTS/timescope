@@ -9,7 +9,6 @@ import es.timescope.rest.Usuarios.models.Usuario;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Set;
 
 @Component
 public class UsuariosMapper {
@@ -22,23 +21,23 @@ public class UsuariosMapper {
                 .email(usuario.getEmail())
                 .password(usuario.getPassword())
                 .username(usuario.getUsername())
-                .roles(usuario.getRoles())
+                .rol(usuario.getRol())
                 .isDeleted(usuario.getIsDeleted())
                 .build();
     }
-    
+
     public UsuarioResponseDto toUsuarioResponseDto(Usuario usuario) {
-        return toUsuarioResponseDto(usuario, usuario.getRoles());
+        return toUsuarioResponseDto(usuario, usuario.getRol());
     }
 
-    public UsuarioResponseDto toUsuarioResponseDto(Usuario usuario, Set<Roles> roles) {
+    public UsuarioResponseDto toUsuarioResponseDto(Usuario usuario, Roles rol) {
         return UsuarioResponseDto.builder()
                 .id(usuario.getId())
                 .nombres(usuario.getNombres())
                 .apellidos(usuario.getApellidos())
                 .username(usuario.getUsername())
                 .email(usuario.getEmail())
-                .roles(roles)
+                .rol(rol)
                 .isDeleted(usuario.getIsDeleted())
                 .organizacionId(usuario.getOrganizacion() != null ? usuario.getOrganizacion().getId() : null)
                 .build();
@@ -51,7 +50,7 @@ public class UsuariosMapper {
                 .apellidos(usuario.getApellidos())
                 .username(usuario.getUsername())
                 .email(usuario.getEmail())
-                .roles(usuario.getRoles())
+                .rol(usuario.getRol())
                 .isDeleted(usuario.getIsDeleted())
                 .tareas(tareas)
                 .proyectos(proyectos)

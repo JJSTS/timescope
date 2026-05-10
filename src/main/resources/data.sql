@@ -1,31 +1,19 @@
 -- =====================
 -- USUARIOS
 -- =====================
-INSERT INTO USUARIOS (nombres, apellidos, username, email, password, is_deleted) VALUES
+INSERT INTO USUARIOS (nombres, apellidos, username, email, password, rol, is_deleted) VALUES
 --Contraseña: UsuarioGarcia
-('Carlos',  'García López',  'cgarcia',    'carlos.garcia@timescope.es',   '$2a$10$0BrI0ndP1P5tUiIirUgOeeQZICTwy72AHcGNeJ84soWiwx1aLRACm', false),
+('Carlos',  'García López',  'cgarcia',    'carlos.garcia@timescope.es',   '$2a$10$0BrI0ndP1P5tUiIirUgOeeQZICTwy72AHcGNeJ84soWiwx1aLRACm', 'DESARROLLADOR', false),
 --Contraseña: MartinezMartinez
-('María',   'Martínez Ruiz', 'mmartinez',  'maria.martinez@timescope.es',  '$2a$10$i/c4xUSoVKJumxz4D2Kqn.O1UMJvqfLh1Te7PiMV/Z8qUVA0gwgFe', false),
+('María',   'Martínez Ruiz', 'mmartinez',  'maria.martinez@timescope.es',  '$2a$10$i/c4xUSoVKJumxz4D2Kqn.O1UMJvqfLh1Te7PiMV/Z8qUVA0gwgFe', 'LIDER',         false),
 --Contraseña: JuanElDestructorDeMundos
-('Juan',    'Pérez Sánchez', 'jperez',     'juan.perez@timescope.es',      '$2a$10$gTqKcJDeIL9nWV/CLHa1ku5AETa0Khes.C1E6EP.Ked7jaA1X/Io6', false),
+('Juan',    'Pérez Sánchez', 'jperez',     'juan.perez@timescope.es',      '$2a$10$gTqKcJDeIL9nWV/CLHa1ku5AETa0Khes.C1E6EP.Ked7jaA1X/Io6', 'LIDER',         false),
 --Contraseña: DragonVampirico2090@@@@
-('Laura',   'Fernández Gil', 'lfernandez', 'laura.fernandez@timescope.es', '$2a$10$vjHYe2EDllMbd8nMraSXGule6lBYxkNdkOtGZEQ0Kb4Rp1Djax50u', false),
+('Laura',   'Fernández Gil', 'lfernandez', 'laura.fernandez@timescope.es', '$2a$10$vjHYe2EDllMbd8nMraSXGule6lBYxkNdkOtGZEQ0Kb4Rp1Djax50u', 'DIRECTOR',      false),
 --Contraseña: MeGustanLosGatos3000@
-('Andrés',  'López Torres',  'alopez',     'andres.lopez@timescope.es',    '$2a$10$e4kQAPpvlFxInkd2ZIpbX.h49bqvsiXoJGXJnpA5dCoGI7X7sbgO2', false),
+('Andrés',  'López Torres',  'alopez',     'andres.lopez@timescope.es',    '$2a$10$e4kQAPpvlFxInkd2ZIpbX.h49bqvsiXoJGXJnpA5dCoGI7X7sbgO2', 'DESARROLLADOR', false),
 --Contraseña: admin123
-('admin',   'Administrador', 'admin',      'admin@timescope.es',           '$2b$10$PKM9iai6W/I1neYmVUs5t.Fb5rWzlakR1MYPjP8fIF6ZaqbiRzfIe', false);
-
--- =====================
--- USUARIO_ROLES (roles globales)
--- =====================
-INSERT INTO USUARIO_ROLES (user_id, roles) VALUES
-(1, 'DESARROLLADOR'),  -- cgarcia
-(2, 'LIDER'),          -- mmartinez (gestora de proyectos en TechCorp)
-(3, 'LIDER'),          -- jperez
-(4, 'DIRECTOR'),       -- lfernandez
-(5, 'DESARROLLADOR'),  -- alopez
-(6, 'LIDER'),
-(6, 'DIRECTOR');       -- admin: todos los roles
+('admin',   'Administrador', 'admin',      'admin@timescope.es',           '$2b$10$PKM9iai6W/I1neYmVUs5t.Fb5rWzlakR1MYPjP8fIF6ZaqbiRzfIe', 'DIRECTOR',      false);
 
 -- =====================
 -- ORGANIZACIONES

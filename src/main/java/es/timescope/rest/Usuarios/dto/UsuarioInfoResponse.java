@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Builder
 @Data
@@ -22,7 +21,7 @@ public class UsuarioInfoResponse {
     private String username;
 
     @Builder.Default
-    private Set<Roles> roles = Set.of(Roles.DESARROLLADOR);
+    private Roles rol = Roles.DESARROLLADOR;
 
     @Builder.Default
     private List<String> proyectos = new ArrayList<>();

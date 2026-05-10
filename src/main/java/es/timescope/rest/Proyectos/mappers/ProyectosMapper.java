@@ -25,7 +25,7 @@ public class ProyectosMapper {
         List<Usuario> usuarios = proyecto.getUsuarios() != null ? proyecto.getUsuarios() : List.of();
 
         String liderNombre = usuarios.stream()
-                .filter(u -> u.getRoles() != null && u.getRoles().contains(Roles.LIDER))
+                .filter(u -> u.getRol() == Roles.LIDER)
                 .map(u -> u.getNombres() + " " + u.getApellidos())
                 .findFirst()
                 .orElse(null);

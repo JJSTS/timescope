@@ -23,7 +23,7 @@ interface Usuario {
   apellidos: string;
   username: string;
   email: string;
-  roles: string[];
+  rol: string;
 }
 
 interface Tarea {
@@ -91,7 +91,7 @@ const ProyectoDetail: React.FC = () => {
   const callerLevel = ROLE_LEVEL[userRole?.toUpperCase() ?? ''] ?? 0;
   const canChangeRoleOf = (u: Usuario) => {
     if (u.username === currentUsername) return false;
-    const targetLevel = Math.max(0, ...u.roles.map(r => ROLE_LEVEL[r.toUpperCase()] ?? 0));
+    const targetLevel = ROLE_LEVEL[u.rol?.toUpperCase() ?? ''] ?? 0;
     return targetLevel < callerLevel;
   };
 
@@ -378,11 +378,9 @@ const ProyectoDetail: React.FC = () => {
                         <p className="pd-usuario-nombre">{u.nombres} {u.apellidos}</p>
                         <p className="pd-usuario-username">@{u.username}</p>
                         <p className="pd-usuario-email">{u.email}</p>
-                        {u.roles?.length > 0 && (
+                        {u.rol && (
                           <div className="pd-roles">
-                            {u.roles.map((r, i) => (
-                              <span key={i} className={`pd-role pd-role--${r.toLowerCase()}`}>{r}</span>
-                            ))}
+                            <span className={`pd-role pd-role--${u.rol.toLowerCase()}`}>{u.rol}</span>
                           </div>
                         )}
 

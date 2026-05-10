@@ -8,7 +8,7 @@ interface Usuario {
   apellidos: string;
   username: string;
   email: string;
-  roles: string[];
+  rol: string;
   isDeleted: boolean;
 }
 
@@ -173,11 +173,9 @@ const UsuariosList: React.FC = () => {
               </td>
               <td>
                 <span className="roles-badge">
-                  {usuario.roles?.map((role, idx) => (
-                    <span key={idx} className={`role ${role.toLowerCase()}`}>
-                      {role}
-                    </span>
-                  )) || '-'}
+                  {usuario.rol
+                    ? <span className={`role ${usuario.rol.toLowerCase()}`}>{usuario.rol}</span>
+                    : '-'}
                 </span>
               </td>
               <td>

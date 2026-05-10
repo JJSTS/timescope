@@ -21,7 +21,7 @@ interface User {
   apellidos: string;
   username: string;
   email: string;
-  roles?: string[];
+  rol?: string;
   organizacionId?: number;
 }
 
@@ -30,7 +30,7 @@ interface TeamMember {
   nombres: string;
   apellidos: string;
   username: string;
-  roles?: string[];
+  rol?: string;
 }
 
 interface MemberDetail {
@@ -39,7 +39,7 @@ interface MemberDetail {
   apellidos: string;
   username: string;
   email: string;
-  roles?: string[];
+  rol?: string;
   proyectos?: string[];
   tareas?: string[];
 }
@@ -209,7 +209,9 @@ const UserProfile: React.FC = () => {
                   <span className="user-email-header">{user?.email}</span>
                 </div>
                 <div className="user-roles">
-                  {user?.roles?.map(r => <span key={r} className={`role-badge role-${r.toLowerCase()}`}>{r.toUpperCase()}</span>) || <span className="role-badge role-miembro">MIEMBRO</span>}
+                  {user?.rol
+                    ? <span className={`role-badge role-${user.rol.toLowerCase()}`}>{user.rol.toUpperCase()}</span>
+                    : <span className="role-badge role-miembro">MIEMBRO</span>}
                 </div>
               </div>
             </div>
@@ -323,7 +325,7 @@ const UserProfile: React.FC = () => {
                 {teamMembers.map(member => (
                   <div key={member.id} className="team-member-item">
                     <div
-                      className={`team-member-avatar role-${member.roles?.[0]?.toLowerCase() || 'miembro'} team-member-avatar--clickable`}
+                      className={`team-member-avatar role-${member.rol?.toLowerCase() || 'miembro'} team-member-avatar--clickable`}
                       onClick={() => handleMemberClick(member.id)}
                       title={`Ver perfil de ${member.nombres}`}
                     >
@@ -331,7 +333,7 @@ const UserProfile: React.FC = () => {
                     </div>
                     <div className="team-member-info">
                       <div className="team-member-name">{member.nombres} {member.apellidos}</div>
-                      <div className="team-member-role">{member.roles?.[0]?.toUpperCase() || 'MIEMBRO'}</div>
+                      <div className="team-member-role">{member.rol?.toUpperCase() || 'MIEMBRO'}</div>
                     </div>
                   </div>
                 ))}
@@ -352,14 +354,14 @@ const UserProfile: React.FC = () => {
             {memberLoading ? <div className="member-modal-loading">Cargando…</div> : selectedMember && (
               <>
                 <div className="member-modal-header">
-                  <div className={`member-modal-avatar role-${selectedMember.roles?.[0]?.toLowerCase() || 'miembro'}`}>
+                  <div className={`member-modal-avatar role-${selectedMember.rol?.toLowerCase() || 'miembro'}`}>
                     {selectedMember.nombres?.charAt(0)}{selectedMember.apellidos?.charAt(0)}
                   </div>
                   <div>
                     <h3 className="member-modal-name">{selectedMember.nombres} {selectedMember.apellidos}</h3>
                     <span className="member-modal-username">@{selectedMember.username}</span>
                     <div className="member-modal-roles">
-                      {selectedMember.roles?.map(r => <span key={r} className={`role-badge role-${r.toLowerCase()}`}>{r}</span>)}
+                      {selectedMember.rol && <span className={`role-badge role-${selectedMember.rol.toLowerCase()}`}>{selectedMember.rol}</span>}
                     </div>
                   </div>
                 </div>
