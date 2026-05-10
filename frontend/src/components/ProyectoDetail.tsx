@@ -26,22 +26,42 @@ interface Usuario {
   roles: string[];
 }
 
+interface Tarea {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  estado?: string;
+  horasEstimadas?: number;
+  fechaLimite?: string;
+  fechaCreacion?: string;
+  usuario?: string;
+}
+
 const estadoMeta: Record<string, { label: string; bg: string; color: string }> = {
   ACTIVO:     { label: 'Activo',     bg: '#ecfdf5', color: '#065f46' },
   COMPLETADO: { label: 'Completado', bg: '#eff6ff', color: '#1d4ed8' },
   SUSPENDIDO: { label: 'Suspendido', bg: '#fffbeb', color: '#92400e' },
 };
 
+const tareaEstadoMeta: Record<string, { label: string; bg: string; color: string }> = {
+  ACTIVO:     { label: 'Activo',     bg: '#ecfdf5', color: '#065f46' },
+  COMPLETADO: { label: 'Completado', bg: '#eff6ff', color: '#1d4ed8' },
+  SUSPENDIDO: { label: 'Suspendido', bg: '#fffbeb', color: '#92400e' },
+  ABIERTO:    { label: 'Abierto',    bg: '#f3f4f6', color: '#374151' },
+};
+
 const ProyectoDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { userRole } = useAuth();
+  const { userRole, username: currentUsername } = useAuth();
 
   const [proyecto, setProyecto] = useState<Proyecto | null>(null);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [tareas, setTareas] = useState<Tarea[]>([]);
+  const [tareasLoading, setTareasLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'info' | 'equipo'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'equipo' | 'tareas'>('info');
 
   // addUsuario state
   const [addUsername, setAddUsername] = useState('');
@@ -49,12 +69,39 @@ const ProyectoDetail: React.FC = () => {
   const [addError, setAddError] = useState<string | null>(null);
   const [addSuccess, setAddSuccess] = useState<string | null>(null);
 
+  // asignarRol state
+  const [roleSelections, setRoleSelections] = useState<Record<number, string>>({});
+  const [roleLoading, setRoleLoading] = useState<Record<number, boolean>>({});
+  const [roleFeedback, setRoleFeedback] = useState<Record<number, { ok: boolean; msg: string }>>({});
+
   const token = localStorage.getItem('token');
   const isDirector = userRole?.toUpperCase() === 'DIRECTOR';
+  const isLider    = userRole?.toUpperCase() === 'LIDER';
+  const canManageRoles = isDirector || isLider;
+
+  const rolesAsignables = isDirector
+    ? ['LIDER', 'DESARROLLADOR']
+    : isLider
+      ? ['LIDER', 'DESARROLLADOR']
+      : [];
+
+  const ROLE_LEVEL: Record<string, number> = {
+    DIRECTOR: 3, LIDER: 2, COORDINADOR: 1, DESARROLLADOR: 1
+  };
+  const callerLevel = ROLE_LEVEL[userRole?.toUpperCase() ?? ''] ?? 0;
+  const canChangeRoleOf = (u: Usuario) => {
+    if (u.username === currentUsername) return false;
+    const targetLevel = Math.max(0, ...u.roles.map(r => ROLE_LEVEL[r.toUpperCase()] ?? 0));
+    return targetLevel < callerLevel;
+  };
 
   useEffect(() => {
     fetchProyecto();
   }, [id]);
+
+  useEffect(() => {
+    if (activeTab === 'tareas' && id) fetchTareas();
+  }, [activeTab, id]);
 
   const fetchProyecto = async () => {
     setLoading(true);
@@ -87,6 +134,21 @@ const ProyectoDetail: React.FC = () => {
     }
   };
 
+  const fetchTareas = async () => {
+    setTareasLoading(true);
+    try {
+      const { data } = await axios.get(
+        `http://localhost:8080/api/v1/tareas/proyecto/${id}?page=0&size=100`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setTareas(Array.isArray(data) ? data : data.content ?? []);
+    } catch {
+      setTareas([]);
+    } finally {
+      setTareasLoading(false);
+    }
+  };
+
   const handleAddUsuario = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!addUsername.trim()) return;
@@ -106,6 +168,29 @@ const ProyectoDetail: React.FC = () => {
       setAddError(err.response?.data?.message || 'No se pudo añadir el usuario.');
     } finally {
       setAddLoading(false);
+    }
+  };
+
+  const handleAsignarRol = async (usuarioId: number) => {
+    const role = roleSelections[usuarioId];
+    if (!role) return;
+    setRoleLoading(prev => ({ ...prev, [usuarioId]: true }));
+    setRoleFeedback(prev => ({ ...prev, [usuarioId]: { ok: false, msg: '' } }));
+    try {
+      await axios.patch(
+        `http://localhost:8080/api/v1/usuarios/${usuarioId}/asingRol?role=${role}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setRoleFeedback(prev => ({ ...prev, [usuarioId]: { ok: true, msg: 'Rol asignado correctamente.' } }));
+      fetchProyecto();
+    } catch (err: any) {
+      setRoleFeedback(prev => ({
+        ...prev,
+        [usuarioId]: { ok: false, msg: err.response?.data?.message || 'No se pudo asignar el rol.' }
+      }));
+    } finally {
+      setRoleLoading(prev => ({ ...prev, [usuarioId]: false }));
     }
   };
 
@@ -199,6 +284,12 @@ const ProyectoDetail: React.FC = () => {
               onClick={() => setActiveTab('equipo')}
             >
               Equipo ({proyecto.membrosCount ?? usuarios.length})
+            </button>
+            <button
+              className={`pd-tab ${activeTab === 'tareas' ? 'pd-tab--active' : ''}`}
+              onClick={() => setActiveTab('tareas')}
+            >
+              Tareas ({proyecto.tareasCount ?? 0})
             </button>
           </div>
 
@@ -294,9 +385,92 @@ const ProyectoDetail: React.FC = () => {
                             ))}
                           </div>
                         )}
+
+                        {/* Asignar rol — solo si tiene permisos y el objetivo es de menor jerarquía */}
+                        {canManageRoles && canChangeRoleOf(u) && (
+                          <div className="pd-role-assign">
+                            <select
+                              className="pd-role-select"
+                              value={roleSelections[u.id] ?? ''}
+                              onChange={e => setRoleSelections(prev => ({ ...prev, [u.id]: e.target.value }))}
+                              disabled={roleLoading[u.id]}
+                            >
+                              <option value="">Cambiar rol…</option>
+                              {rolesAsignables.map(r => (
+                                <option key={r} value={r}>{r}</option>
+                              ))}
+                            </select>
+                            <button
+                              className="pd-role-btn"
+                              onClick={() => handleAsignarRol(u.id)}
+                              disabled={roleLoading[u.id] || !roleSelections[u.id]}
+                            >
+                              {roleLoading[u.id] ? '…' : 'Asignar'}
+                            </button>
+                          </div>
+                        )}
+                        {roleFeedback[u.id]?.msg && (
+                          <p className={roleFeedback[u.id].ok ? 'pd-add-success' : 'pd-add-error'}>
+                            {roleFeedback[u.id].msg}
+                          </p>
+                        )}
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          )}
+          {/* TAB: TAREAS */}
+          {activeTab === 'tareas' && (
+            <div className="pd-tab-content">
+              {tareasLoading ? (
+                <div className="pd-tareas-skeleton">
+                  {[...Array(4)].map((_, i) => <div key={i} className="pd-tarea-skeleton-row" />)}
+                </div>
+              ) : tareas.length === 0 ? (
+                <div className="pd-empty-state">
+                  <p>No hay tareas asignadas a este proyecto</p>
+                </div>
+              ) : (
+                <div className="pd-tareas-list">
+                  {tareas.map(t => {
+                    const tm = tareaEstadoMeta[t.estado ?? ''];
+                    return (
+                      <div key={t.id} className="pd-tarea-row">
+                        <span
+                          className="pd-tarea-badge"
+                          style={{ background: tm?.bg ?? '#f3f4f6', color: tm?.color ?? '#6b7280' }}
+                        >
+                          {tm?.label ?? t.estado ?? '—'}
+                        </span>
+                        <div className="pd-tarea-info">
+                          <span className="pd-tarea-nombre">{t.nombre}</span>
+                          {t.descripcion && (
+                            <span className="pd-tarea-desc">
+                              {t.descripcion.length > 80 ? `${t.descripcion.slice(0, 80)}…` : t.descripcion}
+                            </span>
+                          )}
+                        </div>
+                        <div className="pd-tarea-meta">
+                          {t.usuario && (
+                            <span className="pd-tarea-usuario">@{t.usuario}</span>
+                          )}
+                          {t.fechaLimite && (
+                            <span className="pd-tarea-fecha">
+                              {new Date(t.fechaLimite).toLocaleDateString('es-ES', {
+                                day: '2-digit', month: 'short', year: 'numeric'
+                              })}
+                            </span>
+                          )}
+                          {t.horasEstimadas != null && (
+                            <span className="pd-tarea-horas">{t.horasEstimadas}h</span>
+                          )}
+                        </div>
+                        <span className="pd-tarea-id">#{t.id}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

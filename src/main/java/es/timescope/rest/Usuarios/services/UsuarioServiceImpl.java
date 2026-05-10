@@ -25,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -114,26 +115,59 @@ public class UsuarioServiceImpl implements UsuariosService {
         return usuarioMapper.toUsuarioResponseDto(usuario, authUtils.getCallerRoles());
     }
 
+    private static final Map<Roles, Integer> ROLE_LEVEL = Map.of(
+            Roles.DIRECTOR,     3,
+            Roles.LIDER,        2,
+            Roles.DESARROLLADOR,1
+    );
+
     @Override
     @Transactional
     public void asignarRol(Long id, Roles role) {
         log.info("Asignando un rol al usuario con id: {}", id);
         Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
-        Usuario usuario = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
+        Usuario objetivo = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
 
-        validarJerarquiaRol(role);
+        // Un usuario no puede cambiar su propio rol
+        if (caller.getId().equals(objetivo.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes cambiar tu propio rol");
+        }
 
-        usuario.getRoles().clear();
-        usuario.getRoles().add(role);
-        usuariosRepository.save(usuario);
+        // El caller debe tener un nivel jerárquico superior al del objetivo
+        int callerLevel  = callerMaxLevel();
+        int objetivoLevel = objetivoMaxLevel(objetivo);
+        if (objetivoLevel >= callerLevel) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "No puedes cambiar el rol de un usuario con igual o mayor jerarquía que la tuya");
+        }
+
+        // El rol a asignar debe estar dentro de lo permitido para el caller
+        validarRolAsignable(role);
+
+        objetivo.getRoles().clear();
+        objetivo.getRoles().add(role);
+        usuariosRepository.save(objetivo);
     }
 
-    private void validarJerarquiaRol(Roles rolObjetivo) {
+    private int callerMaxLevel() {
+        if (authUtils.callerHasRole(Roles.DIRECTOR))     return ROLE_LEVEL.get(Roles.DIRECTOR);
+        if (authUtils.callerHasRole(Roles.LIDER))        return ROLE_LEVEL.get(Roles.LIDER);
+        return ROLE_LEVEL.get(Roles.DESARROLLADOR);
+    }
+
+    private int objetivoMaxLevel(Usuario objetivo) {
+        return objetivo.getRoles().stream()
+                .mapToInt(r -> ROLE_LEVEL.getOrDefault(r, 0))
+                .max()
+                .orElse(0);
+    }
+
+    private void validarRolAsignable(Roles rolObjetivo) {
         if (authUtils.callerHasRole(Roles.DIRECTOR)) return;
         if (authUtils.callerHasRole(Roles.LIDER)) {
-            if (rolObjetivo != Roles.LIDER) {
+            if (rolObjetivo != Roles.LIDER && rolObjetivo != Roles.DESARROLLADOR) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                        "Un LIDER solo puede asignar el rol LIDER");
+                        "Un LIDER solo puede asignar los roles LIDER o DESARROLLADOR");
             }
             return;
         }
