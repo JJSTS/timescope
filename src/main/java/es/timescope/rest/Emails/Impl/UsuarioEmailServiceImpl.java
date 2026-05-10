@@ -48,8 +48,7 @@ public class UsuarioEmailServiceImpl implements UsuarioEmailService {
             );
             emailService.sendSimpleEmail(usuario.getEmail(), subject, body);
         } catch (Exception e) {
-            log.error("Error al enviar el email al correo" + usuario.getEmail());
-           throw new EmailNotSent("Error al enviar el email al correo" + usuario.getEmail());
+            log.error("Error al enviar el email al correo {}: {}", usuario.getEmail(), e.getMessage());
         }
     }
 
@@ -76,8 +75,7 @@ public class UsuarioEmailServiceImpl implements UsuarioEmailService {
             );
             emailService.sendSimpleEmail(usuario.getEmail(), subject, body);
         } catch (Exception e) {
-            log.error("Error al enviar el email de cambio de contraseña");
-            throw new EmailNotSent("Error al enviar el email al correo");
+            log.error("Error al enviar el email de cambio de contraseña: {}", e.getMessage());
         }
     }
 }
