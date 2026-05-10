@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import TaskDetailModal from './TaskDetailModal'; // Importar el nuevo modal
 import '../styles/TaskCalendar.css';
 
 interface Task {
@@ -7,7 +8,9 @@ interface Task {
   descripcion: string;
   estado: string;
   proyecto?: string;
+  horasEstimadas?: number;
   fechaLimite?: string;
+  fechaCreacion?: string;
 }
 
 interface TaskCalendarProps {
@@ -16,14 +19,10 @@ interface TaskCalendarProps {
 
 const TaskCalendar: React.FC<TaskCalendarProps> = ({ tasks }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
-  const getDaysInMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  };
-
-  const getFirstDayOfMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-  };
+  const getDaysInMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  const getFirstDayOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
   const getTasksForDate = (day: number) => {
     return tasks.filter((task) => {
@@ -37,105 +36,55 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ tasks }) => {
     });
   };
 
-  const previousMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
-  };
-
-  const nextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
-  };
+  const previousMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
+  const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
 
   const today = new Date();
-  const isCurrentMonth =
-    currentDate.getMonth() === today.getMonth() &&
-    currentDate.getFullYear() === today.getFullYear();
-
+  const isCurrentMonth = currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear();
   const daysInMonth = getDaysInMonth(currentDate);
   const firstDayOfMonth = getFirstDayOfMonth(currentDate);
-  const days = [];
-
-  // Agregar días vacíos del mes anterior
-  for (let i = 0; i < firstDayOfMonth; i++) {
-    days.push(null);
-  }
-
-  // Agregar días del mes actual
-  for (let i = 1; i <= daysInMonth; i++) {
-    days.push(i);
-  }
-
-  const monthNames = [
-    'Enero',
-    'Febrero',
-    'Marzo',
-    'Abril',
-    'Mayo',
-    'Junio',
-    'Julio',
-    'Agosto',
-    'Septiembre',
-    'Octubre',
-    'Noviembre',
-    'Diciembre',
+  
+  const days = [
+    ...Array(firstDayOfMonth).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1)
   ];
 
+  const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
   return (
     <div className="calendar-container">
       <div className="calendar-header">
-        <button className="calendar-nav-btn" onClick={previousMonth}>
-          ◀
-        </button>
-        <h3 className="calendar-month-year">
-          {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-        </h3>
-        <button className="calendar-nav-btn" onClick={nextMonth}>
-          ▶
-        </button>
+        <button className="calendar-nav-btn" onClick={previousMonth}><i className="bi bi-chevron-left" /></button>
+        <h3 className="calendar-month-year">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</h3>
+        <button className="calendar-nav-btn" onClick={nextMonth}><i className="bi bi-chevron-right" /></button>
       </div>
 
       <div className="calendar-weekdays">
-        {dayNames.map((day) => (
-          <div key={day} className="weekday">
-            {day}
-          </div>
-        ))}
+        {dayNames.map((day) => <div key={day} className="weekday">{day}</div>)}
       </div>
 
       <div className="calendar-grid">
         {days.map((day, index) => {
           const dayTasks = day ? getTasksForDate(day) : [];
-          const isToday =
-            isCurrentMonth &&
-            day === today.getDate();
-
+          const isToday = isCurrentMonth && day === today.getDate();
           return (
-            <div
-              key={index}
-              className={`calendar-day ${day ? 'active' : 'empty'} ${
-                isToday ? 'today' : ''
-              } ${dayTasks.length > 0 ? 'has-tasks' : ''}`}
-            >
+            <div key={index} className={`calendar-day ${day ? 'active' : 'empty'} ${isToday ? 'today' : ''} ${dayTasks.length > 0 ? 'has-tasks' : ''}`}>
               {day && (
                 <>
                   <div className="day-number">{day}</div>
-                  {dayTasks.length > 0 && (
-                    <div className="day-tasks">
-                      {dayTasks.slice(0, 2).map((task) => (
-                        <div
-                          key={task.id}
-                          className={`task-dot task-${task.estado.toLowerCase()}`}
-                          title={task.nombre}
-                        >
-                          •
-                        </div>
-                      ))}
-                      {dayTasks.length > 2 && (
-                        <span className="task-count">+{dayTasks.length - 2}</span>
-                      )}
-                    </div>
-                  )}
+                  <div className="day-tasks-list">
+                    {dayTasks.map((task) => (
+                      <div
+                        key={task.id}
+                        className={`task-item task-${task.estado?.toLowerCase() || 'pendiente'}`}
+                        title={task.nombre}
+                        onClick={(e) => { e.stopPropagation(); setSelectedTask(task); }}
+                      >
+                        <span className="task-name">{task.nombre}</span>
+                      </div>
+                    ))}
+                  </div>
                 </>
               )}
             </div>
@@ -143,24 +92,16 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ tasks }) => {
         })}
       </div>
 
-      {/* Leyenda de estados */}
+      {selectedTask && (
+        <TaskDetailModal task={selectedTask} onClose={() => setSelectedTask(null)} />
+      )}
+
       <div className="calendar-legend">
-        <div className="legend-item">
-          <span className="legend-dot task-activo"></span>
-          <span>Activo</span>
-        </div>
-        <div className="legend-item">
-          <span className="legend-dot task-completado"></span>
-          <span>Completado</span>
-        </div>
-        <div className="legend-item">
-          <span className="legend-dot task-pendiente"></span>
-          <span>Pendiente</span>
-        </div>
+        <div className="legend-item"><span className="legend-dot task-activo"></span><span>Activo</span></div>
+        <div className="legend-item"><span className="legend-dot task-abierto"></span><span>Abierto</span></div>
       </div>
     </div>
   );
 };
 
 export default TaskCalendar;
-

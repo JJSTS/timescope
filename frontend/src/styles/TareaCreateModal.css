@@ -1,0 +1,190 @@
+/* ============================================
+   TAREA CREATE MODAL
+   ============================================ */
+
+.tcm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: tcm-fade-in 0.18s ease;
+}
+
+@keyframes tcm-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.tcm-modal {
+  background: var(--ts-surface, #fff);
+  border-radius: 12px;
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  position: relative;
+  border-top: 4px solid #f58025;
+  animation: tcm-slide-up 0.18s ease;
+}
+
+@keyframes tcm-slide-up {
+  from { transform: translateY(16px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.tcm-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #9ca3af;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+.tcm-close:hover {
+  background: #f3f4f6;
+  color: #111;
+}
+
+.tcm-header {
+  margin-bottom: 1.25rem;
+}
+
+.tcm-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+  padding-right: 2rem;
+}
+
+.tcm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tcm-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.tcm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.tcm-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9ca3af;
+}
+
+.tcm-required {
+  color: #ef4444;
+}
+
+.tcm-input,
+.tcm-textarea {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #1f2937;
+  background: #fafafa;
+  transition: border-color 0.2s;
+  outline: none;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.tcm-input:focus,
+.tcm-textarea:focus {
+  border-color: #f58025;
+  background: #fff;
+}
+
+.tcm-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.tcm-assign-hint {
+  margin: 0.3rem 0 0;
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.tcm-assign-hint strong {
+  color: #1e40af;
+}
+
+.tcm-error {
+  font-size: 0.85rem;
+  color: #dc2626;
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  margin: 0;
+}
+
+.tcm-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 0.25rem;
+}
+
+.tcm-btn-cancel {
+  padding: 0.6rem 1.1rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #6b7280;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tcm-btn-cancel:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.tcm-btn-submit {
+  padding: 0.6rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  background: #f58025;
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tcm-btn-submit:hover:not(:disabled) {
+  background: #e07020;
+}
+.tcm-btn-submit:disabled,
+.tcm-btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -49,6 +50,11 @@ public class SolicitudServicesImpl implements SolicitudServices {
                     log.error("Organización no encontrada: {}", organizacionNombre);
                     return new OrganizacionNotFoundException(organizacionNombre);
                 });
+
+        if (usuario.getOrganizacion() != null) {
+            throw new ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST,
+                    "Ya perteneces a una organización y no puedes unirte a otra");
+        }
 
         if (solicitudRepository.existsByUsuarioIdAndOrganizacionIdAndEstado(usuario.getId(), organizacion.getId(), Estado.PENDIENTE)) {
             throw new SolicitudExist();

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import UserProfile from './UserProfile';
+import ChangePasswordModal from './ChangePasswordModal';
+import EditProfileModal from './EditProfileModal';
 import UsuariosList from './UsuariosList';
 import TareasList from './TareasList';
 import ProyectosList from './ProyectosList';
@@ -13,35 +15,23 @@ import { useWebSocketNotif } from '../hooks/useWebSocketNotif';
 import '../styles/Dashboard.css';
 import faviconImage from '../images/Favicon.png';
 
-type IconProps = { className?: string };
-
-const SearchIcon: React.FC<IconProps> = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-    <circle cx="11" cy="11" r="7" />
-    <path d="m20 20-3.5-3.5" />
-  </svg>
-);
-
-const BellIcon: React.FC<IconProps> = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-  </svg>
-);
-
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, logout, username } = useAuth();
+  const { isAuthenticated, logout, username, userRole } = useAuth();
   const [activeTab, setActiveTab] = useState<'perfil' | 'tareas' | 'proyectos' | 'equipo'>('perfil');
   const [notifOpen, setNotifOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
   const [pendientesCount, setPendientesCount] = useState(0);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [userInitials, setUserInitials] = useState('');
-  const [highlightedId, setHighlightedId] = useState<number | null>(null);
   const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
   const toastIdRef = useRef(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Log para depurar el rol del usuario
+  console.log('Rol del usuario en Dashboard:', userRole);
 
   useEffect(() => {
     if (!isAuthenticated) navigate('/');
@@ -60,16 +50,15 @@ const Dashboard: React.FC = () => {
     };
   }, []);
 
-  // Obtener iniciales del usuario
+  // Calcular iniciales del avatar
   useEffect(() => {
-    if (username) {
-      const initials = username
-        .split(' ')
-        .slice(0, 2)
-        .map(word => word.charAt(0).toUpperCase())
-        .join('');
-      setUserInitials(initials || username.charAt(0).toUpperCase());
-    }
+    if (!username) return;
+    const initials = username
+      .split(' ')
+      .slice(0, 2)
+      .map(word => word.charAt(0).toUpperCase())
+      .join('');
+    setUserInitials(initials || username.charAt(0).toUpperCase());
   }, [username]);
 
   const handlePendientesChange = useCallback((count: number) => {
@@ -90,11 +79,8 @@ const Dashboard: React.FC = () => {
 
   useWebSocketNotif(username, handleNuevaNotificacion);
 
-  const handleTabClick = (tab: 'perfil' | 'tareas' | 'proyectos' | 'equipo', highlightId?: number) => {
+  const handleTabClick = (tab: 'perfil' | 'tareas' | 'proyectos' | 'equipo') => {
     setActiveTab(tab);
-    if (highlightId !== undefined) {
-      setHighlightedId(highlightId);
-    }
   };
 
   const handleLogout = () => {
@@ -137,12 +123,14 @@ const Dashboard: React.FC = () => {
             >
               Proyectos
             </button>
-            <button
-              className={`nav-tab ${activeTab === 'equipo' ? 'active' : ''}`}
-              onClick={() => handleTabClick('equipo')}
-            >
-              Equipo
-            </button>
+            {userRole?.toLowerCase() !== 'desarrollador' && (
+              <button
+                className={`nav-tab ${activeTab === 'equipo' ? 'active' : ''}`}
+                onClick={() => handleTabClick('equipo')}
+              >
+                Equipo
+              </button>
+            )}
           </nav>
         </div>
 
@@ -162,7 +150,7 @@ const Dashboard: React.FC = () => {
               aria-expanded={notifOpen}
               onClick={() => setNotifOpen(prev => !prev)}
             >
-              <BellIcon className="dashboard-icon" />
+              <i className="bi bi-bell-fill dashboard-icon" />
             </button>
             {notifOpen && (
               <NotificacionesPanel
@@ -183,23 +171,38 @@ const Dashboard: React.FC = () => {
               {userInitials}
             </button>
             <div className="user-dropdown">
-              <button className="dropdown-item" onClick={handleLogout}>
-                Cerrar sesión
+              <button className="dropdown-item" onClick={() => { setIsDropdownOpen(false); setShowEditProfile(true); }}>
+                <i className="bi bi-pencil-square" /> Editar perfil
+              </button>
+              <button className="dropdown-item" onClick={() => { setIsDropdownOpen(false); setShowChangePassword(true); }}>
+                <i className="bi bi-key-fill" /> Cambiar contraseña
+              </button>
+              <div className="dropdown-divider" />
+              <button className="dropdown-item dropdown-item--danger" onClick={handleLogout}>
+                <i className="bi bi-box-arrow-right" /> Cerrar sesión
               </button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="dashboard-content">
-        {activeTab === 'perfil' && <UserProfile />}
-        {activeTab === 'tareas' && <TareasList highlightedId={highlightedId} />}
-        {activeTab === 'proyectos' && <ProyectosList highlightedId={highlightedId} />}
-        {activeTab === 'equipo' && <UsuariosList />}
-      </main>
+       <main className="dashboard-content">
+         {activeTab === 'perfil' && <UserProfile />}
+         {activeTab === 'tareas' && <TareasList />}
+         {activeTab === 'proyectos' && <ProyectosList />}
+         {activeTab === 'equipo' && <UsuariosList />}
+       </main>
 
       {selectedOrgId !== null && (
         <OrganizacionModal orgId={selectedOrgId} onClose={() => setSelectedOrgId(null)} />
+      )}
+
+      {showChangePassword && (
+        <ChangePasswordModal onClose={() => setShowChangePassword(false)} />
+      )}
+
+      {showEditProfile && (
+        <EditProfileModal onClose={() => setShowEditProfile(false)} />
       )}
     </div>
   );

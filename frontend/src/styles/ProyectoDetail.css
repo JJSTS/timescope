@@ -1,0 +1,622 @@
+/* ============================================================
+   PROYECTO DETAIL — TimeScope
+   ============================================================ */
+
+.pd-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f3f4f6;
+}
+
+/* ---- Nav ---- */
+.pd-nav {
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0 2rem;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.pd-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pd-logo-slot {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.pd-favicon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.pd-logo-text {
+  font-size: 1.15rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.pd-back-btn {
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.pd-back-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+/* ---- Contenedor ---- */
+.pd-container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ---- Hero ---- */
+.pd-hero {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 1.75rem 2rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.pd-hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.pd-hero-id {
+  font-size: 0.75rem;
+  color: #d1d5db;
+  font-weight: 500;
+}
+
+.pd-hero-title {
+  margin: 0;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.pd-hero-lider {
+  font-size: 0.83rem;
+  color: #6b7280;
+}
+
+.pd-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ---- Métricas rápidas ---- */
+.pd-metrics {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.25rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.pd-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.pd-metric-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1;
+}
+
+.pd-metric-label {
+  font-size: 0.72rem;
+  color: #9ca3af;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.pd-metric-divider {
+  width: 1px;
+  height: 40px;
+  background: #e5e7eb;
+  flex-shrink: 0;
+}
+
+/* ---- Card principal ---- */
+.pd-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* ---- Tabs ---- */
+.pd-tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.pd-tab {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.pd-tab:hover {
+  color: #111827;
+  background: #f3f4f6;
+}
+
+.pd-tab--active {
+  color: #4f46e5;
+  border-bottom-color: #4f46e5;
+  background: #fff;
+}
+
+.pd-tab-content {
+  padding: 2rem;
+  animation: pd-fade 0.2s ease;
+}
+
+@keyframes pd-fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Info grid ---- */
+.pd-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.pd-info-block {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.pd-info-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pd-info-text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.pd-info-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.pd-empty {
+  color: #d1d5db;
+  font-style: italic;
+}
+
+/* ---- Añadir miembro ---- */
+.pd-add-form {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.pd-add-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.pd-add-row {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.pd-add-input {
+  flex: 1;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: #111827;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.pd-add-input:focus {
+  border-color: #4f46e5;
+}
+
+.pd-add-btn {
+  padding: 0.55rem 1.2rem;
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.pd-add-btn:hover:not(:disabled) { background: #4338ca; }
+.pd-add-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.pd-add-error   { margin: 0; font-size: 0.82rem; color: #dc2626; }
+.pd-add-success { margin: 0; font-size: 0.82rem; color: #059669; }
+
+/* ---- Grid de usuarios ---- */
+.pd-usuarios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.pd-usuario-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.pd-usuario-card:hover {
+  border-color: #c7d2fe;
+  box-shadow: 0 2px 10px rgba(79, 70, 229, 0.08);
+}
+
+.pd-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.pd-usuario-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pd-usuario-nombre {
+  margin: 0 0 0.15rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.pd-usuario-username {
+  margin: 0 0 0.2rem;
+  font-size: 0.78rem;
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+.pd-usuario-email {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  color: #6b7280;
+  word-break: break-all;
+}
+
+.pd-usuario-horas {
+  margin: 0.4rem 0 0;
+  font-size: 0.78rem;
+  color: #374151;
+}
+
+.pd-usuario-horas-label {
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.pd-roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.pd-role {
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pd-role--director     { background: #fee2e2; color: #991b1b; }
+.pd-role--coordinador  { background: #e5e7eb; color: #374151; }
+.pd-role--lider        { background: #fef9c3; color: #854d0e; }
+.pd-role--desarrollador{ background: #ede9fe; color: #5b21b6; }
+
+/* ---- Asignar rol ---- */
+.pd-role-assign {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.pd-role-select {
+  flex: 1;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  color: #374151;
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.pd-role-select:focus {
+  border-color: #4f46e5;
+}
+
+.pd-role-btn {
+  padding: 0.35rem 0.75rem;
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.pd-role-btn:hover:not(:disabled) { background: #4338ca; }
+.pd-role-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ---- Lista de tareas ---- */
+.pd-tareas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pd-tarea-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.pd-tarea-row:hover {
+  border-color: #c7d2fe;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.07);
+}
+
+.pd-tarea-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.22rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pd-tarea-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.pd-tarea-nombre {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pd-tarea-desc {
+  font-size: 0.78rem;
+  color: #9ca3af;
+}
+
+.pd-tarea-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.pd-tarea-usuario {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.pd-tarea-fecha {
+  font-size: 0.78rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.pd-tarea-horas {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.pd-tarea-id {
+  font-size: 0.7rem;
+  color: #d1d5db;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+/* Skeleton tareas */
+.pd-tareas-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pd-tarea-skeleton-row {
+  height: 58px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #eaebec 50%, #f3f4f6 75%);
+  background-size: 400% 100%;
+  animation: pd-shimmer 1.4s ease infinite;
+}
+
+@keyframes pd-shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* ---- Estado vacío ---- */
+.pd-empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #9ca3af;
+  font-size: 0.88rem;
+}
+
+.pd-empty-state p { margin: 0; }
+
+/* ---- Loading / Error ---- */
+.pd-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  font-size: 1rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.pd-error-box {
+  max-width: 480px;
+  margin: 4rem auto;
+  background: #fff;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 2.5rem;
+  text-align: center;
+  color: #dc2626;
+}
+
+.pd-error-box p { margin: 0 0 1.25rem; font-size: 0.9rem; }
+
+.pd-error-box button {
+  padding: 0.55rem 1.25rem;
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 640px) {
+  .pd-metrics { flex-wrap: wrap; gap: 1rem; }
+  .pd-info-grid { grid-template-columns: 1fr; }
+  .pd-usuarios-grid { grid-template-columns: 1fr; }
+  .pd-tab-content { padding: 1.25rem; }
+  .pd-add-row { flex-direction: column; }
+  .pd-add-btn { width: 100%; }
+}

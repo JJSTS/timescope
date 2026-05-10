@@ -4,6 +4,7 @@ import es.timescope.rest.Usuarios.dto.UsuarioCreateDto;
 import es.timescope.rest.Usuarios.dto.UsuarioInfoResponse;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 import es.timescope.rest.Usuarios.dto.UsuarioUpdateDto;
+import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
 import org.springframework.stereotype.Component;
 
@@ -11,17 +12,6 @@ import java.util.List;
 
 @Component
 public class UsuariosMapper {
-    public Usuario toUsuario(UsuarioCreateDto usuario) {
-        return Usuario.builder()
-                .nombres(usuario.getNombres())
-                .apellidos(usuario.getApellidos())
-                .email(usuario.getEmail())
-                .password(usuario.getPassword())
-                .username(usuario.getUsername())
-                .roles(usuario.getRoles())
-                .isDeleted(usuario.getIsDeleted())
-                .build();
-    }
     
     public Usuario toUsuario(UsuarioCreateDto usuario, Long id) {
         return Usuario.builder()
@@ -31,20 +21,25 @@ public class UsuariosMapper {
                 .email(usuario.getEmail())
                 .password(usuario.getPassword())
                 .username(usuario.getUsername())
-                .roles(usuario.getRoles())
+                .rol(usuario.getRol())
                 .isDeleted(usuario.getIsDeleted())
                 .build();
     }
-    
+
     public UsuarioResponseDto toUsuarioResponseDto(Usuario usuario) {
+        return toUsuarioResponseDto(usuario, usuario.getRol());
+    }
+
+    public UsuarioResponseDto toUsuarioResponseDto(Usuario usuario, Roles rol) {
         return UsuarioResponseDto.builder()
                 .id(usuario.getId())
                 .nombres(usuario.getNombres())
                 .apellidos(usuario.getApellidos())
                 .username(usuario.getUsername())
                 .email(usuario.getEmail())
-                .roles(usuario.getRoles())
+                .rol(rol)
                 .isDeleted(usuario.getIsDeleted())
+                .organizacionId(usuario.getOrganizacion() != null ? usuario.getOrganizacion().getId() : null)
                 .build();
     }
 
@@ -55,7 +50,7 @@ public class UsuariosMapper {
                 .apellidos(usuario.getApellidos())
                 .username(usuario.getUsername())
                 .email(usuario.getEmail())
-                .roles(usuario.getRoles())
+                .rol(usuario.getRol())
                 .isDeleted(usuario.getIsDeleted())
                 .tareas(tareas)
                 .proyectos(proyectos)

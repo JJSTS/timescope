@@ -85,6 +85,21 @@
   border-radius: 4px;
 }
 
+.header-center-section {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.header-org-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ts-text);
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
 .header-right-section {
   display: flex;
   align-items: center;
@@ -148,16 +163,21 @@
 }
 
 .dashboard-icon {
-  width: 26px;
-  height: 26px;
+  font-size: 1.2rem;
   display: block;
   flex-shrink: 0;
   pointer-events: none;
 }
 
 .notification-btn .dashboard-icon {
-  width: 21px;
-  height: 21px;
+  font-size: 1.05rem;
+}
+
+.dropdown-item i {
+  width: 1rem;
+  text-align: center;
+  margin-right: 0.4rem;
+  flex-shrink: 0;
 }
 
 .search-btn:hover,
@@ -262,6 +282,21 @@
 .dropdown-item:hover {
   background: var(--ts-surface-soft);
   color: var(--ts-accent);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--ts-border);
+  margin: 0.25rem 0;
+}
+
+.dropdown-item--danger {
+  color: #ef4444;
+}
+
+.dropdown-item--danger:hover {
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
 }
 
 /* Mobile menu */

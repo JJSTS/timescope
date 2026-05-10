@@ -1,60 +1,93 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import axios from 'axios';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   logout: () => void;
-  login: (username: string, token: string) => void;
+  login: (username: string, token: string) => Promise<void>; // Devuelve una promesa
   username?: string;
+  userRole?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    // Inicializa el estado directamente desde localStorage
-    const token = localStorage.getItem('token');
-    return !!token;
-  });
-  const [username, setUsername] = useState<string | undefined>(() => {
-    // Inicializa el username directamente desde localStorage
-    return localStorage.getItem('username') || undefined;
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [username, setUsername] = useState<string | undefined>();
+  const [userRole, setUserRole] = useState<string | undefined>();
+  const [loading, setLoading] = useState<boolean>(true); // Estado para la carga inicial
 
-  // Efecto para escuchar cambios en otras pestañas
   useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'token') {
-        const token = event.newValue;
-        setIsAuthenticated(!!token);
+    const checkUserStatus = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const response = await axios.get('http://localhost:8080/api/v1/usuarios/me', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          
+          const userData = response.data;
+          
+          if (userData) {
+            setIsAuthenticated(true);
+            setUsername(userData.username);
+            const role = userData.rol || 'USER';
+            setUserRole(role);
+            localStorage.setItem('username', userData.username);
+            localStorage.setItem('userRole', role);
+          } else {
+            logout();
+          }
+        } catch (error) {
+          logout();
+        }
       }
-      if (event.key === 'username') {
-        setUsername(event.newValue || undefined);
-      }
+      setLoading(false);
     };
 
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    checkUserStatus();
   }, []);
 
-  const login = (newUsername: string, token: string) => {
+  const login = async (newUsername: string, token: string): Promise<void> => {
     localStorage.setItem('token', token);
-    localStorage.setItem('username', newUsername);
-    setUsername(newUsername);
-    setIsAuthenticated(true);
+    
+    try {
+      const response = await axios.get('http://localhost:8080/api/v1/usuarios/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const userData = response.data;
+      if (userData) {
+        const role = userData.rol || 'USER';
+        localStorage.setItem('username', userData.username);
+        localStorage.setItem('userRole', role);
+        setUsername(userData.username);
+        setUserRole(role);
+        setIsAuthenticated(true);
+      } else {
+        logout();
+        throw new Error("No se pudieron obtener los datos del usuario.");
+      }
+    } catch (error) {
+      logout();
+      throw error; // Re-lanza el error para que el formulario de login lo pueda capturar
+    }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
+    localStorage.removeItem('userRole');
     setUsername(undefined);
+    setUserRole(undefined);
     setIsAuthenticated(false);
   };
 
+  if (loading) {
+    return <div>Verificando sesión...</div>;
+  }
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, username, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, username, userRole, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

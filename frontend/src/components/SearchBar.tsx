@@ -24,39 +24,32 @@ const TYPE_LABEL: Record<SearchResult['type'], string> = {
 };
 
 const SearchBar: React.FC<Props> = ({ onNavigate, onSelectOrg }) => {
-  const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [focused, setFocused] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const close = useCallback(() => {
-    setIsOpen(false);
+  const clearResults = useCallback(() => {
     setQuery('');
     setResults([]);
   }, []);
 
-  const open = () => {
-    setIsOpen(true);
-    setTimeout(() => inputRef.current?.focus(), 50);
-  };
-
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        close();
+        setFocused(false);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [close]);
+  }, []);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { clearResults(); setFocused(false); } };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [close]);
+  }, [clearResults]);
 
   useEffect(() => {
     if (!query.trim()) { setResults([]); return; }
@@ -106,40 +99,36 @@ const SearchBar: React.FC<Props> = ({ onNavigate, onSelectOrg }) => {
     if (result.type === 'proyecto') onNavigate('proyectos', result.id);
     else if (result.type === 'tarea') onNavigate('tareas', result.id);
     else if (result.type === 'organizacion') onSelectOrg(result.id);
-    close();
+    clearResults();
+    setFocused(false);
   };
 
-  const showDropdown = isOpen && query.trim().length > 0;
+  const showDropdown = focused && query.trim().length > 0;
 
   return (
     <div className="sb-container" ref={containerRef}>
-      <button
-        type="button"
-        className={`sb-icon-btn ${isOpen ? 'sb-icon-btn--active' : ''}`}
-        onClick={isOpen ? close : open}
-        aria-label={isOpen ? 'Cerrar búsqueda' : 'Abrir búsqueda'}
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-          strokeLinecap="round" strokeLinejoin="round" width="22" height="22" aria-hidden="true">
+      <div className={`sb-input-wrapper ${focused ? 'sb-input-wrapper--focused' : ''}`}>
+        <svg className="sb-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+          width="16" height="16" aria-hidden="true">
           <circle cx="11" cy="11" r="7" />
           <path d="m20 20-3.5-3.5" />
         </svg>
-      </button>
 
-      <div className={`sb-input-wrapper ${isOpen ? 'sb-input-wrapper--open' : ''}`}>
         <input
-          ref={inputRef}
           className="sb-input"
           type="text"
           placeholder="Buscar proyectos, tareas, organizaciones…"
           value={query}
           onChange={e => setQuery(e.target.value)}
+          onFocus={() => setFocused(true)}
           aria-label="Buscar"
         />
+
         {loading && <span className="sb-spinner" />}
         {query && !loading && (
-          <button type="button" className="sb-clear" onClick={() => setQuery('')} aria-label="Limpiar">
-            ×
+          <button type="button" className="sb-clear" onClick={clearResults} aria-label="Limpiar">
+            <i className="bi bi-x-lg" />
           </button>
         )}
       </div>

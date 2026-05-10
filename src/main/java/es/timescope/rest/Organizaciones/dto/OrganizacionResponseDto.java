@@ -19,6 +19,8 @@ public class OrganizacionResponseDto {
     private String administrador;
     private String userAdmin;
 
+    private List<String> directoresUsernames;
+
     private List<Long> proyectosIds;
     private List<Long> usuariosIds;
 }

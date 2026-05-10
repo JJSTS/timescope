@@ -3,6 +3,8 @@ package es.timescope.rest.Organizaciones.controllers;
 import es.timescope.rest.Organizaciones.dto.OrganizacionCreateDto;
 import es.timescope.rest.Organizaciones.dto.OrganizacionResponseDto;
 import es.timescope.rest.Organizaciones.services.OrganizacionServices;
+import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
+import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.utils.pagination.PaginationLinksUtils;
 import es.timescope.utils.pagination.PageResponse;
 
@@ -18,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -88,6 +91,12 @@ public class OrganizacionesRestController {
         return ResponseEntity.ok(service.getEmpresaMatriz(id));
     }
 
+    // 🔹 Proyectos de una organización
+    @GetMapping("/{id}/proyectos")
+    public ResponseEntity<?> getProyectos(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getProyectos(id));
+    }
+
     // 🔹 Añadir proyecto
     @PostMapping("/{id}/proyectos/{proyectoId}")
     public ResponseEntity<OrganizacionResponseDto> addProyecto(
@@ -102,5 +111,40 @@ public class OrganizacionesRestController {
             @PathVariable Long id,
             @PathVariable Long usuarioId) {
         return ResponseEntity.ok(service.addUsuario(id, usuarioId));
+    }
+
+    @PostMapping("/{id}/directores/{usuarioId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<OrganizacionResponseDto> addDirector(
+            @PathVariable Long id,
+            @PathVariable Long usuarioId) {
+        log.info("Añadiendo director {} a org {}", usuarioId, id);
+        return ResponseEntity.ok(service.addDirector(id, usuarioId));
+    }
+
+    @DeleteMapping("/{id}/directores/{usuarioId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<OrganizacionResponseDto> removeDirector(
+            @PathVariable Long id,
+            @PathVariable Long usuarioId) {
+        log.info("Eliminando director {} de org {}", usuarioId, id);
+        return ResponseEntity.ok(service.removeDirector(id, usuarioId));
+    }
+
+    @GetMapping("/{id}/miembros")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<UsuarioResponseDto>> getMiembros(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getMiembros(id));
+    }
+
+    @PatchMapping("/{orgId}/usuarios/{usuarioId}/rol")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> asignarRolEnOrg(
+            @PathVariable Long orgId,
+            @PathVariable Long usuarioId,
+            @RequestParam Roles rol) {
+        log.info("Asignando rol {} al usuario {} en org {}", rol, usuarioId, orgId);
+        service.asignarRolEnOrg(orgId, usuarioId, rol);
+        return ResponseEntity.noContent().build();
     }
 }

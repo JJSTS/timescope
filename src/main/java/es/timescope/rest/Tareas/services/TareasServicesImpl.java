@@ -3,6 +3,7 @@ package es.timescope.rest.Tareas.services;
 import es.timescope.config.auth.AuthUtils;
 import es.timescope.rest.Notificacion.models.Tipo;
 import es.timescope.rest.Notificacion.service.NotificacionService;
+import es.timescope.rest.Proyectos.models.Proyecto;
 import es.timescope.rest.Proyectos.repositories.ProyectosRepository;
 import es.timescope.rest.Tareas.dto.TareaAddDto;
 import es.timescope.rest.Tareas.dto.TareaCreateDto;
@@ -48,8 +49,20 @@ public class TareasServicesImpl implements TareasServices {
     @Override
     public Page<TareaResponseDto> findAll(Optional<String> usuario, Optional<String> estado, Pageable pageable){
         log.info("Buscando tareas por usuario: {}, estado: {}", usuario, estado);
+
+        // DESARROLLADOR solo puede ver sus propias tareas
+        boolean esDesarrollador = !authUtils.callerHasRole(Roles.DIRECTOR)
+                && !authUtils.callerHasRole(Roles.LIDER);
+        if (esDesarrollador) {
+            Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+            usuario = Optional.of(caller.getUsername());
+            log.info("Rol DESARROLLADOR: filtrando tareas solo para {}", caller.getUsername());
+        }
+
+        final Optional<String> usuarioFinal = usuario;
+
         Specification<Tarea> specUsuario = (root, query, criteriaBuilder) ->
-                usuario.map(n -> {
+                usuarioFinal.map(n -> {
                     Join<Tarea, Usuario> usuarioJoin = root.join("usuario");
                     return criteriaBuilder.like(criteriaBuilder.lower(usuarioJoin.get("username")), "%" + n.toLowerCase() + "%");
                 }).orElseGet(() -> criteriaBuilder.isTrue(criteriaBuilder.literal(true)));
@@ -58,7 +71,18 @@ public class TareasServicesImpl implements TareasServices {
                 estado.map(n -> criteriaBuilder.like(criteriaBuilder.lower(root.get("estado")), "%" + n.toLowerCase() + "%"))
                         .orElseGet(() -> criteriaBuilder.isTrue(criteriaBuilder.literal(true)));
 
-        Specification<Tarea> criterio = Specification.allOf(specUsuario, specEstado);
+        // DIRECTOR/LIDER: filtra por organización activa si hay orgId en el token
+        Long orgId = authUtils.getCallerOrgId();
+        Specification<Tarea> specOrg = (root, query, criteriaBuilder) -> {
+            if (esDesarrollador || orgId == null) {
+                return criteriaBuilder.isTrue(criteriaBuilder.literal(true));
+            }
+            Join<Object, Object> proyectoJoin = root.join("proyecto", jakarta.persistence.criteria.JoinType.LEFT);
+            Join<Object, Object> orgJoin = proyectoJoin.join("organizacion", jakarta.persistence.criteria.JoinType.LEFT);
+            return criteriaBuilder.equal(orgJoin.get("id"), orgId);
+        };
+
+        Specification<Tarea> criterio = Specification.allOf(specUsuario, specEstado, specOrg);
 
         return tareasRepository.findAll(criterio, pageable).map(tareasMapper::toTareaResponseDto);
     }
@@ -97,8 +121,17 @@ public class TareasServicesImpl implements TareasServices {
     public TareaResponseDto createTarea(TareaCreateDto tareaCreateDto){
         log.info("Creando tarea: {}", tareaCreateDto);
         try {
-            Tarea tarea = tareasRepository.save(tareasMapper.toTarea(tareaCreateDto));
-            return tareasMapper.toTareaResponseDto(tarea);
+            Tarea tarea;
+            if (tareaCreateDto.getProyectoId() != null) {
+                Proyecto proyecto = proyectosRepository.findById(tareaCreateDto.getProyectoId())
+                        .orElseThrow(() -> new TareaCreateException("Proyecto con id " + tareaCreateDto.getProyectoId() + " no encontrado"));
+                tarea = tareasMapper.toTarea(tareaCreateDto, proyecto);
+            } else {
+                tarea = tareasMapper.toTarea(tareaCreateDto);
+            }
+            return tareasMapper.toTareaResponseDto(tareasRepository.save(tarea));
+        } catch (TareaCreateException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error al crear la tarea: {}", e.getMessage());
             throw new TareaCreateException("No fue posible crear la tarea: " + e.getMessage());
@@ -113,9 +146,8 @@ public class TareasServicesImpl implements TareasServices {
                 .orElseThrow(() -> new TareaNotFound(id));
 
         // DESARROLLADOR solo puede editar sus propias tareas
-        boolean soloDesarrollador = !caller.getRoles().contains(Roles.DIRECTOR)
-                && !caller.getRoles().contains(Roles.COORDINADOR)
-                && !caller.getRoles().contains(Roles.LIDER);
+        boolean soloDesarrollador = !authUtils.callerHasRole(Roles.DIRECTOR)
+                && !authUtils.callerHasRole(Roles.LIDER);
         if (soloDesarrollador) {
             boolean esSuTarea = tareaOpt.getUsuario() != null
                     && tareaOpt.getUsuario().getId().equals(caller.getId());
@@ -126,8 +158,35 @@ public class TareasServicesImpl implements TareasServices {
 
         Usuario usuario = usuariosRepository.findByNombres(tareaUpdateDto.getUsuario());
         log.info("Usuario asociado a la tarea: {}", usuario);
-        Tarea tarea = tareasRepository.save(tareasMapper.toTarea(tareaUpdateDto, tareaOpt, usuario));
-        return tareasMapper.toTareaResponseDto(tarea);
+        Tarea tarea = tareasMapper.toTarea(tareaUpdateDto, tareaOpt, usuario);
+
+        if (tareaUpdateDto.getEstado() == Estado.ACTIVO) {
+            if (tareaOpt.getEstado() == Estado.REVISION) {
+                // Reactivación desde REVISION: reinicia el contador
+                tarea.setFechaInicio(java.time.LocalDateTime.now());
+                tarea.setFechaFin(null);
+            } else if (tareaOpt.getFechaInicio() == null) {
+                // Primera activación desde ABIERTO
+                tarea.setFechaInicio(java.time.LocalDateTime.now());
+            }
+        }
+        if (tareaUpdateDto.getEstado() == Estado.REVISION) {
+            tarea.setFechaFin(java.time.LocalDateTime.now());
+        }
+
+        return tareasMapper.toTareaResponseDto(tareasRepository.save(tarea));
+    }
+
+    @Override
+    public List<TareaResponseDto> findByProyectoId(Long proyectoId) {
+        log.info("Buscando tareas del proyecto con id: {}", proyectoId);
+        return tareasMapper.toTareaResponseDtoList(tareasRepository.findByProyectoId(proyectoId));
+    }
+
+    @Override
+    public Page<TareaResponseDto> findByProyectoId(Long proyectoId, Pageable pageable) {
+        log.info("Buscando tareas del proyecto con id: {} (paginado)", proyectoId);
+        return tareasRepository.findByProyectoId(proyectoId, pageable).map(tareasMapper::toTareaResponseDto);
     }
 
     @Override
@@ -142,6 +201,7 @@ public class TareasServicesImpl implements TareasServices {
         
         try {
             tarea.setUsuario(usuario);
+            tarea.setEstado(Estado.ABIERTO);
             Tarea tareaActualizada = tareasRepository.save(tarea);
             log.info("Tarea con id: {} asignada exitosamente al usuario: {}", tareaActualizada.getId(), tareaAddDto.getUsername());
             notificacionService.enviarNotificacion(

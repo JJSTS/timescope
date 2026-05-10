@@ -84,7 +84,7 @@ const OrganizacionModal: React.FC<Props> = ({ orgId, onClose }) => {
               <span className="org-modal-subtitle">Organización</span>
             </div>
           </div>
-          <button className="org-modal-close" onClick={onClose} aria-label="Cerrar">×</button>
+          <button className="org-modal-close" onClick={onClose} aria-label="Cerrar"><i className="bi bi-x-lg" /></button>
         </div>
 
         <div className="org-modal-body">
@@ -135,7 +135,7 @@ const OrganizacionModal: React.FC<Props> = ({ orgId, onClose }) => {
               <div className="org-solicitud-area">
                 {solicitudState === 'success' ? (
                   <div className="org-solicitud-success">
-                    <span className="org-solicitud-check">✓</span>
+                    <span className="org-solicitud-check"><i className="bi bi-check-lg" /></span>
                     Solicitud enviada correctamente
                   </div>
                 ) : (

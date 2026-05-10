@@ -7,8 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Set;
-
 @Builder
 @Data
 @NoArgsConstructor
@@ -25,7 +23,7 @@ public class UsuarioUpdateDto {
 
     private String password;
 
-    private Set<Roles> roles;
+    private Roles rol;
 
     private Boolean isDeleted;
 }

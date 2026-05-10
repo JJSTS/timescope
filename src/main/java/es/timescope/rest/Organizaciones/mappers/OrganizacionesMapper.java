@@ -29,8 +29,13 @@ public class OrganizacionesMapper {
                                 org.getUsuarios().stream().map(u -> u.getId()).collect(Collectors.toList())
                                 : null
                 )
-                .administrador(org.getAdmin().getNombres() + " " + org.getAdmin().getApellidos())
-                .userAdmin(org.getAdmin().getUsername())
+                .administrador(org.getAdmin() != null ? org.getAdmin().getNombres() + " " + org.getAdmin().getApellidos() : null)
+                .userAdmin(org.getAdmin() != null ? org.getAdmin().getUsername() : null)
+                .directoresUsernames(
+                        org.getDirectores() != null
+                                ? org.getDirectores().stream().map(u -> u.getUsername()).collect(Collectors.toList())
+                                : null
+                )
                 .build();
     }
 }

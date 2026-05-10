@@ -41,16 +41,15 @@ public class ProyectoServicesImpl implements ProyectoServices {
     private final NotificacionService notificacionService;
     private final AuthUtils authUtils;
 
-    private boolean tieneAccesoTotal(Usuario usuario) {
-        return usuario.getRoles().contains(Roles.DIRECTOR)
-                || usuario.getRoles().contains(Roles.COORDINADOR);
+    private boolean tieneAccesoTotal() {
+        return authUtils.callerHasRole(Roles.DIRECTOR);
     }
 
     @Override
     public Page<ProyectoResponseDto> findAll(Optional<Long> id, Optional<String> nombre, Optional<Boolean> isDeleted, Pageable pageable) {
         log.info("Buscando proyectos por id: {}, nombre: {} , isDeleted {}", id, nombre, isDeleted);
         Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
-        boolean restricted = !tieneAccesoTotal(caller);
+        boolean restricted = !tieneAccesoTotal();
 
         Specification<Proyecto> specIdProyecto = (root, query, criteriaBuilder) ->
                 id.map(i -> criteriaBuilder.equal(root.get("id"), i))
@@ -79,10 +78,18 @@ public class ProyectoServicesImpl implements ProyectoServices {
     }
 
     @Override
+    public ProyectoResponseDto findById(Long id) {
+        log.info("Buscando proyecto por id: {}", id);
+        Proyecto proyecto = proyectosRepository.findById(id)
+                .orElseThrow(() -> new ProyectoNotFoundException(id));
+        return proyectoMapper.toProyectoResponseDto(proyecto);
+    }
+
+    @Override
     public Page<ProyectoResponseDto> findByEstado(Estado estado, Pageable pageable) {
         log.info("Buscando proyectos por estado: {}", estado);
         Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
-        boolean restricted = !tieneAccesoTotal(caller);
+        boolean restricted = !tieneAccesoTotal();
 
         Specification<Proyecto> specEstado = (root, query, cb) ->
                 cb.equal(root.get("estado"), estado);
@@ -107,9 +114,11 @@ public class ProyectoServicesImpl implements ProyectoServices {
     @Override
     public ProyectoResponseDto save(ProyectoCreateDto proyectoCreateDto) {
         log.info("Guardando proyecto: {}", proyectoCreateDto);
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
         List<Usuario> usuarios = checkUsuarios(proyectoCreateDto.getUsuarios());
-        Proyecto proyectoSaved = proyectosRepository.save(proyectoMapper.toProyecto(proyectoCreateDto, usuarios));
-        return proyectoMapper.toProyectoResponseDto(proyectoSaved);
+        Proyecto proyecto = proyectoMapper.toProyecto(proyectoCreateDto, usuarios);
+        proyecto.setOrganizacion(caller.getOrganizacion());
+        return proyectoMapper.toProyectoResponseDto(proyectosRepository.save(proyecto));
     }
 
     @Override
@@ -120,7 +129,7 @@ public class ProyectoServicesImpl implements ProyectoServices {
                 .orElseThrow(() -> new ProyectoNotFoundException(id));
 
         // LIDER solo puede añadir usuarios a proyectos donde él está asignado
-        if (!tieneAccesoTotal(caller)) {
+        if (!tieneAccesoTotal()) {
             boolean estaEnProyecto = proyecto.getUsuarios().stream()
                     .anyMatch(u -> u.getId().equals(caller.getId()));
             if (!estaEnProyecto) {
@@ -131,6 +140,15 @@ public class ProyectoServicesImpl implements ProyectoServices {
 
         Usuario usuario = usuariosRepository.findByUsername(username)
                 .orElseThrow(() -> new ProyectoBadRequestException("Usuario con username: " + username + " no encontrado"));
+
+        // El usuario debe pertenecer a la misma organización que el caller (org del JWT)
+        Long callerOrgId = authUtils.getCallerOrgId();
+        if (callerOrgId == null || usuario.getOrganizacion() == null
+                || !usuario.getOrganizacion().getId().equals(callerOrgId)) {
+            throw new ProyectoBadRequestException(
+                    "El usuario '" + username + "' no pertenece a esta organización");
+        }
+
         if (proyecto.getUsuarios().contains(usuario)) {
             throw new ProyectoBadRequestException("El usuario ya pertenece a este proyecto");
         }
@@ -153,7 +171,7 @@ public class ProyectoServicesImpl implements ProyectoServices {
                 .orElseThrow(() -> new ProyectoNotFoundException(id));
 
         // LIDER solo puede cambiar estado de proyectos donde está asignado
-        if (!tieneAccesoTotal(caller)) {
+        if (!tieneAccesoTotal()) {
             boolean estaEnProyecto = proyecto.getUsuarios().stream()
                     .anyMatch(u -> u.getId().equals(caller.getId()));
             if (!estaEnProyecto) {
