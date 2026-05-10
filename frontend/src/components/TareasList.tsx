@@ -140,7 +140,7 @@ const TareasList: React.FC = () => {
                 <td>{tarea.descripcion || '-'}</td>
                 <td>{tarea.usuario ? `${tarea.usuario.nombres} ${tarea.usuario.apellidos}` : '-'}</td>
                 <td>
-                  <span className={`estado ${tarea.estado?.toLowerCase()}`}>
+                  <span className={`estado tarea_${tarea.estado?.toLowerCase()}`}>
                     {tarea.estado || '-'}
                   </span>
                 </td>

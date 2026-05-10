@@ -37,11 +37,13 @@
 }
 
 /* Color del borde superior por estado */
-.task-modal-activo      { border-top-color: #22c55e; }
 .task-modal-completado  { border-top-color: #22c55e; }
-.task-modal-abierto     { border-top-color: #3b82f6; }
-.task-modal-pendiente   { border-top-color: #f97316; }
-.task-modal-suspendido  { border-top-color: #9ca3af; }
+.task-modal-activo      { border-top-color: #3b82f6; }
+.task-modal-suspendido  { border-top-color: #ef4444; }
+.task-modal-abierto     { border-top-color: #6b7280; }
+.task-modal-revision    { border-top-color: #eab308; }
+.task-modal-pendiente   { border-top-color: #6b7280; }
+.task-modal-en_progreso { border-top-color: #3b82f6; }
 
 .task-modal-close {
   position: absolute;
@@ -82,6 +84,44 @@
   letter-spacing: 0.4px;
   text-transform: uppercase;
   width: fit-content;
+  background: rgba(107, 114, 128, 0.15);
+  color: #6b7280;
+}
+
+/* Colors por estado - coinciden con TareasList y UserProfile */
+.task-modal-badge.task-completado {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.task-modal-badge.task-activo {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.task-modal-badge.task-suspendido {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.task-modal-badge.task-abierto {
+  background: rgba(107, 114, 128, 0.15);
+  color: #6b7280;
+}
+
+.task-modal-badge.task-revision {
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+}
+
+.task-modal-badge.task-pendiente {
+  background: rgba(107, 114, 128, 0.15);
+  color: #6b7280;
+}
+
+.task-modal-badge.task-en_progreso {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
 }
 
 .task-modal-title {

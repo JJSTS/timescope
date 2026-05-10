@@ -98,28 +98,46 @@
   text-transform: capitalize;
 }
 
-.estado.activo {
-  background: #fffed1;
-  color: #816e01;
-  border: 1.5px solid #e6d95a;
+.estado.tarea_completado {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  border: 1.5px solid #22c55e;
+}
+
+.estado.tarea_activo {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+  border: 1.5px solid #3b82f6;
+}
+
+.estado.tarea_suspendido {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1.5px solid #ef4444;
+}
+
+.estado.tarea_abierto {
+  background: rgba(107, 114, 128, 0.15);
+  color: #6b7280;
+  border: 1.5px solid #6b7280;
+}
+
+.estado.tarea_revision {
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+  border: 1.5px solid #eab308;
 }
 
 .estado.en_progreso {
-  background: #cfe2ff;
-  color: #084298;
-  border: 1.5px solid #b6d4fe;
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+  border: 1.5px solid #3b82f6;
 }
 
-.estado.completado {
-  background: #beffb4;
-  color: #4a7c10;
-  border: 1.5px solid #7bc96f;
-}
-
-.estado.pendiente {
-  background: #e7e7e7;
-  color: #555555;
-  border: 1.5px solid #d0d0d0;
+.estado.tarea_pendiente {
+  background: rgba(107, 114, 128, 0.15);
+  color: #6b7280;
+  border: 1.5px solid #6b7280;
 }
 
 /* LOADING/ERROR */
