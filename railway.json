@@ -5,7 +5,6 @@
   },
   "deploy": {
     "startCommand": "java -jar -Dspring.profiles.active=prod target/*.jar",
-    "healthcheckPath": "/actuator/health",
     "restartPolicyType": "ON_FAILURE"
   }
 }
