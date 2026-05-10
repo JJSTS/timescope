@@ -92,6 +92,9 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
 
         Organizacion saved = repository.save(org);
 
+        admin.setOrganizacion(saved);
+        usuariosRepository.save(admin);
+
         usuarioOrgRolRepository.save(UsuarioOrgRol.builder()
                 .usuario(admin)
                 .organizacion(saved)
