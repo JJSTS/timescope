@@ -7,8 +7,34 @@
   border: 1px solid #e5e7eb;
 }
 
-.tareas-container h2 {
+.tareas-container .list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.btn-create {
+  padding: 0.55rem 1.1rem;
+  background: #8bbf41;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+
+.btn-create:hover {
+  background: #7aac32;
+  transform: translateY(-1px);
+}
+
+.tareas-container h2 {
+  margin: 0;
   color: #1f2937;
   font-size: 1.3rem;
   font-weight: 700;

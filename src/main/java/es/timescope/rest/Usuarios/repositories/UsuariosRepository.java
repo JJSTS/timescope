@@ -32,9 +32,12 @@ public interface UsuariosRepository extends JpaRepository<Usuario, Long>, JpaSpe
     @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Proyecto p JOIN p.usuarios u WHERE u.id = :id")
     Boolean existsProyectosByUsuarioId(Long id);
 
-    @Query("UPDATE Usuario u SET u.roles = :rol WHERE u.id = :id")
+    @Query("UPDATE Usuario u SET u.rol = :rol WHERE u.id = :id")
     @Modifying
     void asingRolUsuario(Long id, Roles rol);
+
+    @Query("SELECT u FROM Usuario u WHERE u.organizacion.id = :orgId AND u.isDeleted = false")
+    List<Usuario> findByOrganizacionId(Long orgId);
 
     Usuario findByUsernameIgnoreCase (String username);
 

@@ -3,12 +3,17 @@ package es.timescope.rest.Proyectos.dto;
 
 import es.timescope.rest.Proyectos.models.Estado;
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
+
 @Builder
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProyectoCreateDto {
     @NotBlank(message = "El nombre no puede estar vacío")
     private String nombre;

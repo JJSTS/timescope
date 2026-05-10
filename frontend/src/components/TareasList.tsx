@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import TaskDetailModal from './TaskDetailModal';
+import TareaCreateModal from './TareaCreateModal';
 import '../styles/TareasList.css';
 
 // Interfaz para el objeto de usuario anidado
@@ -43,8 +44,22 @@ const TareasList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [selectedTask, setSelectedTask] = useState<Tarea | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [organizacionId, setOrganizacionId] = useState<number | undefined>(undefined);
   const token = localStorage.getItem('token');
   const { userRole } = useAuth();
+
+  useEffect(() => {
+    if (!token) return;
+    fetch('http://localhost:8080/api/v1/usuarios/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.organizacionId) setOrganizacionId(data.organizacionId); })
+      .catch(() => {});
+  }, [token]);
+
+  const canCreate = ['DIRECTOR', 'COORDINADOR', 'LIDER'].includes(userRole?.toUpperCase() ?? '');
 
   useEffect(() => {
     if (userRole) {
@@ -111,7 +126,14 @@ const TareasList: React.FC = () => {
   return (
     <>
       <div className="tareas-container">
-        <h2>Gestión de Tareas</h2>
+        <div className="list-header">
+          <h2>Gestión de Tareas</h2>
+          {canCreate && (
+            <button className="btn-create" onClick={() => setShowCreateModal(true)}>
+              + Nueva tarea
+            </button>
+          )}
+        </div>
         <table className="tareas-table">
           <thead>
             <tr>
@@ -173,9 +195,16 @@ const TareasList: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal de detalle de tarea */}
       {selectedTask && (
         <TaskDetailModal task={selectedTask} onClose={() => setSelectedTask(null)} />
+      )}
+
+      {showCreateModal && (
+        <TareaCreateModal
+          onClose={() => setShowCreateModal(false)}
+          onCreated={() => fetchTareas(currentPage)}
+          organizacionId={organizacionId}
+        />
       )}
     </>
   );

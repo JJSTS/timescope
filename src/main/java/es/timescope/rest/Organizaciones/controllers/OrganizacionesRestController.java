@@ -91,6 +91,12 @@ public class OrganizacionesRestController {
         return ResponseEntity.ok(service.getEmpresaMatriz(id));
     }
 
+    // 🔹 Proyectos de una organización
+    @GetMapping("/{id}/proyectos")
+    public ResponseEntity<?> getProyectos(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getProyectos(id));
+    }
+
     // 🔹 Añadir proyecto
     @PostMapping("/{id}/proyectos/{proyectoId}")
     public ResponseEntity<OrganizacionResponseDto> addProyecto(

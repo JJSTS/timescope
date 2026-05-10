@@ -33,4 +33,6 @@ public interface OrganizacionServices {
     void asignarRolEnOrg(Long orgId, Long usuarioId, es.timescope.rest.Usuarios.models.Roles rol);
 
     List<UsuarioResponseDto> getMiembros(Long orgId);
+
+    List<es.timescope.rest.Proyectos.dto.ProyectoResponseDto> getProyectos(Long orgId);
 }

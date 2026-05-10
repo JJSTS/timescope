@@ -5,22 +5,24 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class TareaCreateDto {
 
     @NotBlank(message = "La Tarea debe tener un nombre")
-    private final String nombre;
+    private String nombre;
 
     @NotBlank(message = "La Tarea debe tener una descripción")
-    private final String descripcion;
+    private String descripcion;
 
-    private final Long proyectoId;
+    private Long proyectoId;
     private BigDecimal horasEstimadas;
 
     @NotNull(message = "La Tarea debe tener una fecha límite")

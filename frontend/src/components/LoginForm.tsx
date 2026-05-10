@@ -8,6 +8,7 @@ import '../styles/LoginForm.css';
 interface LoginFormData {
   username: string;
   password: string;
+  orgNombre: string;
 }
 
 interface RegisterFormData {
@@ -52,7 +53,8 @@ export const Login: React.FC = () => {
   // Login state
   const [loginData, setLoginData] = useState<LoginFormData>({
     username: '',
-    password: ''
+    password: '',
+    orgNombre: ''
   });
 
   // Register state
@@ -89,8 +91,8 @@ export const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await authService.login(loginData.username, loginData.password);
-      await login(loginData.username, response.token); // Espera a que el login termine
+      const response = await authService.login(loginData.username, loginData.password, loginData.orgNombre);
+      await login(loginData.username, response.token);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Error al iniciar sesión');
@@ -147,31 +149,13 @@ export const Login: React.FC = () => {
         <div className="hero-content">
           <div className="hero-header">
             <h1 className="hero-title">
-              Accede a <span className="hero-brand">TimeScope</span> y organiza el tiempo de tu equipo
+              Todo tu equipo, cada proyecto, cada tarea en un solo lugar con <span className="hero-brand">TimeScope</span>
             </h1>
             <p className="hero-description">
-              Gestión de tiempo simplificada para equipos modernos. Rastrea proyectos, mide productividad y colabora en tiempo real.
+              Coordina equipos, asigna tareas y da seguimiento a proyectos con claridad. Notificaciones en tiempo real, roles por organización y una visión completa de tu trabajo.
             </p>
           </div>
 
-          {/* Stats Cards */}
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-icon stat-icon-orange">👥</div>
-              <div className="stat-value">+150</div>
-              <div className="stat-label">Equipos</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon stat-icon-sky">📈</div>
-              <div className="stat-value">2.5K</div>
-              <div className="stat-label">Proyectos</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon stat-icon-lime">📍</div>
-              <div className="stat-value">Madrid</div>
-              <div className="stat-label">España</div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -257,6 +241,23 @@ export const Login: React.FC = () => {
                     <EyeIcon visible={showPasswords.login} />
                   </button>
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="login-org" className="form-label">
+                  Organización
+                </label>
+                <input
+                  id="login-org"
+                  name="orgNombre"
+                  type="text"
+                  value={loginData.orgNombre}
+                  onChange={handleLoginChange}
+                  className="form-input"
+                  placeholder="Nombre de tu organización"
+                  required
+                  disabled={loading}
+                />
               </div>
 
               <button

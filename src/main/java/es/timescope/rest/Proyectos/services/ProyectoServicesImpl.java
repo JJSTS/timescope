@@ -114,9 +114,11 @@ public class ProyectoServicesImpl implements ProyectoServices {
     @Override
     public ProyectoResponseDto save(ProyectoCreateDto proyectoCreateDto) {
         log.info("Guardando proyecto: {}", proyectoCreateDto);
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
         List<Usuario> usuarios = checkUsuarios(proyectoCreateDto.getUsuarios());
-        Proyecto proyectoSaved = proyectosRepository.save(proyectoMapper.toProyecto(proyectoCreateDto, usuarios));
-        return proyectoMapper.toProyectoResponseDto(proyectoSaved);
+        Proyecto proyecto = proyectoMapper.toProyecto(proyectoCreateDto, usuarios);
+        proyecto.setOrganizacion(caller.getOrganizacion());
+        return proyectoMapper.toProyectoResponseDto(proyectosRepository.save(proyecto));
     }
 
     @Override
@@ -138,6 +140,15 @@ public class ProyectoServicesImpl implements ProyectoServices {
 
         Usuario usuario = usuariosRepository.findByUsername(username)
                 .orElseThrow(() -> new ProyectoBadRequestException("Usuario con username: " + username + " no encontrado"));
+
+        // El usuario debe pertenecer a la misma organización que el caller (org del JWT)
+        Long callerOrgId = authUtils.getCallerOrgId();
+        if (callerOrgId == null || usuario.getOrganizacion() == null
+                || !usuario.getOrganizacion().getId().equals(callerOrgId)) {
+            throw new ProyectoBadRequestException(
+                    "El usuario '" + username + "' no pertenece a esta organización");
+        }
+
         if (proyecto.getUsuarios().contains(usuario)) {
             throw new ProyectoBadRequestException("El usuario ya pertenece a este proyecto");
         }

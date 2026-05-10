@@ -5,6 +5,8 @@ import es.timescope.rest.Emails.services.EmailService;
 import es.timescope.rest.Emails.services.UsuarioEmailService;
 import es.timescope.rest.Organizaciones.models.Organizacion;
 import es.timescope.rest.Organizaciones.repositories.OrganizacionesRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.Usuarios.models.UsuarioOrgRol;
@@ -29,8 +31,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import org.springframework.security.authentication.BadCredentialsException;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -56,7 +58,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           .email(request.getEmail())
           .nombres(request.getNombre())
           .apellidos(request.getApellidos())
-          .roles(Stream.of(Roles.DESARROLLADOR).collect(Collectors.toSet()))
+          .rol(Roles.DESARROLLADOR)
           .build();
       try {
         var userStored = authUsersRepository.save(user);
@@ -75,6 +77,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
           Organizacion orgCreated = organizacionesRepository.save(org);
           userStored.setOrganizacion(orgCreated);
+          userStored.setRol(Roles.DIRECTOR);
           authUsersRepository.save(userStored);
 
           // Rol DIRECTOR acotado a esta organización
@@ -105,12 +108,27 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   @Override
   public JwtAuthResponse signIn(UserSignInRequest request) {
     log.info("Autenticando usuario: {}", request);
-    authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+    try {
+      authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+    } catch (BadCredentialsException e) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario o contraseña incorrectos");
+    }
     var user = authUsersRepository.findByUsername(request.getUsername())
         .orElseThrow(() -> new AuthSignInNotValid("Usuario o contraseña incorrectos"));
 
-    Long orgId = request.getOrgId();
+    Long orgId = null;
+    if (request.getOrgNombre() != null && !request.getOrgNombre().isBlank()) {
+      Organizacion org = organizacionesRepository.findByNombreIgnoreCase(request.getOrgNombre())
+          .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+              "Organización '" + request.getOrgNombre() + "' no encontrada"));
+      if (user.getOrganizacion() == null || !user.getOrganizacion().getId().equals(org.getId())) {
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+            "No perteneces a la organización '" + request.getOrgNombre() + "'");
+      }
+      orgId = org.getId();
+    }
+
     String jwt = orgId != null
         ? jwtService.generateToken(user, orgId)
         : jwtService.generateToken(user);

@@ -6,6 +6,8 @@ import es.timescope.rest.Organizaciones.exceptions.OrganizacionNotFoundException
 import es.timescope.rest.Organizaciones.mappers.OrganizacionesMapper;
 import es.timescope.rest.Organizaciones.models.Organizacion;
 import es.timescope.rest.Organizaciones.repositories.OrganizacionesRepository;
+import es.timescope.rest.Proyectos.dto.ProyectoResponseDto;
+import es.timescope.rest.Proyectos.mappers.ProyectosMapper;
 import es.timescope.rest.Proyectos.repositories.ProyectosRepository;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 import es.timescope.rest.Usuarios.exceptions.UsuarioNotFound;
@@ -41,6 +43,7 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
     private final UsuarioOrgRolRepository usuarioOrgRolRepository;
     private final AuthUtils authUtils;
     private final UsuariosMapper usuariosMapper;
+    private final ProyectosMapper proyectosMapper;
 
     private Organizacion getEntity(Long id) {
         return repository.findById(id)
@@ -74,7 +77,12 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
     public OrganizacionResponseDto create(OrganizacionCreateDto dto) {
         Usuario admin = authUtils.getUsuarioAuthentication(usuariosRepository);
 
-        admin.getRoles().add(Roles.DIRECTOR);
+        if (admin.getOrganizacion() != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Ya perteneces a una organización y no puedes crear otra");
+        }
+
+        admin.setRol(Roles.DIRECTOR);
         usuariosRepository.save(admin);
 
         Organizacion org = new Organizacion();
@@ -106,7 +114,7 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
         Usuario nuevoAdmin = usuariosRepository.findByUsername(username)
                 .orElseThrow(() -> new UsuarioNotFound(username));
 
-        nuevoAdmin.getRoles().add(Roles.DIRECTOR);
+        nuevoAdmin.setRol(Roles.DIRECTOR);
         usuariosRepository.save(nuevoAdmin);
 
         org.setAdmin(nuevoAdmin);
@@ -123,7 +131,7 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
         Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
 
         boolean isAdmin = org.getAdmin() != null && org.getAdmin().getId().equals(caller.getId());
-        boolean isDirector = caller.getRoles().contains(Roles.DIRECTOR);
+        boolean isDirector = caller.getRol() == Roles.DIRECTOR;
 
         if (!isAdmin && !isDirector) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permisos para eliminar esta organización");
@@ -182,7 +190,7 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
                 .orElseThrow(() -> new UsuarioNotFound(usuarioId.toString()));
 
         if (!org.getDirectores().contains(nuevoDirector)) {
-            nuevoDirector.getRoles().add(Roles.DIRECTOR);
+            nuevoDirector.setRol(Roles.DIRECTOR);
             usuariosRepository.save(nuevoDirector);
             org.getDirectores().add(nuevoDirector);
         }
@@ -220,9 +228,19 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
 
     @Override
     public List<UsuarioResponseDto> getMiembros(Long orgId) {
-        return getEntity(orgId).getUsuarios()
+        getEntity(orgId); // verifica que la org existe
+        return usuariosRepository.findByOrganizacionId(orgId)
                 .stream()
                 .map(usuariosMapper::toUsuarioResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProyectoResponseDto> getProyectos(Long orgId) {
+        return getEntity(orgId).getProyectos()
+                .stream()
+                .filter(p -> !Boolean.TRUE.equals(p.getIsDeleted()))
+                .map(proyectosMapper::toProyectoResponseDto)
                 .collect(Collectors.toList());
     }
 
