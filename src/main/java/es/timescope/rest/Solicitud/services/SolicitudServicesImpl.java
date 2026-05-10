@@ -15,7 +15,10 @@ import es.timescope.rest.Solicitud.mappers.SolicitudMapper;
 import es.timescope.rest.Solicitud.models.Estado;
 import es.timescope.rest.Solicitud.models.Solicitud;
 import es.timescope.rest.Solicitud.repositories.SolicitudRepository;
+import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
+import es.timescope.rest.Usuarios.models.UsuarioOrgRol;
+import es.timescope.rest.Usuarios.repositories.UsuarioOrgRolRepository;
 import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +41,7 @@ public class SolicitudServicesImpl implements SolicitudServices {
 
     private final SolicitudMapper solicitudMapper;
     private final AuthUtils authUtils;
+    private final UsuarioOrgRolRepository usuarioOrgRolRepository;
 
     @Override
     public SolicitudResponseDto enviarSolicitud(String organizacionNombre) {
@@ -84,8 +88,16 @@ public class SolicitudServicesImpl implements SolicitudServices {
         solicitud.setEstado(Estado.ACEPTADA);
 
         Usuario usuario = solicitud.getUsuario();
-        usuario.setOrganizacion(solicitud.getOrganizacion());
+        Organizacion org = solicitud.getOrganizacion();
+        usuario.setOrganizacion(org);
         usuariosRepository.save(usuario);
+
+        usuarioOrgRolRepository.save(UsuarioOrgRol.builder()
+                .usuario(usuario)
+                .organizacion(org)
+                .rol(Roles.DESARROLLADOR)
+                .build());
+
         solicitudRepository.save(solicitud);
 
         notificacionService.enviarNotificacion(
