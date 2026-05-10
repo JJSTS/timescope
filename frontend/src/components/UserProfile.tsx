@@ -320,23 +320,43 @@ const UserProfile: React.FC = () => {
               </div>
             </div>
             <div className="sidebar-card team-card">
-              <h3 className="sidebar-card-title">Miembros<span className="team-count">{teamMembers.length}</span></h3>
+              <div className="team-card-header">
+                <div className="team-card-header-text">
+                  <h3 className="team-card-title">Equipo</h3>
+                  {orgNombre && <p className="team-card-org">{orgNombre}</p>}
+                </div>
+                <span className="team-count-badge">
+                  {teamMembers.filter(m => m.rol === 'DIRECTOR' || m.rol === 'LIDER').length}
+                </span>
+              </div>
               <div className="team-members-list">
-                {teamMembers.map(member => (
-                  <div key={member.id} className="team-member-item">
-                    <div
-                      className={`team-member-avatar role-${member.rol?.toLowerCase() || 'miembro'} team-member-avatar--clickable`}
-                      onClick={() => handleMemberClick(member.id)}
-                      title={`Ver perfil de ${member.nombres}`}
-                    >
+                {(() => {
+                  const ROLE_ORDER: Record<string, number> = { DIRECTOR: 0, LIDER: 1 };
+                  const lideres = teamMembers
+                    .filter(m => m.rol === 'DIRECTOR' || m.rol === 'LIDER')
+                    .sort((a, b) => (ROLE_ORDER[a.rol ?? ''] ?? 9) - (ROLE_ORDER[b.rol ?? ''] ?? 9));
+                  return lideres.length === 0 ? (
+                    <p className="team-empty">Sin líderes registrados</p>
+                  ) : lideres.map(member => (
+                  <div
+                    key={member.id}
+                    className="team-member-row"
+                    onClick={() => handleMemberClick(member.id)}
+                    title={`Ver perfil de ${member.nombres}`}
+                  >
+                    <div className={`team-member-avatar role-${member.rol?.toLowerCase() || 'miembro'}`}>
                       {member.nombres?.charAt(0)}{member.apellidos?.charAt(0)}
                     </div>
                     <div className="team-member-info">
-                      <div className="team-member-name">{member.nombres} {member.apellidos}</div>
-                      <div className="team-member-role">{member.rol?.toUpperCase() || 'MIEMBRO'}</div>
+                      <span className="team-member-name">{member.nombres} {member.apellidos}</span>
+                      <span className="team-member-username">@{member.username}</span>
                     </div>
+                    <span className={`team-role-pill role-pill--${member.rol?.toLowerCase() || 'miembro'}`}>
+                      {member.rol || 'MIEMBRO'}
+                    </span>
                   </div>
-                ))}
+                  ));
+                })()}
               </div>
             </div>
           </aside>

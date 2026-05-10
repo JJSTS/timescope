@@ -36,6 +36,9 @@ public interface UsuariosRepository extends JpaRepository<Usuario, Long>, JpaSpe
     @Modifying
     void asingRolUsuario(Long id, Roles rol);
 
+    @Query("SELECT u FROM Usuario u WHERE u.organizacion.id = :orgId AND u.isDeleted = false")
+    List<Usuario> findByOrganizacionId(Long orgId);
+
     Usuario findByUsernameIgnoreCase (String username);
 
     Usuario findByNombres(String nombres);

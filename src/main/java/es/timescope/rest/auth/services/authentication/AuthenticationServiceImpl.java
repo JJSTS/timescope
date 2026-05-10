@@ -77,6 +77,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
           Organizacion orgCreated = organizacionesRepository.save(org);
           userStored.setOrganizacion(orgCreated);
+          userStored.setRol(Roles.DIRECTOR);
           authUsersRepository.save(userStored);
 
           // Rol DIRECTOR acotado a esta organización
