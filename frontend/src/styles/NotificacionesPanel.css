@@ -123,7 +123,7 @@
 }
 
 .notif-list::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: var(--ts-muted-2);
   border-radius: 4px;
 }
 
@@ -136,7 +136,7 @@
 }
 
 .notif-error {
-  color: #b91c1c;
+  color: var(--ts-danger);
 }
 
 .notif-vacia {
@@ -250,25 +250,25 @@
 }
 
 .solicitud-btn-aceptar {
-  background: #dcfce7;
-  border-color: #86efac;
-  color: #166534;
+  background: var(--ts-green-soft);
+  border-color: rgba(125, 178, 62, 0.45);
+  color: var(--ts-green-dark);
 }
 
 .solicitud-btn-aceptar:hover:not(:disabled) {
-  background: #bbf7d0;
-  border-color: #4ade80;
+  background: rgba(125, 178, 62, 0.18);
+  border-color: var(--ts-green);
 }
 
 .solicitud-btn-rechazar {
-  background: #fee2e2;
-  border-color: #fca5a5;
-  color: #991b1b;
+  background: var(--ts-danger-soft);
+  border-color: rgba(201, 62, 62, 0.35);
+  color: var(--ts-danger);
 }
 
 .solicitud-btn-rechazar:hover:not(:disabled) {
-  background: #fecaca;
-  border-color: #f87171;
+  background: rgba(201, 62, 62, 0.14);
+  border-color: var(--ts-danger);
 }
 
 /* Responsive */

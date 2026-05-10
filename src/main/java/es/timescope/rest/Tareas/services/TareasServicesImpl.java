@@ -1,7 +1,9 @@
 package es.timescope.rest.Tareas.services;
 
+import es.timescope.config.auth.AuthUtils;
 import es.timescope.rest.Notificacion.models.Tipo;
 import es.timescope.rest.Notificacion.service.NotificacionService;
+import es.timescope.rest.Proyectos.models.Proyecto;
 import es.timescope.rest.Proyectos.repositories.ProyectosRepository;
 import es.timescope.rest.Tareas.dto.TareaAddDto;
 import es.timescope.rest.Tareas.dto.TareaCreateDto;
@@ -14,8 +16,11 @@ import es.timescope.rest.Usuarios.exceptions.UsuarioNotFound;
 import es.timescope.rest.Tareas.mappers.TareasMapper;
 import es.timescope.rest.Tareas.models.Tarea;
 import es.timescope.rest.Tareas.repositories.TareasRepository;
+import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import jakarta.persistence.criteria.Join;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +44,7 @@ public class TareasServicesImpl implements TareasServices {
     private final UsuariosRepository usuariosRepository;
     private final ProyectosRepository proyectosRepository;
     private final NotificacionService notificacionService;
+    private final AuthUtils authUtils;
 
     @Override
     public Page<TareaResponseDto> findAll(Optional<String> usuario, Optional<String> estado, Pageable pageable){
@@ -92,8 +98,17 @@ public class TareasServicesImpl implements TareasServices {
     public TareaResponseDto createTarea(TareaCreateDto tareaCreateDto){
         log.info("Creando tarea: {}", tareaCreateDto);
         try {
-            Tarea tarea = tareasRepository.save(tareasMapper.toTarea(tareaCreateDto));
-            return tareasMapper.toTareaResponseDto(tarea);
+            Tarea tarea;
+            if (tareaCreateDto.getProyectoId() != null) {
+                Proyecto proyecto = proyectosRepository.findById(tareaCreateDto.getProyectoId())
+                        .orElseThrow(() -> new TareaCreateException("Proyecto con id " + tareaCreateDto.getProyectoId() + " no encontrado"));
+                tarea = tareasMapper.toTarea(tareaCreateDto, proyecto);
+            } else {
+                tarea = tareasMapper.toTarea(tareaCreateDto);
+            }
+            return tareasMapper.toTareaResponseDto(tareasRepository.save(tarea));
+        } catch (TareaCreateException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error al crear la tarea: {}", e.getMessage());
             throw new TareaCreateException("No fue posible crear la tarea: " + e.getMessage());
@@ -103,12 +118,37 @@ public class TareasServicesImpl implements TareasServices {
     @Override
     public TareaResponseDto updateTarea(Long id, TareaUpdateDto tareaUpdateDto) {
         log.info("Actualizando tarea con id: {}", id);
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
         Tarea tareaOpt = tareasRepository.findById(id)
                 .orElseThrow(() -> new TareaNotFound(id));
+
+        // DESARROLLADOR solo puede editar sus propias tareas
+        boolean soloDesarrollador = !authUtils.callerHasRole(Roles.DIRECTOR)
+                && !authUtils.callerHasRole(Roles.LIDER);
+        if (soloDesarrollador) {
+            boolean esSuTarea = tareaOpt.getUsuario() != null
+                    && tareaOpt.getUsuario().getId().equals(caller.getId());
+            if (!esSuTarea) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo puedes editar tus propias tareas");
+            }
+        }
+
         Usuario usuario = usuariosRepository.findByNombres(tareaUpdateDto.getUsuario());
         log.info("Usuario asociado a la tarea: {}", usuario);
         Tarea tarea = tareasRepository.save(tareasMapper.toTarea(tareaUpdateDto, tareaOpt, usuario));
         return tareasMapper.toTareaResponseDto(tarea);
+    }
+
+    @Override
+    public List<TareaResponseDto> findByProyectoId(Long proyectoId) {
+        log.info("Buscando tareas del proyecto con id: {}", proyectoId);
+        return tareasMapper.toTareaResponseDtoList(tareasRepository.findByProyectoId(proyectoId));
+    }
+
+    @Override
+    public Page<TareaResponseDto> findByProyectoId(Long proyectoId, Pageable pageable) {
+        log.info("Buscando tareas del proyecto con id: {} (paginado)", proyectoId);
+        return tareasRepository.findByProyectoId(proyectoId, pageable).map(tareasMapper::toTareaResponseDto);
     }
 
     @Override

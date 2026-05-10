@@ -29,4 +29,7 @@ public interface TareasServices {
 
     TareaResponseDto addTarea(TareaAddDto tareaAddDto);
 
+    List<TareaResponseDto> findByProyectoId(Long proyectoId);
+
+    Page<TareaResponseDto> findByProyectoId(Long proyectoId, Pageable pageable);
 }

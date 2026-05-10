@@ -1,69 +1,200 @@
-### Proceso de Login Desarrollador
-POST http://localhost:8080/api/v1/auth/signin
-Content-Type: application/json
+### =============================================
+### SIGN IN
+### Si se incluye orgId, el JWT lleva roles acotados a esa org.
+### Sin orgId, el token usa los roles globales del usuario.
+### El script guarda el token automáticamente en {{auth_token}}.
+### =============================================
 
-{
-  "username": "alopez",
-  "password": "MeGustanLosGatos3000@"
-}
-
-> {% client.global.set("auth_token", response.body.token); %}
-
-### Proceso de Login - Carlos García (DESARROLLADOR)
-POST http://localhost:8080/api/v1/auth/signin
-Content-Type: application/json
-
-{
-  "username": "cgarcia",
-  "password": "UsuarioGarcia"
-}
-
-> {% client.global.set("auth_token", response.body.token); %}
-
-
-### Proceso de Login - María Martínez (COORDINADOR)
-POST http://localhost:8080/api/v1/auth/signin
-Content-Type: application/json
-
-{
-  "username": "mmartinez",
-  "password": "MartinezMartinez"
-}
-
-> {% client.global.set("auth_token", response.body.token); %}
-
-
-### Proceso de Login - Juan Pérez (LIDER)
-POST http://localhost:8080/api/v1/auth/signin
-Content-Type: application/json
-
-{
-  "username": "jperez",
-  "password": "JuanElDestructorDeMundos"
-}
-
-> {% client.global.set("auth_token", response.body.token); %}
-
-
-### Proceso de Login - Laura Fernández (DIRECTOR)
-POST http://localhost:8080/api/v1/auth/signin
-Content-Type: application/json
-
-{
-  "username": "lfernandez",
-  "password": "DragonVampirico2090@@@@"
-}
-
-> {% client.global.set("auth_token", response.body.token); %}
-
-
-### Proceso de Login de Admin (ADMIN)
+### Login global (sin org activa)
 POST http://localhost:8080/api/v1/auth/signin
 Content-Type: application/json
 
 {
   "username": "admin",
   "password": "admin123"
+}
+
+> {% client.global.set("auth_token", response.body.token); %}
+
+###
+
+### Login admin con org activa → roles de org 1 (TechCorp)
+POST http://localhost:8080/api/v1/auth/signin
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123",
+  "orgId": 1
+}
+
+> {% client.global.set("auth_token", response.body.token); %}
+
+###
+
+### Carlos García — DESARROLLADOR en org 1
+POST http://localhost:8080/api/v1/auth/signin
+Content-Type: application/json
+
+{
+  "username": "cgarcia",
+  "password": "UsuarioGarcia",
+  "orgId": 1
+}
+
+> {% client.global.set("auth_token", response.body.token); %}
+
+###
+
+### María Martínez — DESARROLLADOR en org 1
+POST http://localhost:8080/api/v1/auth/signin
+Content-Type: application/json
+
+{
+  "username": "mmartinez",
+  "password": "MartinezMartinez",
+  "orgId": 1
+}
+
+> {% client.global.set("auth_token", response.body.token); %}
+
+###
+
+### Juan Pérez — LIDER en org 2 (Innovatech)
+POST http://localhost:8080/api/v1/auth/signin
+Content-Type: application/json
+
+{
+  "username": "jperez",
+  "password": "JuanElDestructorDeMundos",
+  "orgId": 2
+}
+
+> {% client.global.set("auth_token", response.body.token); %}
+
+###
+
+### Laura Fernández — DIRECTOR en org 3 (CloudSystem)
+POST http://localhost:8080/api/v1/auth/signin
+Content-Type: application/json
+
+{
+  "username": "lfernandez",
+  "password": "DragonVampirico2090@@@@",
+  "orgId": 3
+}
+
+> {% client.global.set("auth_token", response.body.token); %}
+
+###
+
+### Andrés López — DESARROLLADOR en org 4 (DataDrive)
+POST http://localhost:8080/api/v1/auth/signin
+Content-Type: application/json
+
+{
+  "username": "alopez",
+  "password": "MeGustanLosGatos3000@",
+  "orgId": 4
+}
+### =============================================
+### SIGN IN
+### Si se incluye orgId, el JWT lleva roles acotados a esa org.
+### Sin orgId, el token usa los roles globales del usuario.
+### El script guarda el token automáticamente en {{auth_token}}.
+### =============================================
+
+### Login global (sin org activa)
+POST http://localhost:8080/api/v1/auth/signin
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+> {% client.global.set("auth_token", response.body.token); %}
+
+###
+
+### Login admin con org activa → roles de org 1 (TechCorp)
+POST http://localhost:8080/api/v1/auth/signin
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123",
+  "orgId": 1
+}
+
+> {% client.global.set("auth_token", response.body.token); %}
+
+###
+
+### Carlos García — DESARROLLADOR en org 1
+POST http://localhost:8080/api/v1/auth/signin
+Content-Type: application/json
+
+{
+  "username": "cgarcia",
+  "password": "UsuarioGarcia",
+  "orgId": 1
+}
+
+> {% client.global.set("auth_token", response.body.token); %}
+
+###
+
+### María Martínez — DESARROLLADOR en org 1
+POST http://localhost:8080/api/v1/auth/signin
+Content-Type: application/json
+
+{
+  "username": "mmartinez",
+  "password": "MartinezMartinez",
+  "orgId": 1
+}
+
+> {% client.global.set("auth_token", response.body.token); %}
+
+###
+
+### Juan Pérez — LIDER en org 2 (Innovatech)
+POST http://localhost:8080/api/v1/auth/signin
+Content-Type: application/json
+
+{
+  "username": "jperez",
+  "password": "JuanElDestructorDeMundos",
+  "orgId": 2
+}
+
+> {% client.global.set("auth_token", response.body.token); %}
+
+###
+
+### Laura Fernández — DIRECTOR en org 3 (CloudSystem)
+POST http://localhost:8080/api/v1/auth/signin
+Content-Type: application/json
+
+{
+  "username": "lfernandez",
+  "password": "DragonVampirico2090@@@@",
+  "orgId": 3
+}
+
+> {% client.global.set("auth_token", response.body.token); %}
+
+###
+
+### Andrés López — DESARROLLADOR en org 4 (DataDrive)
+POST http://localhost:8080/api/v1/auth/signin
+Content-Type: application/json
+
+{
+  "username": "alopez",
+  "password": "MeGustanLosGatos3000@",
+  "orgId": 4
 }
 
 > {% client.global.set("auth_token", response.body.token); %}

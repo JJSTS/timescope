@@ -9,73 +9,98 @@ GET http://localhost:8080/api/v1/organizaciones
     &size=10
     &sortBy=id
     &direction=asc
+Authorization: Bearer {{auth_token}}
 
 ###
 
-### GET ALL - Filtrar por nombre
+### GET ALL - Filtrar por nombre (parcial, case-insensitive)
 GET http://localhost:8080/api/v1/organizaciones
-    ?nombre=TimeScope Corp
+    ?nombre=TechCorp
     &page=0
     &size=10
+Authorization: Bearer {{auth_token}}
 
 ###
 
-### GET ALL - Filtrar por isDeleted
+### GET ALL - Filtrar por isDeleted=false
 GET http://localhost:8080/api/v1/organizaciones
     ?isDeleted=false
     &page=0
     &size=10
+Authorization: Bearer {{auth_token}}
 
 ###
 
 ### GET ALL - Filtrar por id
 GET http://localhost:8080/api/v1/organizaciones
     ?id=1
+Authorization: Bearer {{auth_token}}
 
 ###
 
-### POST - Crear nueva organización
+### POST - Crear nueva organización (el usuario autenticado pasa a ser DIRECTOR y admin)
 POST http://localhost:8080/api/v1/organizaciones
 Content-Type: application/json
+Authorization: Bearer {{auth_token}}
 
 {
-  "nombre": "Nueva Organización",
-  "empresaMatrizId": 1
+  "nombre": "NuevaOrg"
 }
 
 ###
 
-### POST - Crear organización matriz
-POST http://localhost:8080/api/v1/organizaciones
-Content-Type: application/json
-
-{
-  "nombre": "Organización Matriz"
-}
-
-###
-
-### DELETE - Eliminar organización por ID
+### DELETE - Eliminar organización por ID (requiere rol DIRECTOR)
 DELETE http://localhost:8080/api/v1/organizaciones/1
+Authorization: Bearer {{auth_token}}
 
 ###
 
 ### GET - Obtener filiales de una organización
 GET http://localhost:8080/api/v1/organizaciones/1/filiales
+Authorization: Bearer {{auth_token}}
 
 ###
 
 ### GET - Obtener empresa matriz de una organización
 GET http://localhost:8080/api/v1/organizaciones/2/matriz
+Authorization: Bearer {{auth_token}}
 
 ###
 
-### POST - Añadir proyecto a organización
+### POST - Añadir proyecto existente a una organización
 POST http://localhost:8080/api/v1/organizaciones/1/proyectos/1
+Authorization: Bearer {{auth_token}}
 
 ###
 
-### POST - Añadir usuario a organización
-POST http://localhost:8080/api/v1/organizaciones/1/usuarios/1
+### POST - Añadir usuario existente a una organización
+POST http://localhost:8080/api/v1/organizaciones/1/usuarios/3
+Authorization: Bearer {{auth_token}}
+
+###
+
+### PUT - Ceder admin principal de organización a otro usuario
+### Requiere: ser el admin actual de la org. El nuevo admin recibe DIRECTOR.
+PUT http://localhost:8080/api/v1/organizaciones/1/ceder-admin?username=jperez
+Authorization: Bearer {{auth_token}}
+
+###
+
+### POST - Añadir director a organización (solo admin principal puede ejecutarlo)
+POST http://localhost:8080/api/v1/organizaciones/1/directores/3
+Authorization: Bearer {{auth_token}}
+
+###
+
+### DELETE - Eliminar director de organización (solo admin principal puede ejecutarlo)
+DELETE http://localhost:8080/api/v1/organizaciones/1/directores/3
+Authorization: Bearer {{auth_token}}
+
+###
+
+### PATCH - Asignar rol a usuario dentro de una organización concreta
+### Requiere: ser DIRECTOR en esa org. Roles válidos: DIRECTOR, LIDER, DESARROLLADOR
+PATCH http://localhost:8080/api/v1/organizaciones/1/usuarios/1/rol?rol=LIDER
+Authorization: Bearer {{auth_token}}
 
 ###

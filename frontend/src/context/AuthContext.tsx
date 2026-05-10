@@ -1,97 +1,93 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import axios from 'axios';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   logout: () => void;
-  login: (username: string, token: string) => void;
+  login: (username: string, token: string) => Promise<void>; // Devuelve una promesa
   username?: string;
-  setIsAuthenticated: (value: boolean) => void;
-  setUsername: (value: string | undefined) => void;
+  userRole?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState<string>();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [username, setUsername] = useState<string | undefined>();
+  const [userRole, setUserRole] = useState<string | undefined>();
+  const [loading, setLoading] = useState<boolean>(true); // Estado para la carga inicial
 
-  // Al cargar el componente, verificar si hay sesión guardada
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const storedUsername = localStorage.getItem('username');
-    console.log('AuthProvider inicializado. Token:', !!token, 'Username:', storedUsername);
+    const checkUserStatus = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const response = await axios.get('http://localhost:8080/api/v1/usuarios/me', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          
+          const userData = response.data;
+          
+          if (userData) {
+            setIsAuthenticated(true);
+            setUsername(userData.username);
+            const role = userData.roles && userData.roles.length > 0 ? userData.roles[0] : 'USER';
+            setUserRole(role);
+            localStorage.setItem('username', userData.username);
+            localStorage.setItem('userRole', role);
+          } else {
+            logout();
+          }
+        } catch (error) {
+          logout();
+        }
+      }
+      setLoading(false);
+    };
 
-    if (token && storedUsername) {
-      setIsAuthenticated(true);
-      setUsername(storedUsername);
-      console.log('Sesión restaurada desde localStorage:', storedUsername);
-    }
+    checkUserStatus();
   }, []);
 
-  // Monitorear cambios en localStorage (cuando otro tab hace cambios)
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      console.log('Storage cambió. Event:', e.key);
-      const token = localStorage.getItem('token');
-      const storedUsername = localStorage.getItem('username');
-
-      if (token && storedUsername) {
+  const login = async (newUsername: string, token: string): Promise<void> => {
+    localStorage.setItem('token', token);
+    
+    try {
+      const response = await axios.get('http://localhost:8080/api/v1/usuarios/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const userData = response.data;
+      if (userData) {
+        const role = userData.roles && userData.roles.length > 0 ? userData.roles[0] : 'USER';
+        localStorage.setItem('username', userData.username);
+        localStorage.setItem('userRole', role);
+        setUsername(userData.username);
+        setUserRole(role);
         setIsAuthenticated(true);
-        setUsername(storedUsername);
-        console.log('Usuario actualizado desde storage:', storedUsername);
       } else {
-        setIsAuthenticated(false);
-        setUsername(undefined);
+        logout();
+        throw new Error("No se pudieron obtener los datos del usuario.");
       }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
-  // Monitorear cambios manuales en localStorage desde la misma ventana
-  // Esto se llama cuando LoginForm guarda el username
-  useEffect(() => {
-    const checkLocalStorage = () => {
-      const token = localStorage.getItem('token');
-      const storedUsername = localStorage.getItem('username');
-
-      if (token && storedUsername && storedUsername !== username) {
-        console.log('Username cambió en localStorage:', storedUsername);
-        setIsAuthenticated(true);
-        setUsername(storedUsername);
-        console.log('Username actualizado en AuthContext:', storedUsername);
-      }
-    };
-
-    // Verificar inmediatamente
-    checkLocalStorage();
-
-    // Y también crear un intervalo de chequeo frecuente (para la misma ventana)
-    const interval = setInterval(checkLocalStorage, 100);
-    return () => clearInterval(interval);
-  }, [username]);
+    } catch (error) {
+      logout();
+      throw error; // Re-lanza el error para que el formulario de login lo pueda capturar
+    }
+  };
 
   const logout = () => {
-    console.log('Logout ejecutado');
     localStorage.removeItem('token');
     localStorage.removeItem('username');
-    setIsAuthenticated(false);
+    localStorage.removeItem('userRole');
     setUsername(undefined);
+    setUserRole(undefined);
+    setIsAuthenticated(false);
   };
 
-  const login = (newUsername: string, token: string) => {
-    console.log('Login ejecutado para usuario:', newUsername);
-    localStorage.setItem('token', token);
-    localStorage.setItem('username', newUsername);
-    setIsAuthenticated(true);
-    setUsername(newUsername);
-  };
-
-  console.log('AuthContext render. Username:', username, 'IsAuth:', isAuthenticated);
+  if (loading) {
+    return <div>Verificando sesión...</div>;
+  }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, logout, login, username, setUsername, setIsAuthenticated }}>
+    <AuthContext.Provider value={{ isAuthenticated, username, userRole, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -99,9 +95,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth debe ser usado dentro de AuthProvider');
+  if (context === undefined) {
+    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
   }
   return context;
 };
-

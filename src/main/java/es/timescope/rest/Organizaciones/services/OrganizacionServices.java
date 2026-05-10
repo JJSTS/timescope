@@ -1,5 +1,6 @@
 package es.timescope.rest.Organizaciones.services;
 import es.timescope.rest.Organizaciones.dto.*;
+import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,4 +23,16 @@ public interface OrganizacionServices {
     OrganizacionResponseDto addProyecto(Long orgId, Long proyectoId);
 
     OrganizacionResponseDto addUsuario(Long orgId, Long usuarioId);
+
+    OrganizacionResponseDto cederAdmin(Long orgId, String username);
+
+    OrganizacionResponseDto addDirector(Long orgId, Long usuarioId);
+
+    OrganizacionResponseDto removeDirector(Long orgId, Long usuarioId);
+
+    void asignarRolEnOrg(Long orgId, Long usuarioId, es.timescope.rest.Usuarios.models.Roles rol);
+
+    List<UsuarioResponseDto> getMiembros(Long orgId);
+
+    List<es.timescope.rest.Proyectos.dto.ProyectoResponseDto> getProyectos(Long orgId);
 }

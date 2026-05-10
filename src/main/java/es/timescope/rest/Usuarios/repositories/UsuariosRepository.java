@@ -18,12 +18,6 @@ import java.util.Optional;
 public interface UsuariosRepository extends JpaRepository<Usuario, Long>, JpaSpecificationExecutor<Usuario> {
     Optional<Usuario> findByUsernameEqualsIgnoreCaseOrEmailEqualsIgnoreCase(String username, String email);
 
-    @Modifying
-    @Query("UPDATE Usuario u SET u.isDeleted = true WHERE u.id = :id")
-    void updateIsDeletedToTrueById(Long id);
-
-    List<Usuario> findAllByIsDeletedFalse();
-
     Optional<Usuario> findByUsername(String username);
 
     @Query("SELECT t FROM Tarea t WHERE t.usuario.id = :usuarioId")

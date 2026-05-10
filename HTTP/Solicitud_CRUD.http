@@ -1,5 +1,5 @@
 ### Usuario autenticado envía solicitud a TechCorpSolutions
-POST http://localhost:8080/api/v1/solicitud/enviar/TechCorpSolutions
+POST http://localhost:8080/api/v1/solicitud/enviar/SecureNetSecurity
 Authorization: Bearer {{auth_token}}
 
 ### POST - Enviar solicitud a InnovatechDigital

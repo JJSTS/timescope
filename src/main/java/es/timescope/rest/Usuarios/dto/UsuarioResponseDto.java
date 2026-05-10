@@ -25,4 +25,6 @@ public class UsuarioResponseDto {
 
     @Builder.Default
     private Boolean isDeleted = false;
+
+    private Long organizacionId;
 }

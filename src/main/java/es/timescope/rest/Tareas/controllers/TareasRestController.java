@@ -27,6 +27,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -50,7 +51,7 @@ public class TareasRestController {
             @RequestParam(required = false) Optional<String> usuario,
             @RequestParam(required = false) Optional<String> estado,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String direction,
             HttpServletRequest request
@@ -104,6 +105,25 @@ public class TareasRestController {
         return ResponseEntity.ok(tareasServices.findById(id));
     }
 
+    @GetMapping("/proyecto/{proyectoId}")
+    public ResponseEntity<PageResponse<TareaResponseDto>> getByProyecto(
+            @PathVariable Long proyectoId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction,
+            HttpServletRequest request
+    ) {
+        log.info("Buscando tareas del proyecto con id: {}", proyectoId);
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(request.getRequestURL().toString());
+        Page<TareaResponseDto> pageResult = tareasServices.findByProyectoId(proyectoId, pageable);
+        return ResponseEntity.ok()
+                .header("link", paginationLinksUtils.createLinkHeader(pageResult, uriBuilder))
+                .body(PageResponse.of(pageResult, sortBy, direction));
+    }
+
     @PostMapping()
     public ResponseEntity<TareaResponseDto> createTarea(
             @Valid @RequestBody TareaCreateDto tareaCreateDto){
@@ -117,7 +137,8 @@ public class TareasRestController {
         return ResponseEntity.ok(tareasServices.updateTarea(id, tareaUpdateDto));
     }
 
-    @PostMapping("/add")
+    @PostMapping("/addTarea")
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
     public ResponseEntity<TareaResponseDto> addTarea(@Valid @RequestBody TareaAddDto tareaAddDto) {
         log.info("Asignando tarea id: {} al usuario: {}", tareaAddDto.getTareaId(), tareaAddDto.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body(tareasServices.addTarea(tareaAddDto));

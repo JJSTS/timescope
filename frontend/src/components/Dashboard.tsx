@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import UserProfile from './UserProfile';
+import ChangePasswordModal from './ChangePasswordModal';
 import UsuariosList from './UsuariosList';
 import TareasList from './TareasList';
 import ProyectosList from './ProyectosList';
@@ -31,30 +32,67 @@ const BellIcon: React.FC<IconProps> = ({ className }) => (
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, logout, username } = useAuth();
+  const { isAuthenticated, logout, username, userRole } = useAuth();
   const [activeTab, setActiveTab] = useState<'perfil' | 'tareas' | 'proyectos' | 'equipo'>('perfil');
   const [notifOpen, setNotifOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const [pendientesCount, setPendientesCount] = useState(0);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [userInitials, setUserInitials] = useState('');
-  const [highlightedId, setHighlightedId] = useState<number | null>(null);
   const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
+  const [orgNombre, setOrgNombre] = useState<string | null>(null);
   const toastIdRef = useRef(0);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Log para depurar el rol del usuario
+  console.log('Rol del usuario en Dashboard:', userRole);
 
   useEffect(() => {
     if (!isAuthenticated) navigate('/');
   }, [isAuthenticated, navigate]);
 
-  // Obtener iniciales del usuario
+  // Efecto para cerrar el dropdown si se hace clic fuera
   useEffect(() => {
-    if (username) {
-      const initials = username
-        .split(' ')
-        .slice(0, 2)
-        .map(word => word.charAt(0).toUpperCase())
-        .join('');
-      setUserInitials(initials || username.charAt(0).toUpperCase());
-    }
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Obtener iniciales del usuario + nombre de organización
+  useEffect(() => {
+    if (!username) return;
+    const initials = username
+      .split(' ')
+      .slice(0, 2)
+      .map(word => word.charAt(0).toUpperCase())
+      .join('');
+    setUserInitials(initials || username.charAt(0).toUpperCase());
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    fetch('http://localhost:8080/api/v1/usuarios/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(async userData => {
+        if (!userData?.organizacionId) return;
+        const orgRes = await fetch(
+          `http://localhost:8080/api/v1/organizaciones?id=${userData.organizacionId}&size=1`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!orgRes.ok) return;
+        const orgData = await orgRes.json();
+        const nombre = orgData?.content?.[0]?.nombre;
+        if (nombre) setOrgNombre(nombre);
+      })
+      .catch(() => {});
   }, [username]);
 
   const handlePendientesChange = useCallback((count: number) => {
@@ -75,11 +113,8 @@ const Dashboard: React.FC = () => {
 
   useWebSocketNotif(username, handleNuevaNotificacion);
 
-  const handleTabClick = (tab: 'perfil' | 'tareas' | 'proyectos' | 'equipo', highlightId?: number) => {
+  const handleTabClick = (tab: 'perfil' | 'tareas' | 'proyectos' | 'equipo') => {
     setActiveTab(tab);
-    if (highlightId !== undefined) {
-      setHighlightedId(highlightId);
-    }
   };
 
   const handleLogout = () => {
@@ -122,12 +157,14 @@ const Dashboard: React.FC = () => {
             >
               Proyectos
             </button>
-            <button
-              className={`nav-tab ${activeTab === 'equipo' ? 'active' : ''}`}
-              onClick={() => handleTabClick('equipo')}
-            >
-              Equipo
-            </button>
+            {userRole?.toLowerCase() !== 'desarrollador' && (
+              <button
+                className={`nav-tab ${activeTab === 'equipo' ? 'active' : ''}`}
+                onClick={() => handleTabClick('equipo')}
+              >
+                Equipo
+              </button>
+            )}
           </nav>
         </div>
 
@@ -158,12 +195,24 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* User Avatar with Dropdown */}
-          <div className="user-avatar-menu">
-            <div className="user-avatar" title={username}>
+          <div className={`user-avatar-menu ${isDropdownOpen ? 'open' : ''}`} ref={dropdownRef}>
+            <button
+              type="button"
+              className="user-avatar"
+              title={username}
+              onClick={() => setIsDropdownOpen(prev => !prev)}
+            >
               {userInitials}
-            </div>
+            </button>
             <div className="user-dropdown">
-              <button className="dropdown-item" onClick={handleLogout}>
+              <button className="dropdown-item" onClick={() => { setIsDropdownOpen(false); setShowChangePassword(true); }}>
+                🔐 Cambiar contraseña
+              </button>
+              <button className="dropdown-item" onClick={() => { setIsDropdownOpen(false); setActiveTab('perfil'); }}>
+                ✏️ Editar perfil
+              </button>
+              <div className="dropdown-divider" />
+              <button className="dropdown-item dropdown-item--danger" onClick={handleLogout}>
                 Cerrar sesión
               </button>
             </div>
@@ -171,15 +220,19 @@ const Dashboard: React.FC = () => {
         </div>
       </header>
 
-      <main className="dashboard-content">
-        {activeTab === 'perfil' && <UserProfile />}
-        {activeTab === 'tareas' && <TareasList highlightedId={highlightedId} />}
-        {activeTab === 'proyectos' && <ProyectosList highlightedId={highlightedId} />}
-        {activeTab === 'equipo' && <UsuariosList />}
-      </main>
+       <main className="dashboard-content">
+         {activeTab === 'perfil' && <UserProfile />}
+         {activeTab === 'tareas' && <TareasList />}
+         {activeTab === 'proyectos' && <ProyectosList />}
+         {activeTab === 'equipo' && <UsuariosList />}
+       </main>
 
       {selectedOrgId !== null && (
         <OrganizacionModal orgId={selectedOrgId} onClose={() => setSelectedOrgId(null)} />
+      )}
+
+      {showChangePassword && (
+        <ChangePasswordModal onClose={() => setShowChangePassword(false)} />
       )}
     </div>
   );

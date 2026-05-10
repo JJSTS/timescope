@@ -52,6 +52,12 @@ public class ProyectosRestController {
                 .body(PageResponse.of(pageResult, sortBy, direction));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ProyectoResponseDto> findById(@PathVariable Long id) {
+        log.info("Buscando proyecto por id: {}", id);
+        return ResponseEntity.ok(proyectoServices.findById(id));
+    }
+
     @GetMapping("/estado/{estado}")
     public ResponseEntity<PageResponse<ProyectoResponseDto>> findByEstado(
             @PathVariable Estado estado,
@@ -79,7 +85,7 @@ public class ProyectosRestController {
                 .body(PageResponse.of(pageResult, sortBy, direction));
     }
 
-    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
+    @PreAuthorize("hasRole('DIRECTOR')")
     @PostMapping
     public ResponseEntity<ProyectoResponseDto> createProyecto(@RequestBody ProyectoCreateDto proyectoCreateDto) {
         log.info("Recibiendo solicitud para crear proyecto: {}", proyectoCreateDto);
@@ -89,7 +95,7 @@ public class ProyectosRestController {
 
 
     @PutMapping("/usuario/{id}")
-    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
+    @PreAuthorize("hasRole('DIRECTOR')")
     public ResponseEntity<ProyectoResponseDto> addUsuario(
             @PathVariable Long id,
             @RequestParam String username
@@ -125,8 +131,17 @@ public class ProyectosRestController {
                 .body(PageResponse.of(pageResult, sortBy, direction));
     }
 
+    @PatchMapping("/{id}/estado")
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
+    public ResponseEntity<ProyectoResponseDto> cambiarEstado(
+            @PathVariable Long id,
+            @RequestParam Estado estado) {
+        log.info("Cambiando estado del proyecto {} a {}", id, estado);
+        return ResponseEntity.ok(proyectoServices.cambiarEstado(id, estado));
+    }
+
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('DIRECTOR','COORDINADOR')")
+    @PreAuthorize("hasRole('DIRECTOR')")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
         log.info("Eliminando proyecto con id: {}", id);
 

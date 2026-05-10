@@ -34,7 +34,7 @@ public class UsuarioCreateDto {
 
     @Builder.Default
     @JsonIgnore
-    private Set<Roles> roles = Set.of(Roles.DESARROLLADOR);
+    private Set<Roles> roles = null;
 
     @Builder.Default
     private Boolean isDeleted = false;

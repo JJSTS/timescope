@@ -22,4 +22,10 @@ public interface TareasRepository extends JpaRepository<Tarea, Long>, JpaSpecifi
     
     @Query("SELECT t FROM Tarea t WHERE t.usuario.id = :usuarioId AND t.estado = :estado")
     List<Tarea> findByUsuarioIdAndEstado(Long usuarioId, Estado estado);
+
+    @Query("SELECT t FROM Tarea t WHERE t.proyecto.id = :proyectoId")
+    List<Tarea> findByProyectoId(Long proyectoId);
+
+    @Query("SELECT t FROM Tarea t WHERE t.proyecto.id = :proyectoId")
+    Page<Tarea> findByProyectoId(Long proyectoId, Pageable pageable);
 }

@@ -9,6 +9,8 @@ import java.util.Optional;
 public interface ProyectoServices {
     Page<ProyectoResponseDto> findAll(Optional<Long> id, Optional<String> nombre, Optional<Boolean> isDeleted, Pageable pageable);
 
+    ProyectoResponseDto findById(Long id);
+
     Page<ProyectoResponseDto> findByEstado(Estado estado, Pageable pageable);
 
     Page<ProyectoResponseDto> findByUsuarioId(Long usuarioId, Pageable pageable);
@@ -20,4 +22,6 @@ public interface ProyectoServices {
 //    Proyecto update(Long id, ProyectoUpdateDto proyectoUpdateDto);
 
     void deleteById(Long id);
+
+    ProyectoResponseDto cambiarEstado(Long id, Estado estado);
 }
