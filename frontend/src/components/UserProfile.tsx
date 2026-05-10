@@ -73,7 +73,7 @@ const UserProfile: React.FC = () => {
         }
 
         const headers = { Authorization: `Bearer ${token}` };
-        const BASE = '${process.env.REACT_APP_API_URL}';
+        const BASE = `${process.env.REACT_APP_API_URL}`;
 
         // Usuario autenticado
         const userResponse = await fetch(`${BASE}/usuarios/me`, { headers });

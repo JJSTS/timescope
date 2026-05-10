@@ -50,7 +50,7 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
       if (horasEstimadas) body.horasEstimadas = parseFloat(horasEstimadas);
       if (proyectoId) body.proyectoId = parseInt(proyectoId, 10);
 
-      const res = await fetch('${process.env.REACT_APP_API_URL}/tareas', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/tareas`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

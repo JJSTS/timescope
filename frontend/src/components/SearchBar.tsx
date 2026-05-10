@@ -15,7 +15,7 @@ interface Props {
   onSelectOrg: (id: number) => void;
 }
 
-const BASE = '${process.env.REACT_APP_API_URL}';
+const BASE = `${process.env.REACT_APP_API_URL}`;
 
 const TYPE_LABEL: Record<SearchResult['type'], string> = {
   proyecto: 'Proyecto',

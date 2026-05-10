@@ -22,7 +22,7 @@ const ProyectoCreateModal: React.FC<Props> = ({ onClose, onCreated }) => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('${process.env.REACT_APP_API_URL}/proyectos', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/proyectos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

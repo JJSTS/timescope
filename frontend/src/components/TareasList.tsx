@@ -51,7 +51,7 @@ const TareasList: React.FC = () => {
 
   useEffect(() => {
     if (!token) return;
-    fetch('${process.env.REACT_APP_API_URL}/usuarios/me', {
+    fetch(`${process.env.REACT_APP_API_URL}/usuarios/me`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(r => r.ok ? r.json() : null)

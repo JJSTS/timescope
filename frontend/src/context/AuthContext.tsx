@@ -22,7 +22,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const response = await axios.get('${process.env.REACT_APP_API_URL}/usuarios/me', {
+          const response = await axios.get(`${process.env.REACT_APP_API_URL}/usuarios/me`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           
@@ -52,7 +52,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.setItem('token', token);
     
     try {
-      const response = await axios.get('${process.env.REACT_APP_API_URL}/usuarios/me', {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/usuarios/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const userData = response.data;
