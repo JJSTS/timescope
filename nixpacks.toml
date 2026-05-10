@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["jdk21_headless", "maven"]
+nixPkgs = ["jdk21"]
 
 [phases.build]
 cmds = ["mvn -f pom.xml clean package -DskipTests --no-transfer-progress"]
