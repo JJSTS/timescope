@@ -129,11 +129,6 @@ const ProyectosList: React.FC = () => {
         : response.data.content || [];
 
       setProyectos(proyectosData);
-    } catch (error: any) {
-      const errorMsg = error.response?.data?.message || error.message || 'Error al cargar proyectos';
-      setError(errorMsg);
-    } finally {
-      setLoading(false);
     }
   };
 

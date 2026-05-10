@@ -72,54 +72,34 @@ const UserProfile: React.FC = () => {
           return;
         }
 
-        const userResponse = await fetch('http://localhost:8080/api/v1/usuarios/me', {
-          headers: { Authorization: `Bearer ${token}` },
-        const userUrl = `https://timescope-api.loca.lt/api/v1/usuarios?username=${username}`;
+        const headers = { Authorization: `Bearer ${token}` };
+        const BASE = 'http://localhost:8080/api/v1';
 
-        const userResponse = await fetch(userUrl, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
+        // Usuario autenticado
+        const userResponse = await fetch(`${BASE}/usuarios/me`, { headers });
         if (!userResponse.ok) throw new Error('No fue posible cargar el perfil de usuario');
-        const userData = await userResponse.json();
+        const userData: User = await userResponse.json();
         setUser(userData);
 
-        if (!userResponse.ok) {
-          throw new Error('No fue posible cargar el perfil de usuario');
-        }
-
-        const userPageResponse = await userResponse.json();
-
-        let userData = null;
-        if (userPageResponse.content && userPageResponse.content.length > 0) {
-          userData = userPageResponse.content[0];
-          setUser(userData);
-        } else {
-          throw new Error('Usuario no encontrado');
-        }
-
-        // Obtener tareas
-        const tasksUrl = `https://timescope-api.loca.lt/api/v1/tareas`;
-
+        // Tareas activas/abiertas y todas las tareas (en paralelo)
         const [tasksResponse, allTasksResponse] = await Promise.all([
-          fetch('http://localhost:8080/api/v1/tareas/me/activo', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('http://localhost:8080/api/v1/tareas/me?size=100', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${BASE}/tareas/me/activo`, { headers }),
+          fetch(`${BASE}/tareas/me?size=100`, { headers }),
         ]);
         if (tasksResponse.ok) {
-          const tasksData = await tasksResponse.json();
-          setTasks(Array.isArray(tasksData) ? tasksData : tasksData.content || []);
+          const data = await tasksResponse.json();
+          setTasks(Array.isArray(data) ? data : data.content ?? []);
         }
         if (allTasksResponse.ok) {
-          const allTasksData = await allTasksResponse.json();
-          setAllTasks(Array.isArray(allTasksData) ? allTasksData : allTasksData.content || []);
+          const data = await allTasksResponse.json();
+          setAllTasks(Array.isArray(data) ? data : data.content ?? []);
         }
 
+        // Miembros del equipo y nombre de org (si tiene org)
         if (userData.organizacionId) {
           const [teamResponse, orgResponse] = await Promise.all([
-            fetch(`http://localhost:8080/api/v1/organizaciones/${userData.organizacionId}/miembros`, { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`http://localhost:8080/api/v1/organizaciones?id=${userData.organizacionId}&size=1`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`${BASE}/organizaciones/${userData.organizacionId}/miembros`, { headers }),
+            fetch(`${BASE}/organizaciones?id=${userData.organizacionId}&size=1`, { headers }),
           ]);
           if (teamResponse.ok) setTeamMembers(await teamResponse.json());
           if (orgResponse.ok) {
