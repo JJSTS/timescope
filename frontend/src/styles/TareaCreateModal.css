@@ -126,6 +126,16 @@
   min-height: 80px;
 }
 
+.tcm-assign-hint {
+  margin: 0.3rem 0 0;
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.tcm-assign-hint strong {
+  color: #1e40af;
+}
+
 .tcm-error {
   font-size: 0.85rem;
   color: #dc2626;

@@ -214,3 +214,35 @@ UPDATE TAREAS SET proyecto_id = 16 WHERE id IN (19, 20, 26);          -- admin �
 UPDATE TAREAS SET proyecto_id = 3  WHERE id IN (33, 34);              -- Portal Admin (org1)
 UPDATE TAREAS SET proyecto_id = 4  WHERE id IN (35, 36);              -- API Gateway (org1)
 UPDATE TAREAS SET proyecto_id = 10 WHERE id IN (37, 38);              -- Integración ERP (org3)
+
+-- =====================
+-- TAREAS EN REVISIÓN (ids 39-44)
+-- Pendientes de aprobación por DIRECTOR/LIDER
+-- =====================
+INSERT INTO TAREAS (nombre, descripcion, estado, horas_estimadas, fecha_limite, usuario_id) VALUES
+-- Org 1 — TechCorp
+('Validación Formularios',  'Revisar validaciones client-side en formularios de alta.',      'REVISION', 3.0, '2026-05-10 18:00:00', 1),  -- cgarcia
+('Integración WebSocket',   'Verificar reconexión automática del cliente STOMP.',            'REVISION', 4.5, '2026-05-12 18:00:00', 2),  -- mmartinez
+-- Org 2 — Innovatech
+('Suite E2E Login',         'Cobertura completa del flujo de autenticación con Playwright.', 'REVISION', 5.0, '2026-05-13 18:00:00', 3),  -- jperez
+-- Org 3 — CloudSystem
+('Alertas Vencimiento',     'Notificaciones push 24h antes del vencimiento de tareas.',      'REVISION', 3.5, '2026-05-14 18:00:00', 4),  -- lfernandez
+-- Org 4 — DataDrive
+('Cifrado en Tránsito',     'Forzar TLS 1.3 en todos los endpoints expuestos.',             'REVISION', 2.5, '2026-05-15 18:00:00', 5),  -- alopez
+-- Org 1 — TechCorp (admin)
+('Análisis Rendimiento',    'Perfilar endpoints críticos y proponer mejoras de caché.',      'REVISION', 4.0, '2026-05-16 18:00:00', 6);  -- admin
+
+UPDATE TAREAS SET proyecto_id = 1  WHERE id = 39;   -- cgarcia     → TimeScope v1
+UPDATE TAREAS SET proyecto_id = 2  WHERE id = 40;   -- mmartinez   → App Móvil
+UPDATE TAREAS SET proyecto_id = 6  WHERE id = 41;   -- jperez      → QA Automatizada
+UPDATE TAREAS SET proyecto_id = 11 WHERE id = 42;   -- lfernandez  → Notificaciones Push
+UPDATE TAREAS SET proyecto_id = 14 WHERE id = 43;   -- alopez      → Seguridad App
+UPDATE TAREAS SET proyecto_id = 5  WHERE id = 44;   -- admin       → Refactor Backend
+
+-- Tiempos de ejecución para tareas en REVISIÓN
+UPDATE TAREAS SET fecha_inicio = '2026-05-08 09:00:00', fecha_fin = '2026-05-08 12:30:00' WHERE id = 39;  -- 3h 30min
+UPDATE TAREAS SET fecha_inicio = '2026-05-09 10:00:00', fecha_fin = '2026-05-09 14:30:00' WHERE id = 40;  -- 4h 30min
+UPDATE TAREAS SET fecha_inicio = '2026-05-08 08:00:00', fecha_fin = '2026-05-08 13:00:00' WHERE id = 41;  -- 5h
+UPDATE TAREAS SET fecha_inicio = '2026-05-09 13:00:00', fecha_fin = '2026-05-09 16:30:00' WHERE id = 42;  -- 3h 30min
+UPDATE TAREAS SET fecha_inicio = '2026-05-09 09:30:00', fecha_fin = '2026-05-09 12:00:00' WHERE id = 43;  -- 2h 30min
+UPDATE TAREAS SET fecha_inicio = '2026-05-07 15:00:00', fecha_fin = '2026-05-07 19:00:00' WHERE id = 44;  -- 4h

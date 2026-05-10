@@ -163,16 +163,21 @@
 }
 
 .dashboard-icon {
-  width: 26px;
-  height: 26px;
+  font-size: 1.2rem;
   display: block;
   flex-shrink: 0;
   pointer-events: none;
 }
 
 .notification-btn .dashboard-icon {
-  width: 21px;
-  height: 21px;
+  font-size: 1.05rem;
+}
+
+.dropdown-item i {
+  width: 1rem;
+  text-align: center;
+  margin-right: 0.4rem;
+  flex-shrink: 0;
 }
 
 .search-btn:hover,

@@ -49,8 +49,20 @@ public class TareasServicesImpl implements TareasServices {
     @Override
     public Page<TareaResponseDto> findAll(Optional<String> usuario, Optional<String> estado, Pageable pageable){
         log.info("Buscando tareas por usuario: {}, estado: {}", usuario, estado);
+
+        // DESARROLLADOR solo puede ver sus propias tareas
+        boolean esDesarrollador = !authUtils.callerHasRole(Roles.DIRECTOR)
+                && !authUtils.callerHasRole(Roles.LIDER);
+        if (esDesarrollador) {
+            Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+            usuario = Optional.of(caller.getUsername());
+            log.info("Rol DESARROLLADOR: filtrando tareas solo para {}", caller.getUsername());
+        }
+
+        final Optional<String> usuarioFinal = usuario;
+
         Specification<Tarea> specUsuario = (root, query, criteriaBuilder) ->
-                usuario.map(n -> {
+                usuarioFinal.map(n -> {
                     Join<Tarea, Usuario> usuarioJoin = root.join("usuario");
                     return criteriaBuilder.like(criteriaBuilder.lower(usuarioJoin.get("username")), "%" + n.toLowerCase() + "%");
                 }).orElseGet(() -> criteriaBuilder.isTrue(criteriaBuilder.literal(true)));
@@ -59,7 +71,18 @@ public class TareasServicesImpl implements TareasServices {
                 estado.map(n -> criteriaBuilder.like(criteriaBuilder.lower(root.get("estado")), "%" + n.toLowerCase() + "%"))
                         .orElseGet(() -> criteriaBuilder.isTrue(criteriaBuilder.literal(true)));
 
-        Specification<Tarea> criterio = Specification.allOf(specUsuario, specEstado);
+        // DIRECTOR/LIDER: filtra por organización activa si hay orgId en el token
+        Long orgId = authUtils.getCallerOrgId();
+        Specification<Tarea> specOrg = (root, query, criteriaBuilder) -> {
+            if (esDesarrollador || orgId == null) {
+                return criteriaBuilder.isTrue(criteriaBuilder.literal(true));
+            }
+            Join<Object, Object> proyectoJoin = root.join("proyecto", jakarta.persistence.criteria.JoinType.LEFT);
+            Join<Object, Object> orgJoin = proyectoJoin.join("organizacion", jakarta.persistence.criteria.JoinType.LEFT);
+            return criteriaBuilder.equal(orgJoin.get("id"), orgId);
+        };
+
+        Specification<Tarea> criterio = Specification.allOf(specUsuario, specEstado, specOrg);
 
         return tareasRepository.findAll(criterio, pageable).map(tareasMapper::toTareaResponseDto);
     }
@@ -135,8 +158,23 @@ public class TareasServicesImpl implements TareasServices {
 
         Usuario usuario = usuariosRepository.findByNombres(tareaUpdateDto.getUsuario());
         log.info("Usuario asociado a la tarea: {}", usuario);
-        Tarea tarea = tareasRepository.save(tareasMapper.toTarea(tareaUpdateDto, tareaOpt, usuario));
-        return tareasMapper.toTareaResponseDto(tarea);
+        Tarea tarea = tareasMapper.toTarea(tareaUpdateDto, tareaOpt, usuario);
+
+        if (tareaUpdateDto.getEstado() == Estado.ACTIVO) {
+            if (tareaOpt.getEstado() == Estado.REVISION) {
+                // Reactivación desde REVISION: reinicia el contador
+                tarea.setFechaInicio(java.time.LocalDateTime.now());
+                tarea.setFechaFin(null);
+            } else if (tareaOpt.getFechaInicio() == null) {
+                // Primera activación desde ABIERTO
+                tarea.setFechaInicio(java.time.LocalDateTime.now());
+            }
+        }
+        if (tareaUpdateDto.getEstado() == Estado.REVISION) {
+            tarea.setFechaFin(java.time.LocalDateTime.now());
+        }
+
+        return tareasMapper.toTareaResponseDto(tareasRepository.save(tarea));
     }
 
     @Override
@@ -163,6 +201,7 @@ public class TareasServicesImpl implements TareasServices {
         
         try {
             tarea.setUsuario(usuario);
+            tarea.setEstado(Estado.ABIERTO);
             Tarea tareaActualizada = tareasRepository.save(tarea);
             log.info("Tarea con id: {} asignada exitosamente al usuario: {}", tareaActualizada.getId(), tareaAddDto.getUsername());
             notificacionService.enviarNotificacion(

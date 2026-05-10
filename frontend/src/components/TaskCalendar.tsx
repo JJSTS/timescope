@@ -55,9 +55,9 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ tasks }) => {
   return (
     <div className="calendar-container">
       <div className="calendar-header">
-        <button className="calendar-nav-btn" onClick={previousMonth}>◀</button>
+        <button className="calendar-nav-btn" onClick={previousMonth}><i className="bi bi-chevron-left" /></button>
         <h3 className="calendar-month-year">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</h3>
-        <button className="calendar-nav-btn" onClick={nextMonth}>▶</button>
+        <button className="calendar-nav-btn" onClick={nextMonth}><i className="bi bi-chevron-right" /></button>
       </div>
 
       <div className="calendar-weekdays">

@@ -353,6 +353,9 @@
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #f3f4f6;
+  position: relative;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .section-header h2 {
@@ -391,6 +394,148 @@
   background: white;
   border-color: var(--ts-navy);
   color: var(--ts-navy);
+}
+
+.tasks-filter-btn--active {
+  background: var(--ts-navy);
+  border-color: var(--ts-navy);
+  color: white;
+}
+
+.tasks-filter-btn--active:hover {
+  background: #1e3a5f;
+  color: white;
+}
+
+.filter-arrow {
+  display: inline-block;
+  margin-left: 0.35rem;
+  font-size: 0.8rem;
+  transition: transform 0.2s ease;
+}
+
+.filter-arrow--open {
+  transform: rotate(180deg);
+}
+
+/* ============================================
+   FILTER PANEL DROPDOWN
+   ============================================ */
+
+.filter-panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 1.25rem;
+  z-index: 200;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.filter-panel-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-panel-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+}
+
+.filter-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.filter-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+
+.filter-checkbox-label input[type="checkbox"] {
+  accent-color: var(--ts-navy);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.filter-estado-chip {
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.filter-chip--activo  { background: #dbeafe; color: #1e40af; }
+.filter-chip--abierto { background: #f3f4f6; color: #374151; }
+
+.filter-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.filter-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.filter-radio-label input[type="radio"] {
+  accent-color: var(--ts-navy);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.filter-user-input {
+  width: 100%;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #1a1a1a;
+  outline: none;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.filter-user-input:focus {
+  border-color: var(--ts-navy);
+}
+
+.filter-reset-btn {
+  width: 100%;
+  padding: 0.5rem;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  color: #b91c1c;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.filter-reset-btn:hover {
+  background: #fecaca;
 }
 
 .count-badge {

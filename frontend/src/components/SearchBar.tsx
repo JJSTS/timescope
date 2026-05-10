@@ -128,7 +128,7 @@ const SearchBar: React.FC<Props> = ({ onNavigate, onSelectOrg }) => {
         {loading && <span className="sb-spinner" />}
         {query && !loading && (
           <button type="button" className="sb-clear" onClick={clearResults} aria-label="Limpiar">
-            ×
+            <i className="bi bi-x-lg" />
           </button>
         )}
       </div>

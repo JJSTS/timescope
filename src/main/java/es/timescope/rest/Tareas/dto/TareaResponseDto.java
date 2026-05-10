@@ -19,6 +19,8 @@ public class TareaResponseDto {
     private BigDecimal horasEstimadas;
     private LocalDateTime fechaLimite;
     private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaInicio;
+    private LocalDateTime fechaFin;
     private String usuario;
     private Long proyectoId;
     private String proyectoNombre;

@@ -34,6 +34,8 @@ interface Tarea {
   horasEstimadas?: number;
   fechaLimite?: string;
   fechaCreacion?: string;
+  fechaInicio?: string;
+  fechaFin?: string;
   usuario?: string;
 }
 
@@ -48,6 +50,25 @@ const tareaEstadoMeta: Record<string, { label: string; bg: string; color: string
   COMPLETADO: { label: 'Completado', bg: '#eff6ff', color: '#1d4ed8' },
   SUSPENDIDO: { label: 'Suspendido', bg: '#fffbeb', color: '#92400e' },
   ABIERTO:    { label: 'Abierto',    bg: '#f3f4f6', color: '#374151' },
+  REVISION:   { label: 'Revisión',   bg: '#fefce8', color: '#ca8a04' },
+};
+
+const formatHoras = (totalMinutes: number): string => {
+  if (totalMinutes <= 0) return '0 min';
+  const days  = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const mins  = totalMinutes % 60;
+  const parts: string[] = [];
+  if (days  > 0) parts.push(`${days}d`);
+  if (hours > 0) parts.push(`${hours}h`);
+  if (mins  > 0 || parts.length === 0) parts.push(`${mins}min`);
+  return parts.join(' ');
+};
+
+const calcMinutes = (inicio?: string, fin?: string): number => {
+  if (!inicio || !fin) return 0;
+  const ms = new Date(fin).getTime() - new Date(inicio).getTime();
+  return ms > 0 ? Math.floor(ms / 60000) : 0;
 };
 
 const ProyectoDetail: React.FC = () => {
@@ -97,10 +118,11 @@ const ProyectoDetail: React.FC = () => {
 
   useEffect(() => {
     fetchProyecto();
+    if (id) fetchTareas();
   }, [id]);
 
   useEffect(() => {
-    if (activeTab === 'tareas' && id) fetchTareas();
+    if (activeTab === 'tareas' && id && tareas.length === 0) fetchTareas();
   }, [activeTab, id]);
 
   const fetchProyecto = async () => {
@@ -215,6 +237,15 @@ const ProyectoDetail: React.FC = () => {
 
   const meta = estadoMeta[proyecto.estado ?? ''];
 
+  const totalMinutosProyecto = tareas.reduce(
+    (sum, t) => sum + calcMinutes(t.fechaInicio, t.fechaFin), 0
+  );
+
+  const minutesPorUsuario = (uname: string) =>
+    tareas
+      .filter(t => t.usuario === uname)
+      .reduce((sum, t) => sum + calcMinutes(t.fechaInicio, t.fechaFin), 0);
+
   return (
     <div className="pd-page">
 
@@ -226,7 +257,7 @@ const ProyectoDetail: React.FC = () => {
           </span>
           <span className="pd-logo-text">TimeScope</span>
           <button className="pd-back-btn" onClick={() => navigate('/dashboard')}>
-            ← Volver
+            <i className="bi bi-arrow-left" /> Volver
           </button>
         </div>
       </header>
@@ -267,6 +298,13 @@ const ProyectoDetail: React.FC = () => {
               {meta?.label ?? proyecto.estado ?? '—'}
             </span>
             <span className="pd-metric-label">Estado</span>
+          </div>
+          <div className="pd-metric-divider" />
+          <div className="pd-metric">
+            <span className="pd-metric-value" style={{ fontSize: totalMinutosProyecto > 0 ? '1.2rem' : undefined }}>
+              {totalMinutosProyecto > 0 ? formatHoras(totalMinutosProyecto) : '—'}
+            </span>
+            <span className="pd-metric-label">Horas empleadas</span>
           </div>
         </div>
 
@@ -383,6 +421,15 @@ const ProyectoDetail: React.FC = () => {
                             <span className={`pd-role pd-role--${u.rol.toLowerCase()}`}>{u.rol}</span>
                           </div>
                         )}
+                        {(() => {
+                          const mins = minutesPorUsuario(u.username);
+                          return mins > 0 ? (
+                            <p className="pd-usuario-horas">
+                              <span className="pd-usuario-horas-label">Horas empleadas:</span>{' '}
+                              {formatHoras(mins)}
+                            </p>
+                          ) : null;
+                        })()}
 
                         {/* Asignar rol — solo si tiene permisos y el objetivo es de menor jerarquía */}
                         {canManageRoles && canChangeRoleOf(u) && (

@@ -48,7 +48,7 @@ const ProyectoCreateModal: React.FC<Props> = ({ onClose, onCreated }) => {
   return (
     <div className="pcm-overlay" onClick={onClose}>
       <div className="pcm-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="pcm-close" onClick={onClose} type="button">✕</button>
+        <button className="pcm-close" onClick={onClose} type="button"><i className="bi bi-x-lg" /></button>
 
         <div className="pcm-header">
           <h3 className="pcm-title">Nuevo Proyecto</h3>

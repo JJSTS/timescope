@@ -387,6 +387,17 @@
   word-break: break-all;
 }
 
+.pd-usuario-horas {
+  margin: 0.4rem 0 0;
+  font-size: 0.78rem;
+  color: #374151;
+}
+
+.pd-usuario-horas-label {
+  color: #9ca3af;
+  font-weight: 500;
+}
+
 .pd-roles {
   display: flex;
   flex-wrap: wrap;
