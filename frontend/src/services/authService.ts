@@ -4,21 +4,16 @@ const API_URL = `${process.env.REACT_APP_API_URL}`;
 
 interface LoginResponse {
   token: string;
-  role?: string; // Añadido el campo opcional para el rol
-}
-
-interface OrganizationData {
-  nombre: string;
-  crearNueva?: boolean;  // ✨ NUEVO - flag para crear o unirse
+  orgId?: number;
 }
 
 export const authService = {
-  async login(username: string, password: string, orgNombre: string): Promise<LoginResponse> {
+  async login(username: string, password: string, orgNombre?: string): Promise<LoginResponse> {
     try {
       const response = await axios.post(`${API_URL}/auth/signin`, {
         username,
         password,
-        orgNombre
+        ...(orgNombre?.trim() ? { orgNombre: orgNombre.trim() } : {}),
       });
       return response.data;
     } catch (error: any) {
@@ -33,24 +28,16 @@ export const authService = {
     username: string,
     password: string,
     passwordComprobacion: string,
-    organizacion?: OrganizationData
   ) {
     try {
-      const payload: any = {
+      const response = await axios.post(`${API_URL}/auth/signup`, {
         nombre,
         apellidos,
         username,
         email,
         password,
-        passwordComprobacion
-      };
-
-      // Si el usuario quiere crear una organización, agregar los datos
-      if (organizacion) {
-        payload.organizacion = organizacion;
-      }
-
-      const response = await axios.post(`${API_URL}/auth/signup`, payload);
+        passwordComprobacion,
+      });
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || error.response?.data?.detail || 'Error al registrarse');
@@ -63,9 +50,9 @@ export const authService = {
       await axios.patch(`${API_URL}/auth/password`, {
         password,
         newPassword,
-        passwordComprobacion
+        passwordComprobacion,
       }, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
     } catch (error: any) {
       throw new Error(error.response?.data?.message || error.response?.data?.detail || 'Error al cambiar la contraseña');
@@ -75,5 +62,5 @@ export const authService = {
   logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
-  }
+  },
 };
