@@ -34,23 +34,21 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const BASE = process.env.REACT_APP_API_URL;
   const canAssign = ['DIRECTOR', 'LIDER'].includes(userRole?.toUpperCase() ?? '');
 
   useEffect(() => {
     if (!organizacionId) return;
     const token = localStorage.getItem('token');
-    fetch(`${process.env.REACT_APP_API_URL}/organizaciones/${organizacionId}/proyectos`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
     const headers = { Authorization: `Bearer ${token}` };
 
-    fetch(`${process.env.REACT_APP_API_URL}/organizaciones/${organizacionId}/proyectos`, { headers })
+    fetch(`${BASE}/organizaciones/${organizacionId}/proyectos`, { headers })
       .then(r => r.ok ? r.json() : [])
       .then(data => setProyectos(Array.isArray(data) ? data : []))
       .catch(() => setProyectos([]));
 
     if (canAssign) {
-      fetch(`http://localhost:8080/api/v1/organizaciones/${organizacionId}/miembros`, { headers })
+      fetch(`${BASE}/organizaciones/${organizacionId}/miembros`, { headers })
         .then(r => r.ok ? r.json() : [])
         .then(data => setMiembros(Array.isArray(data) ? data : []))
         .catch(() => setMiembros([]));
@@ -77,8 +75,7 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
       if (horasEstimadas) body.horasEstimadas = parseFloat(horasEstimadas);
       if (proyectoId) body.proyectoId = parseInt(proyectoId, 10);
 
-      const createRes = await fetch('http://localhost:8080/api/v1/tareas', {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/tareas`, {
+      const createRes = await fetch(`${BASE}/tareas`, {
         method: 'POST',
         headers,
         body: JSON.stringify(body),
@@ -92,10 +89,10 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
       const tareaCreada = await createRes.json();
 
       if (canAssign && usuarioUsername) {
-        const assignRes = await fetch('http://localhost:8080/api/v1/tareas/addTarea', {
+        const assignRes = await fetch(`${BASE}/tareas/${tareaCreada.id}/usuario`, {
           method: 'POST',
           headers,
-          body: JSON.stringify({ tareaId: tareaCreada.id, username: usuarioUsername }),
+          body: JSON.stringify({ username: usuarioUsername }),
         });
         if (!assignRes.ok) {
           const data = await assignRes.json().catch(() => ({}));

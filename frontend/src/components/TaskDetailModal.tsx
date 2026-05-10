@@ -60,7 +60,7 @@ const TaskDetailModal: React.FC<Props> = ({ task, onClose, onUpdated }) => {
 
   const putRequest = async (body: Record<string, unknown>) => {
     const token = localStorage.getItem('token');
-    const res = await fetch(`http://localhost:8080/api/v1/tareas/update/${task.id}`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/tareas/${task.id}`, {
       method: 'PUT',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),

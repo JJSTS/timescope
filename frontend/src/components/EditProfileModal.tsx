@@ -27,7 +27,7 @@ const EditProfileModal: React.FC<Props> = ({ onClose, onUpdated }) => {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/v1/usuarios/me', {
+    fetch(`${process.env.REACT_APP_API_URL}/usuarios/me`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(r => r.ok ? r.json() : Promise.reject('Error al cargar perfil'))
@@ -47,7 +47,7 @@ const EditProfileModal: React.FC<Props> = ({ onClose, onUpdated }) => {
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/usuarios/${userData.id}`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/usuarios/${userData.id}`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,

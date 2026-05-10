@@ -25,6 +25,7 @@ const UsuariosList: React.FC = () => {
   const [search, setSearch]       = useState('');
 
   const token = localStorage.getItem('token');
+  const BASE = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     const load = async () => {
@@ -32,35 +33,19 @@ const UsuariosList: React.FC = () => {
       setError(null);
       try {
         const { data: me } = await axios.get(
-          'http://localhost:8080/api/v1/usuarios/me',
+          `${BASE}/usuarios/me`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-    fetchUsuarios(currentPage);
-  }, [currentPage]);
-
-  const fetchUsuarios = async (page: number) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await axios.get<PageResponse>(
-        `${process.env.REACT_APP_API_URL}/usuarios?page=${page}&size=10`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
 
         if (!me.organizacionId) { setLoading(false); return; }
 
         const [membrosRes, orgRes] = await Promise.all([
           axios.get<Usuario[]>(
-            `http://localhost:8080/api/v1/organizaciones/${me.organizacionId}/miembros`,
+            `${BASE}/organizaciones/${me.organizacionId}/miembros`,
             { headers: { Authorization: `Bearer ${token}` } }
           ),
           axios.get(
-            `http://localhost:8080/api/v1/organizaciones?id=${me.organizacionId}&size=1`,
+            `${BASE}/organizaciones?id=${me.organizacionId}&size=1`,
             { headers: { Authorization: `Bearer ${token}` } }
           ),
         ]);
@@ -82,48 +67,12 @@ const UsuariosList: React.FC = () => {
       .toLowerCase()
       .includes(search.toLowerCase())
   );
-  const handleSaveEdit = async () => {
-    if (editingId) {
-      try {
-        await axios.put(
-          `${process.env.REACT_APP_API_URL}/usuarios/${editingId}`,
-          editForm,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setEditingId(null);
-        setEditForm({});
-        fetchUsuarios(currentPage);
-      } catch (error: any) {
-        console.error('Error al actualizar usuario:', error);
-        const errorMsg = error.response?.data?.message || error.message || 'Error al actualizar usuario';
-        setError(errorMsg);
-      }
-    }
-  };
-
-  const handleCancel = () => {
-    setEditingId(null);
-    setEditForm({});
-  };
-
-  const nextPage = () => {
-    if (currentPage < totalPages - 1) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const previousPage = () => {
-    if (currentPage > 0) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
 
   if (loading) return <div className="ul-shell"><div className="ul-state">Cargando equipo…</div></div>;
   if (error)   return <div className="ul-shell"><div className="ul-state ul-state--error">{error}</div></div>;
 
   return (
     <div className="ul-shell">
-      {/* HEADER */}
       <div className="ul-header">
         <div className="ul-header-left">
           <h2 className="ul-title">Equipo</h2>
@@ -141,7 +90,6 @@ const UsuariosList: React.FC = () => {
         </div>
       </div>
 
-      {/* GRID DE CARDS */}
       {filtered.length === 0 ? (
         <div className="ul-state">Sin resultados</div>
       ) : (
@@ -150,7 +98,6 @@ const UsuariosList: React.FC = () => {
             const roleKey = m.rol?.toLowerCase() || 'miembro';
             return (
               <div key={m.id} className="ul-card">
-                {/* Cabecera de la card */}
                 <div className="ul-card-top">
                   <div className={`ul-avatar ul-avatar--${roleKey}`}>
                     {m.nombres?.charAt(0)}{m.apellidos?.charAt(0)}
@@ -160,10 +107,8 @@ const UsuariosList: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Nombre */}
                 <div className="ul-card-name">{m.nombres} {m.apellidos}</div>
 
-                {/* Datos de contacto */}
                 <div className="ul-card-contact">
                   <div className="ul-contact-row">
                     <span className="ul-contact-label">Usuario</span>

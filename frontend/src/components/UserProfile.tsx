@@ -79,8 +79,8 @@ const UserProfile: React.FC = () => {
     if (!token) return;
     const isLeader = ['DIRECTOR', 'LIDER'].includes(rol?.toUpperCase() ?? '');
     const url = isLeader
-      ? 'http://localhost:8080/api/v1/tareas?size=100'
-      : 'http://localhost:8080/api/v1/tareas/me?size=100';
+      ? `${process.env.REACT_APP_API_URL}/tareas?size=100`
+      : `${process.env.REACT_APP_API_URL}/tareas/me?size=100`;
     const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     if (res.ok) {
       const data = await res.json();
@@ -109,20 +109,7 @@ const UserProfile: React.FC = () => {
         const userData: User = await userResponse.json();
         setUser(userData);
 
-        await reloadTasks(userData.rol);
-        // Tareas activas/abiertas y todas las tareas (en paralelo)
-        const [tasksResponse, allTasksResponse] = await Promise.all([
-          fetch(`${BASE}/tareas/me/activo`, { headers }),
-          fetch(`${BASE}/tareas/me?size=100`, { headers }),
-        ]);
-        if (tasksResponse.ok) {
-          const data = await tasksResponse.json();
-          setTasks(Array.isArray(data) ? data : data.content ?? []);
-        }
-        if (allTasksResponse.ok) {
-          const data = await allTasksResponse.json();
-          setAllTasks(Array.isArray(data) ? data : data.content ?? []);
-        }
+        await reloadTasks(userData.rol ?? '');
 
         // Miembros del equipo y nombre de org (si tiene org)
         if (userData.organizacionId) {
@@ -187,8 +174,6 @@ const UserProfile: React.FC = () => {
 
   if (loading) return <div className="profile-container"><div className="loading-state"><div className="loading-spinner"></div></div></div>;
   if (error) return <div className="profile-container"><div className="error-state"><h2>Error</h2><p>{error}</p></div></div>;
-
-  const pendingTasks = tasks;
 
   const ALL_ESTADOS = ['ACTIVO', 'ABIERTO'];
   const hasActiveFilter = filterEstados.length < ALL_ESTADOS.length || filterFecha !== 'none' || filterUsuario.trim() !== '';

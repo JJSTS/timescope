@@ -65,7 +65,6 @@ const TareasList: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    const endpoint = `http://localhost:8080/api/v1/tareas?page=${page}&size=10`;
     const isDeveloper = userRole?.toLowerCase() === 'desarrollador';
     const endpoint = isDeveloper
       ? `${process.env.REACT_APP_API_URL}/tareas/me?page=${page}&size=10`
@@ -90,9 +89,7 @@ const TareasList: React.FC = () => {
         setTotalPages(response.data.totalPages);
       }
 
-      if (tareasData.length > 0) {
-        console.log('Estructura de la primera tarea recibida:', tareasData[0]);
-      }
+
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || error.message || 'Error al cargar tareas';
       setError(errorMsg);
