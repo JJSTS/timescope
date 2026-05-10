@@ -258,17 +258,10 @@
   flex-shrink: 0;
 }
 
-.legend-dot.task-activo {
-  background: var(--ts-accent);
-}
-
-.legend-dot.task-completado {
-  background: var(--ts-green);
-}
-
-.legend-dot.task-pendiente {
-  background: var(--ts-orange);
-}
+.legend-dot.task-activo { background: #3b82f6; }
+.legend-dot.task-abierto { background: #6b7280; }
+.legend-dot.task-completado { background: #22c55e; }
+.legend-dot.task-pendiente { background: #f97316; }
 
 /* Responsive */
 @media (max-width: 768px) {
