@@ -11,6 +11,7 @@ import NotificacionesPanel from './NotificacionesPanel';
 import ToastNotificacion, { ToastItem } from './ToastNotificacion';
 import SearchBar from './SearchBar';
 import OrganizacionModal from './OrganizacionModal';
+import CrearOrganizacionModal from './CrearOrganizacionModal';
 import { useWebSocketNotif } from '../hooks/useWebSocketNotif';
 import '../styles/Dashboard.css';
 import faviconImage from '../images/Favicon.png';
@@ -23,21 +24,25 @@ const Dashboard: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showCrearOrg, setShowCrearOrg] = useState(false);
   const [pendientesCount, setPendientesCount] = useState(0);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [userInitials, setUserInitials] = useState('');
   const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
+  const [organizacionId, setOrganizacionId] = useState<number | null | undefined>(undefined);
+  const [solicitudOrg, setSolicitudOrg] = useState('');
+  const [solicitudLoading, setSolicitudLoading] = useState(false);
+  const [solicitudMsg, setSolicitudMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+  const [orgSugerencias, setOrgSugerencias] = useState<string[]>([]);
+  const [showOrgDropdown, setShowOrgDropdown] = useState(false);
   const toastIdRef = useRef(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Log para depurar el rol del usuario
-  console.log('Rol del usuario en Dashboard:', userRole);
+  const orgSearchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) navigate('/');
   }, [isAuthenticated, navigate]);
 
-  // Efecto para cerrar el dropdown si se hace clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -45,12 +50,9 @@ const Dashboard: React.FC = () => {
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Calcular iniciales del avatar
   useEffect(() => {
     if (!username) return;
     const initials = username
@@ -61,16 +63,25 @@ const Dashboard: React.FC = () => {
     setUserInitials(initials || username.charAt(0).toUpperCase());
   }, [username]);
 
+  // Verificar si el usuario tiene organización
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    fetch(`${process.env.REACT_APP_API_URL}/usuarios/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => setOrganizacionId(data?.organizacionId ?? null))
+      .catch(() => setOrganizacionId(null));
+  }, [username]);
+
   const handlePendientesChange = useCallback((count: number) => {
     setPendientesCount(count);
   }, []);
 
   const handleNuevaNotificacion = useCallback((mensaje: string) => {
     setPendientesCount(prev => prev + 1);
-    setToasts(prev => [
-      ...prev,
-      { id: ++toastIdRef.current, mensaje },
-    ]);
+    setToasts(prev => [...prev, { id: ++toastIdRef.current, mensaje }]);
   }, []);
 
   const removeToast = useCallback((id: number) => {
@@ -79,22 +90,167 @@ const Dashboard: React.FC = () => {
 
   useWebSocketNotif(username, handleNuevaNotificacion);
 
-  const handleTabClick = (tab: 'perfil' | 'tareas' | 'proyectos' | 'equipo') => {
-    setActiveTab(tab);
+  const handleOrgSearchChange = (value: string) => {
+    setSolicitudOrg(value);
+    if (orgSearchTimeout.current) clearTimeout(orgSearchTimeout.current);
+    if (!value.trim()) { setOrgSugerencias([]); setShowOrgDropdown(false); return; }
+    orgSearchTimeout.current = setTimeout(async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(
+          `${process.env.REACT_APP_API_URL}/organizaciones?nombre=${encodeURIComponent(value.trim())}&page=0&size=6`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        const nombres: string[] = (data.content ?? []).map((o: any) => o.nombre);
+        setOrgSugerencias(nombres);
+        setShowOrgDropdown(nombres.length > 0);
+      } catch { /* silencioso */ }
+    }, 300);
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleEnviarSolicitud = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!solicitudOrg.trim()) return;
+    setSolicitudLoading(true);
+    setSolicitudMsg(null);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/solicitud/enviar/${encodeURIComponent(solicitudOrg.trim())}`,
+        { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.message || 'Error al enviar solicitud');
+      }
+      setSolicitudMsg({ type: 'ok', text: `Solicitud enviada a "${solicitudOrg.trim()}". Espera a que un director la acepte.` });
+      setSolicitudOrg('');
+    } catch (err: any) {
+      setSolicitudMsg({ type: 'err', text: err.message });
+    } finally {
+      setSolicitudLoading(false);
+    }
   };
+
+  // Pantalla cuando el usuario no tiene organización
+  if (organizacionId === null) {
+    return (
+      <div className="dashboard-container">
+        <ToastNotificacion toasts={toasts} onRemove={removeToast} />
+
+        <header className="dashboard-header">
+          <div className="header-left-section">
+            <div className="header-logo-area">
+              <span className="logo-favicon-slot"><img className="logo-favicon" src={faviconImage} alt="" /></span>
+              <h1 className="logo">TimeScope</h1>
+            </div>
+          </div>
+          <div className="header-right-section">
+            <div className={`user-avatar-menu ${isDropdownOpen ? 'open' : ''}`} ref={dropdownRef}>
+              <button type="button" className="user-avatar" title={username} onClick={() => setIsDropdownOpen(prev => !prev)}>
+                {userInitials}
+              </button>
+              <div className="user-dropdown">
+                <button className="dropdown-item" onClick={() => { setIsDropdownOpen(false); setShowEditProfile(true); }}>
+                  <i className="bi bi-pencil-square" /> Editar perfil
+                </button>
+                <button className="dropdown-item" onClick={() => { setIsDropdownOpen(false); setShowChangePassword(true); }}>
+                  <i className="bi bi-key-fill" /> Cambiar contraseña
+                </button>
+                <div className="dropdown-divider" />
+                <button className="dropdown-item dropdown-item--danger" onClick={logout}>
+                  <i className="bi bi-box-arrow-right" /> Cerrar sesión
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="dashboard-content">
+          <div className="no-org-screen">
+            <div className="no-org-icon"><i className="bi bi-building" /></div>
+            <h2 className="no-org-title">Bienvenido, {username}</h2>
+            <p className="no-org-subtitle">Aún no perteneces a ninguna organización. Crea la tuya o solicita unirte a una existente.</p>
+
+            <div className="no-org-options">
+              {/* Crear organización */}
+              <div className="no-org-card">
+                <i className="bi bi-plus-circle no-org-card-icon" />
+                <h3>Crear organización</h3>
+                <p>Funda tu propia organización y serás su DIRECTOR.</p>
+                <button className="no-org-btn no-org-btn--create" onClick={() => setShowCrearOrg(true)}>
+                  Crear organización
+                </button>
+              </div>
+
+              {/* Solicitar unirse */}
+              <div className="no-org-card">
+                <i className="bi bi-send no-org-card-icon" />
+                <h3>Solicitar unirse</h3>
+                <p>Envía una solicitud a una organización existente y espera la aprobación del director.</p>
+                <form className="no-org-join-form" onSubmit={handleEnviarSolicitud}>
+                  <div className="no-org-search-wrap">
+                    <input
+                      className="no-org-input"
+                      type="text"
+                      placeholder="Buscar organización..."
+                      value={solicitudOrg}
+                      onChange={e => handleOrgSearchChange(e.target.value)}
+                      onFocus={() => orgSugerencias.length > 0 && setShowOrgDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowOrgDropdown(false), 150)}
+                      disabled={solicitudLoading}
+                      autoComplete="off"
+                      required
+                    />
+                    {showOrgDropdown && (
+                      <ul className="no-org-dropdown">
+                        {orgSugerencias.map(nombre => (
+                          <li
+                            key={nombre}
+                            className="no-org-dropdown-item"
+                            onMouseDown={() => { setSolicitudOrg(nombre); setShowOrgDropdown(false); }}
+                          >
+                            <i className="bi bi-building" /> {nombre}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <button
+                    type="submit"
+                    className="no-org-btn no-org-btn--join"
+                    disabled={solicitudLoading || !solicitudOrg.trim()}
+                  >
+                    {solicitudLoading ? 'Enviando...' : 'Enviar solicitud'}
+                  </button>
+                </form>
+                {solicitudMsg && (
+                  <p className={`no-org-msg no-org-msg--${solicitudMsg.type}`}>{solicitudMsg.text}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </main>
+
+        {showCrearOrg && (
+          <CrearOrganizacionModal
+            onClose={() => setShowCrearOrg(false)}
+            onCreated={() => {}}
+          />
+        )}
+        {showChangePassword && <ChangePasswordModal onClose={() => setShowChangePassword(false)} />}
+        {showEditProfile && <EditProfileModal onClose={() => setShowEditProfile(false)} />}
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-container">
-      {/* Toasts de notificación en tiempo real */}
       <ToastNotificacion toasts={toasts} onRemove={removeToast} />
 
-      {/* Header mejorado */}
       <header className="dashboard-header">
-        {/* Left Section: Logo + Navigation */}
         <div className="header-left-section">
           <div className="header-logo-area">
             <span className="logo-favicon-slot" aria-hidden="true">
@@ -103,43 +259,26 @@ const Dashboard: React.FC = () => {
             <h1 className="logo">TimeScope</h1>
           </div>
 
-          {/* Horizontal Navigation */}
           <nav className="header-nav" aria-label="Navegación principal">
-            <button
-              className={`nav-tab ${activeTab === 'perfil' ? 'active' : ''}`}
-              onClick={() => handleTabClick('perfil')}
-            >
+            <button className={`nav-tab ${activeTab === 'perfil' ? 'active' : ''}`} onClick={() => setActiveTab('perfil')}>
               Mi Perfil
             </button>
-            <button
-              className={`nav-tab ${activeTab === 'tareas' ? 'active' : ''}`}
-              onClick={() => handleTabClick('tareas')}
-            >
+            <button className={`nav-tab ${activeTab === 'tareas' ? 'active' : ''}`} onClick={() => setActiveTab('tareas')}>
               Tareas
             </button>
-            <button
-              className={`nav-tab ${activeTab === 'proyectos' ? 'active' : ''}`}
-              onClick={() => handleTabClick('proyectos')}
-            >
+            <button className={`nav-tab ${activeTab === 'proyectos' ? 'active' : ''}`} onClick={() => setActiveTab('proyectos')}>
               Proyectos
             </button>
             {userRole?.toLowerCase() !== 'desarrollador' && (
-              <button
-                className={`nav-tab ${activeTab === 'equipo' ? 'active' : ''}`}
-                onClick={() => handleTabClick('equipo')}
-              >
+              <button className={`nav-tab ${activeTab === 'equipo' ? 'active' : ''}`} onClick={() => setActiveTab('equipo')}>
                 Equipo
               </button>
             )}
           </nav>
         </div>
 
-        {/* Right Section: Search, Notifications, Avatar */}
         <div className="header-right-section">
-          <SearchBar 
-            onNavigate={handleTabClick} 
-            onSelectOrg={setSelectedOrgId}
-          />
+          <SearchBar onNavigate={setActiveTab} onSelectOrg={setSelectedOrgId} />
 
           <div style={{ position: 'relative' }}>
             <button
@@ -153,21 +292,12 @@ const Dashboard: React.FC = () => {
               <i className="bi bi-bell-fill dashboard-icon" />
             </button>
             {notifOpen && (
-              <NotificacionesPanel
-                onClose={() => setNotifOpen(false)}
-                onPendientesChange={handlePendientesChange}
-              />
+              <NotificacionesPanel onClose={() => setNotifOpen(false)} onPendientesChange={handlePendientesChange} />
             )}
           </div>
 
-          {/* User Avatar with Dropdown */}
           <div className={`user-avatar-menu ${isDropdownOpen ? 'open' : ''}`} ref={dropdownRef}>
-            <button
-              type="button"
-              className="user-avatar"
-              title={username}
-              onClick={() => setIsDropdownOpen(prev => !prev)}
-            >
+            <button type="button" className="user-avatar" title={username} onClick={() => setIsDropdownOpen(prev => !prev)}>
               {userInitials}
             </button>
             <div className="user-dropdown">
@@ -178,7 +308,7 @@ const Dashboard: React.FC = () => {
                 <i className="bi bi-key-fill" /> Cambiar contraseña
               </button>
               <div className="dropdown-divider" />
-              <button className="dropdown-item dropdown-item--danger" onClick={handleLogout}>
+              <button className="dropdown-item dropdown-item--danger" onClick={logout}>
                 <i className="bi bi-box-arrow-right" /> Cerrar sesión
               </button>
             </div>
@@ -186,24 +316,18 @@ const Dashboard: React.FC = () => {
         </div>
       </header>
 
-       <main className="dashboard-content">
-         {activeTab === 'perfil' && <UserProfile />}
-         {activeTab === 'tareas' && <TareasList />}
-         {activeTab === 'proyectos' && <ProyectosList />}
-         {activeTab === 'equipo' && <UsuariosList />}
-       </main>
+      <main className="dashboard-content">
+        {activeTab === 'perfil' && <UserProfile />}
+        {activeTab === 'tareas' && <TareasList />}
+        {activeTab === 'proyectos' && <ProyectosList />}
+        {activeTab === 'equipo' && <UsuariosList />}
+      </main>
 
       {selectedOrgId !== null && (
         <OrganizacionModal orgId={selectedOrgId} onClose={() => setSelectedOrgId(null)} />
       )}
-
-      {showChangePassword && (
-        <ChangePasswordModal onClose={() => setShowChangePassword(false)} />
-      )}
-
-      {showEditProfile && (
-        <EditProfileModal onClose={() => setShowEditProfile(false)} />
-      )}
+      {showChangePassword && <ChangePasswordModal onClose={() => setShowChangePassword(false)} />}
+      {showEditProfile && <EditProfileModal onClose={() => setShowEditProfile(false)} />}
     </div>
   );
 };
