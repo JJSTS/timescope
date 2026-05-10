@@ -1,5 +1,13 @@
-/*  PROYECTOS CONTAINER  */
-.proyectos-container {
+/* ============================================================
+   PROYECTOS LIST — TimeScope
+   ============================================================ */
+
+.pl-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
   background: #ffffff;
   padding: 2rem;
   border-radius: var(--ts-radius);
@@ -7,233 +15,356 @@
   border: 1px solid #e5e7eb;
 }
 
-.list-header {
+/* ---- Cabecera ---- */
+
+.pl-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
   gap: 1rem;
 }
 
-.proyectos-container h2 {
-  margin: 0;
-  color: #1f2937;
-  font-size: 1.3rem;
-  font-weight: 700;
+.pl-header-left {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
-.btn-create {
-  padding: 0.55rem 1.1rem;
-  background: #8bbf41;
+.pl-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.3px;
+}
+
+.pl-subtitle {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #9ca3af;
+}
+
+.pl-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 1.15rem;
+  background: #4f46e5;
   color: #fff;
   border: none;
   border-radius: 8px;
-  font-size: 0.88rem;
-  font-weight: 700;
+  font-size: 0.85rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
+  transition: background 0.18s, transform 0.15s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
-.btn-create:hover {
-  background: #7aac32;
+
+.pl-btn-primary:hover {
+  background: #4338ca;
   transform: translateY(-1px);
 }
 
-.proyectos-container h2::before {
-  content: "";
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: linear-gradient(to bottom, #8bbf41, #f58025);
+/* ---- Filtros ---- */
+
+.pl-filters {
+  display: flex;
+  gap: 0.35rem;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-/* TABLE */
-.proyectos-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid #e5e7eb;
-}
-
-.proyectos-table thead {
-  background: #304356;
-}
-
-.proyectos-table th {
-  padding: 1rem;
-  text-align: left;
-  font-weight: 700;
-  color: white;
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  border-bottom: 2px solid #e5e7eb;
-}
-
-.proyectos-table td {
-  padding: 1rem;
-  color: #4b5563;
-  border-bottom: 1px solid #f1f5f9;
-  vertical-align: middle;
-}
-
-.proyectos-table tbody tr {
-  transition: all 0.2s ease;
-}
-
-.proyectos-table tbody tr:hover {
-  background: #f9fafb;
-}
-
-.proyectos-table tbody tr:nth-child(even) {
-  background: #fcfcfd;
-}
-
-/* PROYECTO BUTTON LINK */
-.proyecto-link {
+.pl-filter-tab {
+  padding: 0.5rem 1rem;
   background: none;
   border: none;
-  color: #8bbf41;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-size: 0.83rem;
+  font-weight: 500;
+  color: #6b7280;
   cursor: pointer;
-  font-size: inherit;
-  font-weight: 700;
-  padding: 0;
-  transition: all 0.2s ease;
+  transition: color 0.15s, border-color 0.15s;
 }
 
-.proyecto-link:hover {
-  color: #f58025;
-  text-decoration: none;
+.pl-filter-tab:hover {
+  color: #111827;
 }
 
-/* ESTADOS */
-.estado {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-transform: capitalize;
-}
-
-/* Puedes adaptar estos estados */
-.estado.activo {
-  background: #fffed1;
-  color: #816e01;
-  border: 1.5px solid #e6d95a;
-}
-
-.estado.suspendido {
-  background: #ffb7b7;
-  color: #6e0000;
-  border: 1.5px solid #e57373;
-}
-
-.estado.completado {
-  background: #beffb4;
-  color: #4a7c10;
-  border: 1.5px solid #7bc96f;
-}
-
-/* LOADING/ERROR */
-.loading,
-.error-message {
-  padding: 2rem;
-  text-align: center;
-  border-radius: 12px;
-  font-size: 1rem;
-  background: white;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
-}
-
-.loading {
-  color: #8bbf41;
+.pl-filter-tab--active {
+  color: #4f46e5;
+  border-bottom-color: #4f46e5;
   font-weight: 600;
 }
 
-.error-message {
-  color: #dc2626;
-  background: #fff5f5;
-  border-color: #fecaca;
+/* ---- Grid de cards ---- */
+
+.pl-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.1rem;
 }
 
-/* PAGINATION */
-.pagination {
+/* ---- Card ---- */
+
+.pl-card {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 1.8rem;
-}
-
-.pagination button {
-  background: #f8fafc;
-  color: #374151;
-  border: 1px solid #dbe3ea;
-  padding: 0.7rem 1.1rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
   border-radius: 10px;
+  overflow: hidden;
+  transition: box-shadow 0.18s, transform 0.15s;
+}
+
+.pl-card--clickable {
   cursor: pointer;
+}
+
+.pl-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.pl-card-indicator {
+  width: 4px;
+  flex-shrink: 0;
+}
+
+.pl-card-indicator.pl-estado--activo     { background: #059669; }
+.pl-card-indicator.pl-estado--completado { background: #2563eb; }
+.pl-card-indicator.pl-estado--suspendido { background: #d97706; }
+.pl-card-indicator.pl-estado--sin-estado { background: #d1d5db; }
+
+.pl-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.1rem 1.25rem;
+  min-width: 0;
+}
+
+/* Header del card */
+
+.pl-card-top {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.pl-card-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.pl-card-title {
+  margin: 0;
+  font-size: 0.97rem;
   font-weight: 700;
-  transition: all 0.25s ease;
+  color: #111827;
+  line-height: 1.3;
+  word-break: break-word;
 }
 
-.pagination button:hover:not(:disabled) {
-  background: #8bbf41;
-  border-color: #8bbf41;
-  color: white;
-  transform: translateY(-1px);
+.pl-card-lider {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: #6b7280;
 }
 
-.pagination button:active:not(:disabled) {
-  background: #f58025;
-  border-color: #f58025;
-}
-
-.pagination button:disabled {
-  background: #f3f4f6;
+.pl-card-lider svg {
+  flex-shrink: 0;
   color: #9ca3af;
-  border-color: #e5e7eb;
+}
+
+.pl-card-lider-role {
+  padding: 0.1rem 0.45rem;
+  background: #fef9c3;
+  color: #854d0e;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  margin-left: 0.15rem;
+}
+
+.pl-card-lider--empty {
+  color: #d1d5db;
+  font-style: italic;
+}
+
+/* Descripción */
+
+.pl-card-desc {
+  margin: 0;
+  font-size: 0.81rem;
+  color: #6b7280;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.pl-card-desc--empty {
+  color: #d1d5db;
+  font-style: italic;
+}
+
+/* Footer de métricas */
+
+.pl-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.pl-card-metric {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.pl-card-metric svg {
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.pl-card-metric strong {
+  color: #111827;
+  font-weight: 600;
+}
+
+.pl-card-divider {
+  width: 1px;
+  height: 14px;
+  background: #e5e7eb;
+  flex-shrink: 0;
+}
+
+.pl-card-id {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: #d1d5db;
+  font-weight: 500;
+}
+
+/* ---- Badges de estado ---- */
+
+.pl-estado {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pl-estado--activo     { background: #ecfdf5; color: #065f46; }
+.pl-estado--completado { background: #eff6ff; color: #1d4ed8; }
+.pl-estado--suspendido { background: #fffbeb; color: #92400e; }
+.pl-estado--sin-estado { background: #f3f4f6; color: #9ca3af; }
+
+/* ---- Skeleton ---- */
+
+.pl-card-skeleton {
+  height: 180px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #eaebec 50%, #f3f4f6 75%);
+  background-size: 400% 100%;
+  animation: pl-shimmer 1.4s ease infinite;
+}
+
+@keyframes pl-shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* ---- Estado vacío ---- */
+
+.pl-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 4rem 2rem;
+  color: #9ca3af;
+  font-size: 0.88rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.pl-empty svg { opacity: 0.3; }
+.pl-empty p { margin: 0; }
+
+/* ---- Error ---- */
+
+.pl-error {
+  padding: 1.25rem 1.5rem;
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  color: #dc2626;
+  font-size: 0.88rem;
+}
+
+/* ---- Paginación ---- */
+
+.pl-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+.pl-page-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.83rem;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.pl-page-btn:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.pl-page-btn:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-.pagination span {
-  color: #374151;
-  font-weight: 700;
-  font-size: 0.95rem;
-  padding: 0.45rem 0.8rem;
-  border-bottom: 3px solid #f58025;
+.pl-page-info {
+  font-size: 0.83rem;
+  color: #6b7280;
 }
 
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .proyectos-container {
-    padding: 1.25rem;
-  }
+.pl-page-info strong { color: #111827; }
 
-  .proyectos-table {
-    font-size: 0.9rem;
-  }
+/* ---- Responsive ---- */
 
-  .proyectos-table th,
-  .proyectos-table td {
-    padding: 0.75rem 0.55rem;
+@media (max-width: 900px) {
+  .pl-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
+}
 
-  .pagination {
-    flex-direction: column;
-  }
-
-  .pagination button,
-  .pagination span {
-    width: 100%;
-    text-align: center;
-  }
+@media (max-width: 600px) {
+  .pl-grid { grid-template-columns: 1fr; }
 }

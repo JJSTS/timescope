@@ -15,4 +15,7 @@ public class ProyectoResponseDto {
     private Estado estado;
     private List<Long> usuarios;
     private Boolean isDeleted;
+    private Integer membrosCount;
+    private Integer tareasCount;
+    private String liderNombre;
 }

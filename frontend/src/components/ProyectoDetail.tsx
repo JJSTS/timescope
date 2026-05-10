@@ -11,6 +11,9 @@ interface Proyecto {
   descripcion?: string;
   estado?: string;
   usuarios?: number[];
+  membrosCount?: number;
+  tareasCount?: number;
+  liderNombre?: string;
   isDeleted?: boolean;
 }
 
@@ -23,235 +26,285 @@ interface Usuario {
   roles: string[];
 }
 
-interface Tarea {
-  id: number;
-  nombre: string;
-  descripcion?: string;
-  estado?: string;
-}
+const estadoMeta: Record<string, { label: string; bg: string; color: string }> = {
+  ACTIVO:     { label: 'Activo',     bg: '#ecfdf5', color: '#065f46' },
+  COMPLETADO: { label: 'Completado', bg: '#eff6ff', color: '#1d4ed8' },
+  SUSPENDIDO: { label: 'Suspendido', bg: '#fffbeb', color: '#92400e' },
+};
 
 const ProyectoDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { userRole } = useAuth();
+
   const [proyecto, setProyecto] = useState<Proyecto | null>(null);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'info' | 'usuarios'>('info');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'info' | 'equipo'>('info');
+
+  // addUsuario state
+  const [addUsername, setAddUsername] = useState('');
+  const [addLoading, setAddLoading] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [addSuccess, setAddSuccess] = useState<string | null>(null);
+
   const token = localStorage.getItem('token');
+  const isDirector = userRole?.toUpperCase() === 'DIRECTOR';
 
   useEffect(() => {
-    fetchProyectoDetails();
+    fetchProyecto();
   }, [id]);
 
-  const fetchProyectoDetails = async () => {
+  const fetchProyecto = async () => {
     setLoading(true);
     setError(null);
     try {
-      // Obtener detalles del proyecto
-      const proyectoResponse = await axios.get(
+      const { data: proy } = await axios.get<Proyecto>(
         `http://localhost:8080/api/v1/proyectos/${id}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
+      setProyecto(proy);
 
-      setProyecto(proyectoResponse.data);
-
-      // Obtener todos los usuarios para mapear los IDs
-      try {
-        const usuariosResponse = await axios.get(
-          `http://localhost:8080/api/v1/usuarios?page=0&size=100`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-
-        const todosLosUsuarios = Array.isArray(usuariosResponse.data)
-          ? usuariosResponse.data
-          : usuariosResponse.data.content || [];
-
-        // Filtrar usuarios que pertenecen a este proyecto
-        const usuariosDelProyecto = proyectoResponse.data.usuarios
-          ? todosLosUsuarios.filter((u: Usuario) => proyectoResponse.data.usuarios?.includes(u.id))
-          : [];
-
-        setUsuarios(usuariosDelProyecto);
-      } catch (usuariosError) {
-        console.log('No se pudieron obtener usuarios:', usuariosError);
+      if (proy.usuarios && proy.usuarios.length > 0) {
+        try {
+          const { data: usersPage } = await axios.get(
+            `http://localhost:8080/api/v1/usuarios?page=0&size=100`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          const todos: Usuario[] = Array.isArray(usersPage) ? usersPage : usersPage.content ?? [];
+          setUsuarios(todos.filter(u => proy.usuarios!.includes(u.id)));
+        } catch {
+          setUsuarios([]);
+        }
+      } else {
         setUsuarios([]);
       }
-    } catch (error: any) {
-      console.error('Error al obtener detalles del proyecto:', error);
-      const errorMsg = error.response?.data?.message || error.message || 'Error al cargar el proyecto';
-      setError(errorMsg);
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message || 'Error al cargar el proyecto');
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) {
-    return <div className="loading">Cargando detalles del proyecto...</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="proyecto-detail-error">
-        <h2>Error</h2>
-        <p>{error}</p>
-        <button onClick={() => navigate('/dashboard')}>Volver a proyectos</button>
-      </div>
-    );
-  }
-
-  if (!proyecto) {
-    return (
-      <div className="proyecto-detail-error">
-        <h2>Proyecto no encontrado</h2>
-        <button onClick={() => navigate('/dashboard')}>Volver a proyectos</button>
-      </div>
-    );
-  }
-
-  const getEstadoClass = (estado?: string) => {
-    return estado ? estado.toLowerCase() : 'desconocido';
+  const handleAddUsuario = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addUsername.trim()) return;
+    setAddLoading(true);
+    setAddError(null);
+    setAddSuccess(null);
+    try {
+      await axios.put(
+        `http://localhost:8080/api/v1/proyectos/usuario/${id}?username=${encodeURIComponent(addUsername.trim())}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setAddSuccess(`Usuario "${addUsername.trim()}" añadido correctamente.`);
+      setAddUsername('');
+      fetchProyecto();
+    } catch (err: any) {
+      setAddError(err.response?.data?.message || 'No se pudo añadir el usuario.');
+    } finally {
+      setAddLoading(false);
+    }
   };
 
-  return (
-    <div className="proyecto-detail-page">
-      {/* Header con navegación */}
-      <header className="proyecto-detail-header-nav">
-        <div className="header-left">
-          <div className="header-logo-area">
-            <span className="logo-favicon-slot">
-              <img className="logo-favicon" src={faviconImage} alt="" />
-            </span>
-            <h1 className="logo">TimeScope</h1>
-          </div>
-          <button className="nav-back-btn" onClick={() => navigate('/dashboard')}>
-            ← Volver a Proyectos
-          </button>
+  if (loading) {
+    return (
+      <div className="pd-page">
+        <div className="pd-loading">Cargando proyecto...</div>
+      </div>
+    );
+  }
+
+  if (error || !proyecto) {
+    return (
+      <div className="pd-page">
+        <div className="pd-error-box">
+          <p>{error ?? 'Proyecto no encontrado'}</p>
+          <button onClick={() => navigate('/dashboard')}>Volver al Dashboard</button>
         </div>
-        <div className="header-right">
-          <button className="user-dropdown-btn" onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
-            ⚙️
+      </div>
+    );
+  }
+
+  const meta = estadoMeta[proyecto.estado ?? ''];
+
+  return (
+    <div className="pd-page">
+
+      {/* Nav */}
+      <header className="pd-nav">
+        <div className="pd-nav-left">
+          <span className="pd-logo-slot">
+            <img src={faviconImage} alt="" className="pd-favicon" />
+          </span>
+          <span className="pd-logo-text">TimeScope</span>
+          <button className="pd-back-btn" onClick={() => navigate('/dashboard')}>
+            ← Volver
           </button>
-          {isDropdownOpen && (
-            <div className="dropdown-menu">
-              <button onClick={() => { navigate('/dashboard'); setIsDropdownOpen(false); }}>
-                Ir al Dashboard
-              </button>
-              <button onClick={() => { logout(); setIsDropdownOpen(false); }}>
-                Cerrar sesión
-              </button>
-            </div>
-          )}
         </div>
       </header>
 
-       <div className="proyecto-detail-container">
-         <div className="proyecto-detail-header">
-           <h1>{proyecto.nombre}</h1>
-           <span className={`estado-badge ${getEstadoClass(proyecto.estado)}`}>
-             {proyecto.estado || 'Desconocido'}
-           </span>
-         </div>
+      <div className="pd-container">
 
-         <div className="proyecto-detail-content">
-        <div className="tabs-navigation">
-          <button
-            className={`tab-button ${activeTab === 'info' ? 'active' : ''}`}
-            onClick={() => setActiveTab('info')}
-          >
-            Información
-          </button>
-          <button
-            className={`tab-button ${activeTab === 'usuarios' ? 'active' : ''}`}
-            onClick={() => setActiveTab('usuarios')}
-          >
-            Equipo ({usuarios.length})
-          </button>
-        </div>
-
-        {/* TAB: INFORMACIÓN */}
-        {activeTab === 'info' && (
-          <div className="tab-content">
-            <div className="info-grid">
-              <div className="info-card">
-                <h3>Descripción</h3>
-                <p>{proyecto.descripcion || 'Sin descripción disponible'}</p>
-              </div>
-
-              <div className="info-card">
-                <h3>Estado del Proyecto</h3>
-                <div className="estado-info">
-                  <span className={`estado-badge-large ${getEstadoClass(proyecto.estado)}`}>
-                    {proyecto.estado || 'Sin estado'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="info-card">
-                <h3>Estadísticas</h3>
-                <div className="stats">
-                  <div className="stat">
-                    <span className="stat-number">{usuarios.length}</span>
-                    <span className="stat-label">Miembros del Equipo</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB: USUARIOS */}
-        {activeTab === 'usuarios' && (
-          <div className="tab-content">
-            {usuarios.length === 0 ? (
-              <div className="empty-state">
-                <p>No hay miembros asignados a este proyecto</p>
-              </div>
-            ) : (
-              <div className="usuarios-grid">
-                {usuarios.map((usuario) => (
-                  <div key={usuario.id} className="usuario-card">
-                    <div className="usuario-avatar">
-                      {usuario.nombres.charAt(0).toUpperCase()}
-                      {usuario.apellidos.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="usuario-info">
-                      <h4>{usuario.nombres} {usuario.apellidos}</h4>
-                      <p className="usuario-username">@{usuario.username}</p>
-                      <p className="usuario-email">{usuario.email}</p>
-                      {usuario.roles && usuario.roles.length > 0 && (
-                        <div className="usuario-roles">
-                          {usuario.roles.map((role, idx) => (
-                            <span key={idx} className={`role-badge ${role.toLowerCase()}`}>
-                              {role}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+        {/* Hero del proyecto */}
+        <div className="pd-hero">
+          <div className="pd-hero-left">
+            <span className="pd-hero-id">#{proyecto.id}</span>
+            <h1 className="pd-hero-title">{proyecto.nombre}</h1>
+            {proyecto.liderNombre && (
+              <span className="pd-hero-lider">Líder: {proyecto.liderNombre}</span>
             )}
           </div>
-        )}
+          <span
+            className="pd-hero-badge"
+            style={{ background: meta?.bg ?? '#f3f4f6', color: meta?.color ?? '#6b7280' }}
+          >
+            {meta?.label ?? proyecto.estado ?? '—'}
+          </span>
+        </div>
+
+        {/* Métricas rápidas */}
+        <div className="pd-metrics">
+          <div className="pd-metric">
+            <span className="pd-metric-value">{proyecto.membrosCount ?? usuarios.length}</span>
+            <span className="pd-metric-label">Miembros</span>
+          </div>
+          <div className="pd-metric-divider" />
+          <div className="pd-metric">
+            <span className="pd-metric-value">{proyecto.tareasCount ?? 0}</span>
+            <span className="pd-metric-label">Tareas</span>
+          </div>
+          <div className="pd-metric-divider" />
+          <div className="pd-metric">
+            <span className="pd-metric-value" style={{ fontSize: '0.95rem' }}>
+              {meta?.label ?? proyecto.estado ?? '—'}
+            </span>
+            <span className="pd-metric-label">Estado</span>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="pd-card">
+          <div className="pd-tabs">
+            <button
+              className={`pd-tab ${activeTab === 'info' ? 'pd-tab--active' : ''}`}
+              onClick={() => setActiveTab('info')}
+            >
+              Información
+            </button>
+            <button
+              className={`pd-tab ${activeTab === 'equipo' ? 'pd-tab--active' : ''}`}
+              onClick={() => setActiveTab('equipo')}
+            >
+              Equipo ({proyecto.membrosCount ?? usuarios.length})
+            </button>
+          </div>
+
+          {/* TAB: INFORMACIÓN */}
+          {activeTab === 'info' && (
+            <div className="pd-tab-content">
+              <div className="pd-info-grid">
+
+                <div className="pd-info-block">
+                  <span className="pd-info-label">Descripción</span>
+                  <p className="pd-info-text">
+                    {proyecto.descripcion || <span className="pd-empty">Sin descripción registrada</span>}
+                  </p>
+                </div>
+
+                <div className="pd-info-block">
+                  <span className="pd-info-label">Estado</span>
+                  <span
+                    className="pd-info-badge"
+                    style={{ background: meta?.bg ?? '#f3f4f6', color: meta?.color ?? '#6b7280' }}
+                  >
+                    {meta?.label ?? proyecto.estado ?? '—'}
+                  </span>
+                </div>
+
+                <div className="pd-info-block">
+                  <span className="pd-info-label">Líder del proyecto</span>
+                  <span className="pd-info-text">
+                    {proyecto.liderNombre ?? <span className="pd-empty">Sin líder asignado</span>}
+                  </span>
+                </div>
+
+                <div className="pd-info-block">
+                  <span className="pd-info-label">Miembros</span>
+                  <span className="pd-info-text">{proyecto.membrosCount ?? usuarios.length} persona(s)</span>
+                </div>
+
+                <div className="pd-info-block">
+                  <span className="pd-info-label">Tareas</span>
+                  <span className="pd-info-text">{proyecto.tareasCount ?? 0} tarea(s) registrada(s)</span>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* TAB: EQUIPO */}
+          {activeTab === 'equipo' && (
+            <div className="pd-tab-content">
+
+              {/* Formulario añadir usuario — solo DIRECTOR */}
+              {isDirector && (
+                <form className="pd-add-form" onSubmit={handleAddUsuario}>
+                  <span className="pd-add-label">Añadir miembro al proyecto</span>
+                  <div className="pd-add-row">
+                    <input
+                      className="pd-add-input"
+                      type="text"
+                      placeholder="Username del usuario"
+                      value={addUsername}
+                      onChange={e => { setAddUsername(e.target.value); setAddError(null); setAddSuccess(null); }}
+                      disabled={addLoading}
+                    />
+                    <button className="pd-add-btn" type="submit" disabled={addLoading || !addUsername.trim()}>
+                      {addLoading ? 'Añadiendo…' : 'Añadir'}
+                    </button>
+                  </div>
+                  {addError   && <p className="pd-add-error">{addError}</p>}
+                  {addSuccess && <p className="pd-add-success">{addSuccess}</p>}
+                </form>
+              )}
+
+              {/* Lista de miembros */}
+              {usuarios.length === 0 ? (
+                <div className="pd-empty-state">
+                  <p>No hay miembros asignados a este proyecto</p>
+                </div>
+              ) : (
+                <div className="pd-usuarios-grid">
+                  {usuarios.map(u => (
+                    <div key={u.id} className="pd-usuario-card">
+                      <div className="pd-avatar">
+                        {u.nombres.charAt(0).toUpperCase()}{u.apellidos.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="pd-usuario-info">
+                        <p className="pd-usuario-nombre">{u.nombres} {u.apellidos}</p>
+                        <p className="pd-usuario-username">@{u.username}</p>
+                        <p className="pd-usuario-email">{u.email}</p>
+                        {u.roles?.length > 0 && (
+                          <div className="pd-roles">
+                            {u.roles.map((r, i) => (
+                              <span key={i} className={`pd-role pd-role--${r.toLowerCase()}`}>{r}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
     </div>
   );
 };
 
 export default ProyectoDetail;
-

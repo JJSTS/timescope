@@ -122,6 +122,30 @@
   border: 1px solid #a7f3d0;
 }
 
+.role.director {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid rgba(153, 27, 27, 0.2);
+}
+
+.role.lider {
+  background: #fef9c3;
+  color: #854d0e;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.role.desarrollador {
+  background: #ede9fe;
+  color: #5b21b6;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.role.coordinador {
+  background: #e5e7eb;
+  color: #374151;
+  border: 1px solid rgba(55, 65, 81, 0.15);
+}
+
 /* ACTION BUTTONS */
 .action-buttons {
   display: flex;

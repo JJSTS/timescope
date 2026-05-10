@@ -180,6 +180,18 @@ INSERT INTO TAREAS (nombre, descripcion, estado, horas_estimadas, fecha_limite, 
 ('Microcopy UI',          'Pulir textos de interfaz y estados del sistema.',             'COMPLETADO', 1.5,  '2026-05-04 18:00:00', 6),
 ('Integración Correo',    'Conectar proveedor SMTP para notificaciones.',                'ACTIVO',     3.5,  '2026-05-20 18:00:00', 6);
 
+-- Tareas adicionales para proyectos sin asignación (ids 33-38)
+INSERT INTO TAREAS (nombre, descripcion, estado, horas_estimadas, fecha_limite, usuario_id) VALUES
+-- Portal Admin (proyecto 3, org 1) → admin(6) y cgarcia(1)
+('Diseño Panel Admin',      'Diseñar estructura visual del panel de supervisores.',       'ACTIVO',     3.0, '2026-05-22 18:00:00', 6),
+('Permisos Panel',          'Configurar accesos y vistas según rol de supervisor.',       'ABIERTO',    2.5, '2026-05-28 18:00:00', 1),
+-- API Gateway (proyecto 4, org 1) → mmartinez(2) y admin(6)
+('Configurar Gateway',      'Establecer rutas base y middleware de autenticación.',       'ACTIVO',     4.0, '2026-05-18 18:00:00', 2),
+('Rate Limiting',           'Implementar límite de peticiones por IP y por token.',       'ABIERTO',    3.5, '2026-05-24 18:00:00', 6),
+-- Integración ERP (proyecto 10, org 3) → lfernandez(4)
+('Mapeo Entidades ERP',     'Mapear entidades locales con esquema del ERP externo.',      'ACTIVO',     5.0, '2026-05-26 18:00:00', 4),
+('Sincronización Usuarios', 'Automatizar sincronización de altas y bajas de usuarios.',  'SUSPENDIDO', 4.0, '2026-06-03 18:00:00', 4);
+
 -- =====================
 -- TAREAS → PROYECTOS
 -- proyecto_id debe coincidir con la org del usuario asignado.
@@ -209,3 +221,8 @@ UPDATE TAREAS SET proyecto_id = 13 WHERE id = 27;                     -- admin �
 -- Org 5 — WebMaster
 UPDATE TAREAS SET proyecto_id = 15 WHERE id IN (23, 24);              -- admin → Soporte Clientes
 UPDATE TAREAS SET proyecto_id = 16 WHERE id IN (19, 20, 26);          -- admin → Optimizacion SQL
+
+-- Tareas nuevas (33-38) — proyectos sin tareas
+UPDATE TAREAS SET proyecto_id = 3  WHERE id IN (33, 34);              -- Portal Admin (org1)
+UPDATE TAREAS SET proyecto_id = 4  WHERE id IN (35, 36);              -- API Gateway (org1)
+UPDATE TAREAS SET proyecto_id = 10 WHERE id IN (37, 38);              -- Integración ERP (org3)
