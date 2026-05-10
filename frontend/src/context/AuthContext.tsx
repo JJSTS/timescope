@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           if (userData) {
             setIsAuthenticated(true);
             setUsername(userData.username);
-            const role = userData.roles && userData.roles.length > 0 ? userData.roles[0] : 'USER';
+            const role = userData.rol || 'USER';
             setUserRole(role);
             localStorage.setItem('username', userData.username);
             localStorage.setItem('userRole', role);
@@ -57,7 +57,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
       const userData = response.data;
       if (userData) {
-        const role = userData.roles && userData.roles.length > 0 ? userData.roles[0] : 'USER';
+        const role = userData.rol || 'USER';
         localStorage.setItem('username', userData.username);
         localStorage.setItem('userRole', role);
         setUsername(userData.username);

@@ -53,7 +53,7 @@ public class TareasRestController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String direction,
+            @RequestParam(defaultValue = "desc") String direction,
             HttpServletRequest request
     ) {
         log.info("Buscando todos los titulares con usuario={} estado={}", usuario, estado);

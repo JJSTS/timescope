@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import TaskCalendar from './TaskCalendar';
 import TaskDetailModal from './TaskDetailModal';
@@ -13,6 +13,10 @@ interface Task {
   horasEstimadas?: number;
   fechaLimite?: string;
   fechaCreacion?: string;
+  fechaInicio?: string;
+  fechaFin?: string;
+  usuario?: string;
+  proyectoNombre?: string;
 }
 
 interface User {
@@ -21,7 +25,7 @@ interface User {
   apellidos: string;
   username: string;
   email: string;
-  roles?: string[];
+  rol?: string;
   organizacionId?: number;
 }
 
@@ -30,7 +34,7 @@ interface TeamMember {
   nombres: string;
   apellidos: string;
   username: string;
-  roles?: string[];
+  rol?: string;
 }
 
 interface MemberDetail {
@@ -39,7 +43,7 @@ interface MemberDetail {
   apellidos: string;
   username: string;
   email: string;
-  roles?: string[];
+  rol?: string;
   proyectos?: string[];
   tareas?: string[];
 }
@@ -57,10 +61,34 @@ const UserProfile: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [memberLoading, setMemberLoading] = useState(false);
 
+  // --- FILTER STATE ---
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterFecha, setFilterFecha] = useState<'asc' | 'desc' | 'none'>('none');
+  const [filterEstados, setFilterEstados] = useState<string[]>(['ACTIVO', 'ABIERTO']);
+  const [filterUsuario, setFilterUsuario] = useState('');
+  const filterPanelRef = useRef<HTMLDivElement>(null);
+  // --------------------
+
   // --- PAGINATION STATE ---
   const [currentPage, setCurrentPage] = useState(1);
   const tasksPerPage = 5;
   // ------------------------
+
+  const reloadTasks = async (rol: string) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const isLeader = ['DIRECTOR', 'LIDER'].includes(rol?.toUpperCase() ?? '');
+    const url = isLeader
+      ? 'http://localhost:8080/api/v1/tareas?size=100'
+      : 'http://localhost:8080/api/v1/tareas/me?size=100';
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    if (res.ok) {
+      const data = await res.json();
+      const fetched: Task[] = Array.isArray(data) ? data : data.content || [];
+      setAllTasks(fetched);
+      setTasks(fetched.filter(t => t.estado === 'ACTIVO' || t.estado === 'ABIERTO'));
+    }
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -81,6 +109,7 @@ const UserProfile: React.FC = () => {
         const userData: User = await userResponse.json();
         setUser(userData);
 
+        await reloadTasks(userData.rol);
         // Tareas activas/abiertas y todas las tareas (en paralelo)
         const [tasksResponse, allTasksResponse] = await Promise.all([
           fetch(`${BASE}/tareas/me/activo`, { headers }),
@@ -122,6 +151,26 @@ const UserProfile: React.FC = () => {
     }
   }, [username]);
 
+  // Click-outside to close filter panel
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (filterPanelRef.current && !filterPanelRef.current.contains(e.target as Node)) {
+        setFilterOpen(false);
+      }
+    };
+    if (filterOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [filterOpen]);
+
+  // Reset page when filters change
+  useEffect(() => { setCurrentPage(1); }, [filterEstados, filterFecha, filterUsuario]);
+
+  const toggleEstado = (estado: string) => {
+    setFilterEstados(prev =>
+      prev.includes(estado) ? prev.filter(e => e !== estado) : [...prev, estado]
+    );
+  };
+
   const handleTaskClick = (task: Task) => setSelectedTask(task);
   const handleMemberClick = async (memberId: number) => {
     const token = localStorage.getItem('token');
@@ -140,6 +189,25 @@ const UserProfile: React.FC = () => {
   if (error) return <div className="profile-container"><div className="error-state"><h2>Error</h2><p>{error}</p></div></div>;
 
   const pendingTasks = tasks;
+
+  const ALL_ESTADOS = ['ACTIVO', 'ABIERTO'];
+  const hasActiveFilter = filterEstados.length < ALL_ESTADOS.length || filterFecha !== 'none' || filterUsuario.trim() !== '';
+
+  const filteredTasks = (() => {
+    let result = allTasks.filter(t => filterEstados.includes(t.estado));
+    if (filterUsuario.trim()) {
+      const q = filterUsuario.trim().toLowerCase();
+      result = result.filter(t => t.usuario?.toLowerCase().includes(q));
+    }
+    if (filterFecha !== 'none') {
+      result = [...result].sort((a, b) => {
+        const da = a.fechaLimite ? new Date(a.fechaLimite).getTime() : Infinity;
+        const db = b.fechaLimite ? new Date(b.fechaLimite).getTime() : Infinity;
+        return filterFecha === 'asc' ? da - db : db - da;
+      });
+    }
+    return result;
+  })();
 
   // --- PRODUCTIVITY CHART ---
   const now = new Date();
@@ -182,10 +250,10 @@ const UserProfile: React.FC = () => {
   // --------------------------
 
   // --- PAGINATION LOGIC ---
-  const totalPages = Math.ceil(pendingTasks.length / tasksPerPage);
+  const totalPages = Math.ceil(filteredTasks.length / tasksPerPage);
   const indexOfLastTask = currentPage * tasksPerPage;
   const indexOfFirstTask = indexOfLastTask - tasksPerPage;
-  const visibleTasks = pendingTasks.slice(indexOfFirstTask, indexOfLastTask);
+  const visibleTasks = filteredTasks.slice(indexOfFirstTask, indexOfLastTask);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -213,7 +281,9 @@ const UserProfile: React.FC = () => {
                   <span className="user-email-header">{user?.email}</span>
                 </div>
                 <div className="user-roles">
-                  {user?.roles?.map(r => <span key={r} className={`role-badge role-${r.toLowerCase()}`}>{r.toUpperCase()}</span>) || <span className="role-badge role-miembro">MIEMBRO</span>}
+                  {user?.rol
+                    ? <span className={`role-badge role-${user.rol.toLowerCase()}`}>{user.rol.toUpperCase()}</span>
+                    : <span className="role-badge role-miembro">MIEMBRO</span>}
                 </div>
               </div>
             </div>
@@ -224,14 +294,82 @@ const UserProfile: React.FC = () => {
         <div className="profile-main-layout">
           <div className="profile-main-content">
             <section className="content-section">
-              <div className="section-header">
+              <div className="section-header" ref={filterPanelRef}>
                 <div className="tasks-header-left">
-                  <h2>Tareas pendientes</h2>
-                  <p className="tasks-subtitle">{pendingTasks.length} abiertas · ordenadas por vencimiento</p>
+                  <h2>Tareas</h2>
+                  <p className="tasks-subtitle">{filteredTasks.length} tarea{filteredTasks.length !== 1 ? 's' : ''} · {hasActiveFilter ? 'filtradas' : 'sin filtros'}</p>
                 </div>
-                <button className="tasks-filter-btn">Filtrar</button>
+                <button
+                  className={`tasks-filter-btn${hasActiveFilter ? ' tasks-filter-btn--active' : ''}`}
+                  onClick={() => setFilterOpen(o => !o)}
+                >
+                  {hasActiveFilter ? 'Filtros activos' : 'Filtrar'}
+                  <i className={`bi bi-chevron-down filter-arrow${filterOpen ? ' filter-arrow--open' : ''}`} />
+                </button>
+
+                {filterOpen && (
+                  <div className="filter-panel">
+                    <div className="filter-panel-section">
+                      <span className="filter-panel-label">Estado</span>
+                      <div className="filter-checkboxes">
+                        {ALL_ESTADOS.map(estado => (
+                          <label key={estado} className="filter-checkbox-label">
+                            <input
+                              type="checkbox"
+                              checked={filterEstados.includes(estado)}
+                              onChange={() => toggleEstado(estado)}
+                            />
+                            <span className={`filter-estado-chip filter-chip--${estado.toLowerCase()}`}>{estado}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="filter-panel-section">
+                      <span className="filter-panel-label">Fecha de vencimiento</span>
+                      <div className="filter-radio-group">
+                        {(['none', 'asc', 'desc'] as const).map(opt => (
+                          <label key={opt} className="filter-radio-label">
+                            <input
+                              type="radio"
+                              name="filterFecha"
+                              value={opt}
+                              checked={filterFecha === opt}
+                              onChange={() => setFilterFecha(opt)}
+                            />
+                            {opt === 'none' ? 'Sin orden' : opt === 'asc' ? 'Más próxima primero' : 'Más lejana primero'}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="filter-panel-section">
+                      <span className="filter-panel-label">Usuario asignado</span>
+                      <input
+                        className="filter-user-input"
+                        type="text"
+                        placeholder="Buscar por usuario…"
+                        value={filterUsuario}
+                        onChange={e => setFilterUsuario(e.target.value)}
+                      />
+                    </div>
+
+                    {hasActiveFilter && (
+                      <button
+                        className="filter-reset-btn"
+                        onClick={() => {
+                          setFilterEstados(ALL_ESTADOS);
+                          setFilterFecha('none');
+                          setFilterUsuario('');
+                        }}
+                      >
+                        Limpiar filtros
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
-              {pendingTasks.length > 0 ? (
+              {filteredTasks.length > 0 ? (
                 <div>
                   <div className="tasks-list">
                     {visibleTasks.map((task) => (
@@ -248,10 +386,10 @@ const UserProfile: React.FC = () => {
                           <p className="task-list-description">{task.descripcion}</p>
                         </div>
                         <div className="task-list-right">
-                          {task.proyecto && (
+                          {task.proyectoNombre && (
                             <div className="task-list-category">
                               <span className="category-label">PROYECTO</span>
-                              <span className="category-value">{task.proyecto}</span>
+                              <span className="category-value">{task.proyectoNombre}</span>
                             </div>
                           )}
                           {task.fechaLimite && (
@@ -271,7 +409,7 @@ const UserProfile: React.FC = () => {
                         onClick={handlePrevPage}
                         disabled={currentPage === 1}
                       >
-                        ◀ Anteriores
+                        <i className="bi bi-chevron-left" /> Anteriores
                       </button>
                       <span className="pagination-info">
                         Página {currentPage} de {totalPages}
@@ -281,13 +419,13 @@ const UserProfile: React.FC = () => {
                         onClick={handleNextPage}
                         disabled={currentPage === totalPages}
                       >
-                        Siguientes ▶
+                        Siguientes <i className="bi bi-chevron-right" />
                       </button>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="empty-placeholder"><p>No hay tareas pendientes.</p></div>
+                <div className="empty-placeholder"><p>No hay tareas{hasActiveFilter ? ' que coincidan con los filtros' : ' disponibles'}.</p></div>
               )}
             </section>
             <section className="content-section calendar-section-wrapper">
@@ -322,23 +460,43 @@ const UserProfile: React.FC = () => {
               </div>
             </div>
             <div className="sidebar-card team-card">
-              <h3 className="sidebar-card-title">Miembros<span className="team-count">{teamMembers.length}</span></h3>
+              <div className="team-card-header">
+                <div className="team-card-header-text">
+                  <h3 className="team-card-title">Equipo</h3>
+                  {orgNombre && <p className="team-card-org">{orgNombre}</p>}
+                </div>
+                <span className="team-count-badge">
+                  {teamMembers.filter(m => m.rol === 'DIRECTOR' || m.rol === 'LIDER').length}
+                </span>
+              </div>
               <div className="team-members-list">
-                {teamMembers.map(member => (
-                  <div key={member.id} className="team-member-item">
-                    <div
-                      className={`team-member-avatar role-${member.roles?.[0]?.toLowerCase() || 'miembro'} team-member-avatar--clickable`}
-                      onClick={() => handleMemberClick(member.id)}
-                      title={`Ver perfil de ${member.nombres}`}
-                    >
+                {(() => {
+                  const ROLE_ORDER: Record<string, number> = { DIRECTOR: 0, LIDER: 1 };
+                  const lideres = teamMembers
+                    .filter(m => m.rol === 'DIRECTOR' || m.rol === 'LIDER')
+                    .sort((a, b) => (ROLE_ORDER[a.rol ?? ''] ?? 9) - (ROLE_ORDER[b.rol ?? ''] ?? 9));
+                  return lideres.length === 0 ? (
+                    <p className="team-empty">Sin líderes registrados</p>
+                  ) : lideres.map(member => (
+                  <div
+                    key={member.id}
+                    className="team-member-row"
+                    onClick={() => handleMemberClick(member.id)}
+                    title={`Ver perfil de ${member.nombres}`}
+                  >
+                    <div className={`team-member-avatar role-${member.rol?.toLowerCase() || 'miembro'}`}>
                       {member.nombres?.charAt(0)}{member.apellidos?.charAt(0)}
                     </div>
                     <div className="team-member-info">
-                      <div className="team-member-name">{member.nombres} {member.apellidos}</div>
-                      <div className="team-member-role">{member.roles?.[0]?.toUpperCase() || 'MIEMBRO'}</div>
+                      <span className="team-member-name">{member.nombres} {member.apellidos}</span>
+                      <span className="team-member-username">@{member.username}</span>
                     </div>
+                    <span className={`team-role-pill role-pill--${member.rol?.toLowerCase() || 'miembro'}`}>
+                      {member.rol || 'MIEMBRO'}
+                    </span>
                   </div>
-                ))}
+                  ));
+                })()}
               </div>
             </div>
           </aside>
@@ -346,24 +504,28 @@ const UserProfile: React.FC = () => {
       </div>
 
       {selectedTask && (
-        <TaskDetailModal task={selectedTask} onClose={() => setSelectedTask(null)} />
+        <TaskDetailModal
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onUpdated={() => user && reloadTasks(user.rol ?? '')}
+        />
       )}
 
       {(selectedMember || memberLoading) && (
         <div className="member-modal-overlay" onClick={() => setSelectedMember(null)}>
           <div className="member-modal" onClick={e => e.stopPropagation()}>
-            <button className="member-modal-close" onClick={() => setSelectedMember(null)}>✕</button>
+            <button className="member-modal-close" onClick={() => setSelectedMember(null)}><i className="bi bi-x-lg" /></button>
             {memberLoading ? <div className="member-modal-loading">Cargando…</div> : selectedMember && (
               <>
                 <div className="member-modal-header">
-                  <div className={`member-modal-avatar role-${selectedMember.roles?.[0]?.toLowerCase() || 'miembro'}`}>
+                  <div className={`member-modal-avatar role-${selectedMember.rol?.toLowerCase() || 'miembro'}`}>
                     {selectedMember.nombres?.charAt(0)}{selectedMember.apellidos?.charAt(0)}
                   </div>
                   <div>
                     <h3 className="member-modal-name">{selectedMember.nombres} {selectedMember.apellidos}</h3>
                     <span className="member-modal-username">@{selectedMember.username}</span>
                     <div className="member-modal-roles">
-                      {selectedMember.roles?.map(r => <span key={r} className={`role-badge role-${r.toLowerCase()}`}>{r}</span>)}
+                      {selectedMember.rol && <span className={`role-badge role-${selectedMember.rol.toLowerCase()}`}>{selectedMember.rol}</span>}
                     </div>
                   </div>
                 </div>

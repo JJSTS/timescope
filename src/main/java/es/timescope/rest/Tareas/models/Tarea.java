@@ -44,6 +44,10 @@ public class Tarea {
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime fechaCreacion = LocalDateTime.now();
 
+    private LocalDateTime fechaInicio;
+
+    private LocalDateTime fechaFin;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;

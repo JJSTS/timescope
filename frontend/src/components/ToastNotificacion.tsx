@@ -21,14 +21,14 @@ const ToastSingle: React.FC<{ toast: ToastItem; onRemove: (id: number) => void }
 
   return (
     <div className="toast-item" role="alert">
-      <span className="toast-icon" aria-hidden="true">🔔</span>
+      <span className="toast-icon" aria-hidden="true"><i className="bi bi-bell-fill" /></span>
       <p className="toast-mensaje">{toast.mensaje}</p>
       <button
         className="toast-close"
         onClick={() => onRemove(toast.id)}
         aria-label="Cerrar notificación"
       >
-        ×
+        <i className="bi bi-x-lg" />
       </button>
       <div className="toast-progress" style={{ animationDuration: `${DURACION_MS}ms` }} />
     </div>

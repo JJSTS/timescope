@@ -44,7 +44,6 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ tasks }) => {
   const daysInMonth = getDaysInMonth(currentDate);
   const firstDayOfMonth = getFirstDayOfMonth(currentDate);
   
-  // CORREGIDO: Usar spread operator para combinar los arrays de forma segura
   const days = [
     ...Array(firstDayOfMonth).fill(null),
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1)
@@ -56,9 +55,9 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ tasks }) => {
   return (
     <div className="calendar-container">
       <div className="calendar-header">
-        <button className="calendar-nav-btn" onClick={previousMonth}>◀</button>
+        <button className="calendar-nav-btn" onClick={previousMonth}><i className="bi bi-chevron-left" /></button>
         <h3 className="calendar-month-year">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</h3>
-        <button className="calendar-nav-btn" onClick={nextMonth}>▶</button>
+        <button className="calendar-nav-btn" onClick={nextMonth}><i className="bi bi-chevron-right" /></button>
       </div>
 
       <div className="calendar-weekdays">
@@ -93,15 +92,13 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ tasks }) => {
         })}
       </div>
 
-      {/* Usar el componente de modal reutilizable */}
       {selectedTask && (
         <TaskDetailModal task={selectedTask} onClose={() => setSelectedTask(null)} />
       )}
 
       <div className="calendar-legend">
         <div className="legend-item"><span className="legend-dot task-activo"></span><span>Activo</span></div>
-        <div className="legend-item"><span className="legend-dot task-completado"></span><span>Completado</span></div>
-        <div className="legend-item"><span className="legend-dot task-pendiente"></span><span>Pendiente</span></div>
+        <div className="legend-item"><span className="legend-dot task-abierto"></span><span>Abierto</span></div>
       </div>
     </div>
   );

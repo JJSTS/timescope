@@ -61,6 +61,8 @@ public class TareasMapper {
                 .horasEstimadas(tareaUpdateDto.getHorasEstimadas() != null ? tareaUpdateDto.getHorasEstimadas() : tarea.getHorasEstimadas())
                 .fechaLimite(tareaUpdateDto.getFechaLimite() != null ? tareaUpdateDto.getFechaLimite() : tarea.getFechaLimite())
                 .fechaCreacion(tarea.getFechaCreacion())
+                .fechaInicio(tarea.getFechaInicio())
+                .fechaFin(tarea.getFechaFin())
                 .usuario(usuario != null ? usuario : tarea.getUsuario())
                 .proyecto(tarea.getProyecto())
                 .build();
@@ -75,7 +77,9 @@ public class TareasMapper {
                 .horasEstimadas(tarea.getHorasEstimadas())
                 .fechaLimite(tarea.getFechaLimite())
                 .fechaCreacion(tarea.getFechaCreacion())
-                .usuario(tarea.getUsuario() != null ? tarea.getUsuario().getNombres() : null)
+                .fechaInicio(tarea.getFechaInicio())
+                .fechaFin(tarea.getFechaFin())
+                .usuario(tarea.getUsuario() != null ? tarea.getUsuario().getUsername() : null)
                 .proyectoId(tarea.getProyecto() != null ? tarea.getProyecto().getId() : null)
                 .proyectoNombre(tarea.getProyecto() != null ? tarea.getProyecto().getNombre() : null)
                 .build();

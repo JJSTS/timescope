@@ -4,5 +4,6 @@ public enum Estado {
     COMPLETADO,
     ACTIVO,
     SUSPENDIDO,
-    ABIERTO
+    ABIERTO,
+    REVISION
 }

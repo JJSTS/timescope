@@ -33,8 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.security.authentication.BadCredentialsException;
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -60,7 +58,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           .email(request.getEmail())
           .nombres(request.getNombre())
           .apellidos(request.getApellidos())
-          .roles(Stream.of(Roles.DESARROLLADOR).collect(Collectors.toSet()))
+          .rol(Roles.DESARROLLADOR)
           .build();
       try {
         var userStored = authUsersRepository.save(user);
@@ -79,6 +77,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
           Organizacion orgCreated = organizacionesRepository.save(org);
           userStored.setOrganizacion(orgCreated);
+          userStored.setRol(Roles.DIRECTOR);
           authUsersRepository.save(userStored);
 
           // Rol DIRECTOR acotado a esta organización

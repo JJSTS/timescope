@@ -5,14 +5,6 @@ import TaskDetailModal from './TaskDetailModal';
 import TareaCreateModal from './TareaCreateModal';
 import '../styles/TareasList.css';
 
-// Interfaz para el objeto de usuario anidado
-interface UsuarioSimple {
-  id: number;
-  username: string;
-  nombres: string;
-  apellidos: string;
-}
-
 interface Tarea {
   id: number;
   nombre: string;
@@ -21,8 +13,10 @@ interface Tarea {
   horasEstimadas?: number;
   fechaLimite?: string;
   fechaCreacion?: string;
-  usuario: UsuarioSimple;
-  proyecto?: string;
+  fechaInicio?: string;
+  fechaFin?: string;
+  usuario?: string;
+  proyectoNombre?: string;
 }
 
 interface PageResponse {
@@ -71,6 +65,7 @@ const TareasList: React.FC = () => {
     setLoading(true);
     setError(null);
 
+    const endpoint = `http://localhost:8080/api/v1/tareas?page=${page}&size=10`;
     const isDeveloper = userRole?.toLowerCase() === 'desarrollador';
     const endpoint = isDeveloper
       ? `${process.env.REACT_APP_API_URL}/tareas/me?page=${page}&size=10`
@@ -119,84 +114,108 @@ const TareasList: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="loading">Cargando tareas...</div>;
-  if (error) return <div className="error-message">{error}</div>;
-  if (tareas.length === 0) return <div className="loading">No hay tareas disponibles</div>;
+  if (loading) return (
+    <div className="tl-state">
+      <span className="tl-state__dot tl-state__dot--loading" />
+      Cargando tareas…
+    </div>
+  );
+  if (error) return <div className="tl-state tl-state--error">{error}</div>;
+  if (tareas.length === 0) return (
+    <div className="tl-state">Sin tareas disponibles</div>
+  );
 
   return (
     <>
-      <div className="tareas-container">
-        <div className="list-header">
-          <h2>Gestión de Tareas</h2>
-          {canCreate && (
-            <button className="btn-create" onClick={() => setShowCreateModal(true)}>
-              + Nueva tarea
-            </button>
-          )}
+      <div className="tl-shell">
+
+        {/* CABECERA */}
+        <header className="tl-header">
+          <div className="tl-header__left">
+            <p className="tl-header__eyebrow">Gestión</p>
+            <h2 className="tl-header__title">Tareas</h2>
+          </div>
+          <div className="tl-header__right">
+            <span className="tl-header__count">{tareas.length} registro{tareas.length !== 1 ? 's' : ''}</span>
+            {canCreate && (
+              <button className="tl-btn-create" onClick={() => setShowCreateModal(true)}>
+                + Nueva tarea
+              </button>
+            )}
+          </div>
+        </header>
+
+        {/* COLUMNAS */}
+        <div className="tl-cols-label">
+          <span>Tarea</span>
+          <span>Asignado a</span>
+          <span>Proyecto</span>
+          <span>Fecha límite</span>
+          <span>Horas est.</span>
+          <span>Estado</span>
         </div>
-        <table className="tareas-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>Descripción</th>
-              <th>Usuario Asignado</th>
-              <th>Estado</th>
-              <th>Fecha Límite</th>
-              <th>Horas Estimadas</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tareas.map((tarea) => (
-              <tr key={tarea.id}>
-                <td>{tarea.id}</td>
-                <td>
-                  <button
-                    className="tarea-link"
-                    onClick={() => setSelectedTask(tarea)}
-                    title="Ver detalles de la tarea"
-                  >
-                    {tarea.nombre}
-                  </button>
-                </td>
-                <td>{tarea.descripcion || '-'}</td>
-                <td>{tarea.usuario ? `${tarea.usuario.nombres} ${tarea.usuario.apellidos}` : '-'}</td>
-                <td>
-                  <span className={`estado ${tarea.estado?.toLowerCase()}`}>
-                    {tarea.estado || '-'}
-                  </span>
-                </td>
-                <td>{tarea.fechaLimite ? new Date(tarea.fechaLimite).toLocaleDateString('es-ES') : '-'}</td>
-                <td>{tarea.horasEstimadas ? `${tarea.horasEstimadas}h` : '-'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+        {/* FILAS */}
+        <ul className="tl-list">
+          {tareas.map((tarea) => (
+            <li
+              key={tarea.id}
+              className={`tl-item tl-item--${tarea.estado?.toLowerCase()}`}
+              onClick={() => setSelectedTask(tarea)}
+            >
+              <div className="tl-item__main">
+                <span className="tl-item__nombre">{tarea.nombre}</span>
+                {tarea.descripcion && (
+                  <span className="tl-item__desc">{tarea.descripcion}</span>
+                )}
+              </div>
+
+              <span className="tl-item__meta">
+                {tarea.usuario ? `@${tarea.usuario}` : '—'}
+              </span>
+
+              <span className="tl-item__meta">
+                {tarea.proyectoNombre || '—'}
+              </span>
+
+              <span className="tl-item__meta">
+                {tarea.fechaLimite
+                  ? new Date(tarea.fechaLimite).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+                  : '—'}
+              </span>
+
+              <span className="tl-item__meta">
+                {tarea.horasEstimadas ? `${tarea.horasEstimadas}h` : '—'}
+              </span>
+
+              <span className={`tl-item__estado tl-estado--${tarea.estado?.toLowerCase()}`}>
+                {tarea.estado}
+              </span>
+            </li>
+          ))}
+        </ul>
 
         {/* PAGINACIÓN */}
-        <div className="pagination">
-          <button
-            onClick={previousPage}
-            disabled={currentPage === 0}
-          >
-            ← Anterior
+        <footer className="tl-pagination">
+          <button className="tl-page-btn" onClick={previousPage} disabled={currentPage === 0}>
+            <i className="bi bi-arrow-left" /> Anterior
           </button>
-
-          <span>
-            Página {currentPage + 1} de {totalPages}
+          <span className="tl-page-info">
+            {currentPage + 1} / {totalPages}
           </span>
-
-          <button
-            onClick={nextPage}
-            disabled={currentPage >= totalPages - 1}
-          >
-            Siguiente →
+          <button className="tl-page-btn" onClick={nextPage} disabled={currentPage >= totalPages - 1}>
+            Siguiente <i className="bi bi-arrow-right" />
           </button>
-        </div>
+        </footer>
+
       </div>
 
       {selectedTask && (
-        <TaskDetailModal task={selectedTask} onClose={() => setSelectedTask(null)} />
+        <TaskDetailModal
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onUpdated={() => fetchTareas(currentPage)}
+        />
       )}
 
       {showCreateModal && (

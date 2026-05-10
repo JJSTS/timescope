@@ -82,7 +82,7 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
                     "Ya perteneces a una organización y no puedes crear otra");
         }
 
-        admin.getRoles().add(Roles.DIRECTOR);
+        admin.setRol(Roles.DIRECTOR);
         usuariosRepository.save(admin);
 
         Organizacion org = new Organizacion();
@@ -114,7 +114,7 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
         Usuario nuevoAdmin = usuariosRepository.findByUsername(username)
                 .orElseThrow(() -> new UsuarioNotFound(username));
 
-        nuevoAdmin.getRoles().add(Roles.DIRECTOR);
+        nuevoAdmin.setRol(Roles.DIRECTOR);
         usuariosRepository.save(nuevoAdmin);
 
         org.setAdmin(nuevoAdmin);
@@ -131,7 +131,7 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
         Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
 
         boolean isAdmin = org.getAdmin() != null && org.getAdmin().getId().equals(caller.getId());
-        boolean isDirector = caller.getRoles().contains(Roles.DIRECTOR);
+        boolean isDirector = caller.getRol() == Roles.DIRECTOR;
 
         if (!isAdmin && !isDirector) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permisos para eliminar esta organización");
@@ -190,7 +190,7 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
                 .orElseThrow(() -> new UsuarioNotFound(usuarioId.toString()));
 
         if (!org.getDirectores().contains(nuevoDirector)) {
-            nuevoDirector.getRoles().add(Roles.DIRECTOR);
+            nuevoDirector.setRol(Roles.DIRECTOR);
             usuariosRepository.save(nuevoDirector);
             org.getDirectores().add(nuevoDirector);
         }
@@ -228,7 +228,8 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
 
     @Override
     public List<UsuarioResponseDto> getMiembros(Long orgId) {
-        return getEntity(orgId).getUsuarios()
+        getEntity(orgId); // verifica que la org existe
+        return usuariosRepository.findByOrganizacionId(orgId)
                 .stream()
                 .map(usuariosMapper::toUsuarioResponseDto)
                 .collect(Collectors.toList());

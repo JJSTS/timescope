@@ -27,7 +27,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @Slf4j
@@ -112,7 +111,7 @@ public class UsuarioServiceImpl implements UsuariosService {
     @Override
     public UsuarioResponseDto getMe() {
         Usuario usuario = authUtils.getUsuarioAuthentication(usuariosRepository);
-        return usuarioMapper.toUsuarioResponseDto(usuario, authUtils.getCallerRoles());
+        return usuarioMapper.toUsuarioResponseDto(usuario, authUtils.getCallerRole());
     }
 
     private static final Map<Roles, Integer> ROLE_LEVEL = Map.of(
@@ -144,8 +143,7 @@ public class UsuarioServiceImpl implements UsuariosService {
         // El rol a asignar debe estar dentro de lo permitido para el caller
         validarRolAsignable(role);
 
-        objetivo.getRoles().clear();
-        objetivo.getRoles().add(role);
+        objetivo.setRol(role);
         usuariosRepository.save(objetivo);
     }
 
@@ -156,10 +154,7 @@ public class UsuarioServiceImpl implements UsuariosService {
     }
 
     private int objetivoMaxLevel(Usuario objetivo) {
-        return objetivo.getRoles().stream()
-                .mapToInt(r -> ROLE_LEVEL.getOrDefault(r, 0))
-                .max()
-                .orElse(0);
+        return ROLE_LEVEL.getOrDefault(objetivo.getRol(), 0);
     }
 
     private void validarRolAsignable(Roles rolObjetivo) {

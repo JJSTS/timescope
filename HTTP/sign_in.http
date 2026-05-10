@@ -122,79 +122,67 @@ POST http://localhost:8080/api/v1/auth/signin
 Content-Type: application/json
 
 {
-  "username": "admin",
-  "password": "admin123",
-  "orgId": 1
+  "username": "alopez",
+  "password": "MeGustanLosGatos3000@"
 }
 
 > {% client.global.set("auth_token", response.body.token); %}
 
-###
-
-### Carlos García — DESARROLLADOR en org 1
+### Proceso de Login - Carlos García (DESARROLLADOR)
 POST http://localhost:8080/api/v1/auth/signin
 Content-Type: application/json
 
 {
   "username": "cgarcia",
-  "password": "UsuarioGarcia",
-  "orgId": 1
+  "password": "UsuarioGarcia"
 }
 
 > {% client.global.set("auth_token", response.body.token); %}
 
-###
 
-### María Martínez — DESARROLLADOR en org 1
+### Proceso de Login - María Martínez (COORDINADOR)
 POST http://localhost:8080/api/v1/auth/signin
 Content-Type: application/json
 
 {
   "username": "mmartinez",
-  "password": "MartinezMartinez",
-  "orgId": 1
+  "password": "MartinezMartinez"
 }
 
 > {% client.global.set("auth_token", response.body.token); %}
 
-###
 
-### Juan Pérez — LIDER en org 2 (Innovatech)
+### Proceso de Login - Juan Pérez (LIDER)
 POST http://localhost:8080/api/v1/auth/signin
 Content-Type: application/json
 
 {
   "username": "jperez",
-  "password": "JuanElDestructorDeMundos",
-  "orgId": 2
+  "password": "JuanElDestructorDeMundos"
 }
 
 > {% client.global.set("auth_token", response.body.token); %}
 
-###
 
-### Laura Fernández — DIRECTOR en org 3 (CloudSystem)
+### Proceso de Login - Laura Fernández (DIRECTOR)
 POST http://localhost:8080/api/v1/auth/signin
 Content-Type: application/json
 
 {
   "username": "lfernandez",
-  "password": "DragonVampirico2090@@@@",
-  "orgId": 3
+  "password": "DragonVampirico2090@@@@"
 }
 
 > {% client.global.set("auth_token", response.body.token); %}
 
-###
 
-### Andrés López — DESARROLLADOR en org 4 (DataDrive)
+### Proceso de Login de Admin (ADMIN)
 POST http://localhost:8080/api/v1/auth/signin
 Content-Type: application/json
 
 {
-  "username": "alopez",
-  "password": "MeGustanLosGatos3000@",
-  "orgId": 4
+  "username": "admin",
+  "password": "admin123"
 }
 
 > {% client.global.set("auth_token", response.body.token); %}

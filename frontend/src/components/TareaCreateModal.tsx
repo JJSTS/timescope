@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import '../styles/TareaCreateModal.css';
 
 interface Proyecto {
   id: number;
   nombre: string;
+}
+
+interface Miembro {
+  id: number;
+  nombres: string;
+  apellidos: string;
+  username: string;
+  rol?: string;
 }
 
 interface Props {
@@ -13,14 +22,19 @@ interface Props {
 }
 
 const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId }) => {
+  const { userRole } = useAuth();
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [fechaLimite, setFechaLimite] = useState('');
   const [horasEstimadas, setHorasEstimadas] = useState('');
   const [proyectoId, setProyectoId] = useState('');
+  const [usuarioUsername, setUsuarioUsername] = useState('');
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);
+  const [miembros, setMiembros] = useState<Miembro[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const canAssign = ['DIRECTOR', 'LIDER'].includes(userRole?.toUpperCase() ?? '');
 
   useEffect(() => {
     if (!organizacionId) return;
@@ -28,10 +42,20 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
     fetch(`${process.env.REACT_APP_API_URL}/organizaciones/${organizacionId}/proyectos`, {
       headers: { Authorization: `Bearer ${token}` },
     })
+    const headers = { Authorization: `Bearer ${token}` };
+
+    fetch(`${process.env.REACT_APP_API_URL}/organizaciones/${organizacionId}/proyectos`, { headers })
       .then(r => r.ok ? r.json() : [])
       .then(data => setProyectos(Array.isArray(data) ? data : []))
       .catch(() => setProyectos([]));
-  }, [organizacionId]);
+
+    if (canAssign) {
+      fetch(`http://localhost:8080/api/v1/organizaciones/${organizacionId}/miembros`, { headers })
+        .then(r => r.ok ? r.json() : [])
+        .then(data => setMiembros(Array.isArray(data) ? data : []))
+        .catch(() => setMiembros([]));
+    }
+  }, [organizacionId, canAssign]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,28 +64,43 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
 
     try {
       const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      };
 
       const body: Record<string, unknown> = {
         nombre,
         descripcion,
         fechaLimite: fechaLimite ? `${fechaLimite}:00` : undefined,
       };
-
       if (horasEstimadas) body.horasEstimadas = parseFloat(horasEstimadas);
       if (proyectoId) body.proyectoId = parseInt(proyectoId, 10);
 
+      const createRes = await fetch('http://localhost:8080/api/v1/tareas', {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/tareas`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify(body),
       });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
+      if (!createRes.ok) {
+        const data = await createRes.json().catch(() => ({}));
         throw new Error(data?.message || data?.detail || 'Error al crear la tarea');
+      }
+
+      const tareaCreada = await createRes.json();
+
+      if (canAssign && usuarioUsername) {
+        const assignRes = await fetch('http://localhost:8080/api/v1/tareas/addTarea', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ tareaId: tareaCreada.id, username: usuarioUsername }),
+        });
+        if (!assignRes.ok) {
+          const data = await assignRes.json().catch(() => ({}));
+          throw new Error(data?.message || 'Tarea creada pero no se pudo asignar al usuario');
+        }
       }
 
       onCreated();
@@ -76,7 +115,7 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
   return (
     <div className="tcm-overlay" onClick={onClose}>
       <div className="tcm-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="tcm-close" onClick={onClose} type="button">✕</button>
+        <button className="tcm-close" onClick={onClose} type="button"><i className="bi bi-x-lg" /></button>
 
         <div className="tcm-header">
           <h3 className="tcm-title">Nueva Tarea</h3>
@@ -152,6 +191,31 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
               </select>
             </div>
           </div>
+
+          {canAssign && (
+            <div className="tcm-field">
+              <label className="tcm-label">Asignar a</label>
+              <select
+                className="tcm-input"
+                value={usuarioUsername}
+                onChange={(e) => setUsuarioUsername(e.target.value)}
+                disabled={loading || miembros.length === 0}
+              >
+                <option value="">Sin asignar</option>
+                {miembros.map(m => (
+                  <option key={m.id} value={m.username}>
+                    @{m.username} — {m.nombres} {m.apellidos}
+                    {m.rol ? ` (${m.rol})` : ''}
+                  </option>
+                ))}
+              </select>
+              {usuarioUsername && (
+                <p className="tcm-assign-hint">
+                  La tarea quedará en estado <strong>ABIERTO</strong> al asignarse.
+                </p>
+              )}
+            </div>
+          )}
 
           {error && <p className="tcm-error">{error}</p>}
 

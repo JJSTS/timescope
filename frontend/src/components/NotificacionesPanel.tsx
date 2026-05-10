@@ -232,7 +232,7 @@ const NotificacionesPanel: React.FC<Props> = ({ onClose, onPendientesChange }) =
                   title="Marcar como leída"
                   aria-label="Marcar como leída"
                 >
-                  {marcando.has(notif.id) ? '...' : '✓'}
+                  {marcando.has(notif.id) ? '...' : <i className="bi bi-check-lg" />}
                 </button>
               )}
             </div>

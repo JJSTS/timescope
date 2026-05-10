@@ -7,8 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Set;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -21,7 +19,7 @@ public class UsuarioResponseDto {
     private String username;
 
     @Builder.Default
-    private Set<Roles> roles = Set.of(Roles.DESARROLLADOR);
+    private Roles rol = Roles.DESARROLLADOR;
 
     @Builder.Default
     private Boolean isDeleted = false;

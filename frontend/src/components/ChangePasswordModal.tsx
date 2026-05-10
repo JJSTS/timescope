@@ -63,12 +63,12 @@ const ChangePasswordModal: React.FC<Props> = ({ onClose }) => {
       <div className="cp-modal" onClick={(e) => e.stopPropagation()}>
         <div className="cp-header">
           <h2>Cambiar contraseña</h2>
-          <button className="cp-close" onClick={onClose} aria-label="Cerrar">×</button>
+          <button className="cp-close" onClick={onClose} aria-label="Cerrar"><i className="bi bi-x-lg" /></button>
         </div>
 
         {success ? (
           <div className="cp-success">
-            <div className="cp-success-icon">✓</div>
+            <div className="cp-success-icon"><i className="bi bi-check-lg" /></div>
             <p>Contraseña actualizada correctamente.</p>
             <button className="cp-btn-primary" onClick={onClose}>Cerrar</button>
           </div>

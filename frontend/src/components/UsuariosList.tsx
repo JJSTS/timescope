@@ -8,33 +8,33 @@ interface Usuario {
   apellidos: string;
   username: string;
   email: string;
-  roles: string[];
-  isDeleted: boolean;
+  rol: string;
 }
 
-interface PageResponse {
-  content: Usuario[];
-  empty: boolean;
-  first: boolean;
-  last: boolean;
-  number: number;
-  numberOfElements: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-}
+const PILL: Record<string, string> = {
+  director:      'pill--director',
+  lider:         'pill--lider',
+  desarrollador: 'pill--desarrollador',
+};
 
 const UsuariosList: React.FC = () => {
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editForm, setEditForm] = useState<Partial<Usuario>>({});
-  const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [miembros, setMiembros]   = useState<Usuario[]>([]);
+  const [orgNombre, setOrgNombre] = useState<string>('');
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState<string | null>(null);
+  const [search, setSearch]       = useState('');
+
   const token = localStorage.getItem('token');
 
   useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data: me } = await axios.get(
+          'http://localhost:8080/api/v1/usuarios/me',
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
     fetchUsuarios(currentPage);
   }, [currentPage]);
 
@@ -52,33 +52,36 @@ const UsuariosList: React.FC = () => {
         }
       );
 
-      console.log('Respuesta del servidor:', response.data);
+        if (!me.organizacionId) { setLoading(false); return; }
 
-      // Manejar tanto respuestas paginadas como arrays directos
-      const usuariosData = Array.isArray(response.data)
-        ? response.data
-        : response.data.content || [];
+        const [membrosRes, orgRes] = await Promise.all([
+          axios.get<Usuario[]>(
+            `http://localhost:8080/api/v1/organizaciones/${me.organizacionId}/miembros`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          ),
+          axios.get(
+            `http://localhost:8080/api/v1/organizaciones?id=${me.organizacionId}&size=1`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          ),
+        ]);
 
-      setUsuarios(usuariosData);
-
-      // Guardar total de páginas
-      if (!Array.isArray(response.data)) {
-        setTotalPages(response.data.totalPages);
+        setMiembros(membrosRes.data);
+        const nombre = orgRes.data?.content?.[0]?.nombre;
+        if (nombre) setOrgNombre(nombre);
+      } catch (e: any) {
+        setError(e.response?.data?.message || e.message || 'Error al cargar el equipo');
+      } finally {
+        setLoading(false);
       }
-    } catch (error: any) {
-      console.error('Error al obtener usuarios:', error);
-      const errorMsg = error.response?.data?.message || error.message || 'Error al cargar usuarios';
-      setError(errorMsg);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+    load();
+  }, []);
 
-  const handleEdit = (usuario: Usuario) => {
-    setEditingId(usuario.id);
-    setEditForm(usuario);
-  };
-
+  const filtered = miembros.filter(m =>
+    `${m.nombres} ${m.apellidos} ${m.username} ${m.email}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
   const handleSaveEdit = async () => {
     if (editingId) {
       try {
@@ -115,109 +118,69 @@ const UsuariosList: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="loading">Cargando usuarios...</div>;
-
-  if (error) return <div className="error-message">{error}</div>;
-
-  if (usuarios.length === 0) return <div className="loading">No hay usuarios disponibles</div>;
+  if (loading) return <div className="ul-shell"><div className="ul-state">Cargando equipo…</div></div>;
+  if (error)   return <div className="ul-shell"><div className="ul-state ul-state--error">{error}</div></div>;
 
   return (
-    <div className="usuarios-container">
-      <h2>Gestión de Usuarios ({usuarios.length})</h2>
-      <table className="usuarios-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre Completo</th>
-            <th>Usuario</th>
-            <th>Email</th>
-            <th>Roles</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {usuarios.map((usuario) => (
-            <tr key={usuario.id}>
-              <td>{usuario.id}</td>
-              <td>
-                {editingId === usuario.id ? (
-                  <div className="edit-names">
-                    <input
-                      type="text"
-                      placeholder="Nombres"
-                      value={editForm.nombres || ''}
-                      onChange={(e) => setEditForm({ ...editForm, nombres: e.target.value })}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Apellidos"
-                      value={editForm.apellidos || ''}
-                      onChange={(e) => setEditForm({ ...editForm, apellidos: e.target.value })}
-                    />
-                  </div>
-                ) : (
-                  `${usuario.nombres} ${usuario.apellidos}`
-                )}
-              </td>
-              <td>{usuario.username}</td>
-              <td>
-                {editingId === usuario.id ? (
-                  <input
-                    type="email"
-                    value={editForm.email || ''}
-                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                  />
-                ) : (
-                  usuario.email
-                )}
-              </td>
-              <td>
-                <span className="roles-badge">
-                  {usuario.roles?.map((role, idx) => (
-                    <span key={idx} className={`role ${role.toLowerCase()}`}>
-                      {role}
-                    </span>
-                  )) || '-'}
-                </span>
-              </td>
-              <td>
-                {editingId === usuario.id ? (
-                  <div className="action-buttons">
-                    <button onClick={handleSaveEdit} className="btn-save">Guardar</button>
-                    <button onClick={handleCancel} className="btn-cancel">Cancelar</button>
-                  </div>
-                ) : (
-                  <button onClick={() => handleEdit(usuario)} className="btn-edit">Editar</button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* PAGINACIÓN */}
-      <div className="pagination">
-        <button
-          onClick={previousPage}
-          disabled={currentPage === 0}
-        >
-          ← Anterior
-        </button>
-
-        <span>
-          Página {currentPage + 1} de {totalPages}
-        </span>
-
-        <button
-          onClick={nextPage}
-          disabled={currentPage >= totalPages - 1}
-        >
-          Siguiente →
-        </button>
+    <div className="ul-shell">
+      {/* HEADER */}
+      <div className="ul-header">
+        <div className="ul-header-left">
+          <h2 className="ul-title">Equipo</h2>
+          {orgNombre && <p className="ul-org">{orgNombre}</p>}
+        </div>
+        <div className="ul-header-right">
+          <span className="ul-count">{filtered.length} miembro{filtered.length !== 1 ? 's' : ''}</span>
+          <input
+            className="ul-search"
+            type="text"
+            placeholder="Buscar miembro…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
       </div>
+
+      {/* GRID DE CARDS */}
+      {filtered.length === 0 ? (
+        <div className="ul-state">Sin resultados</div>
+      ) : (
+        <div className="ul-grid">
+          {filtered.map(m => {
+            const roleKey = m.rol?.toLowerCase() || 'miembro';
+            return (
+              <div key={m.id} className="ul-card">
+                {/* Cabecera de la card */}
+                <div className="ul-card-top">
+                  <div className={`ul-avatar ul-avatar--${roleKey}`}>
+                    {m.nombres?.charAt(0)}{m.apellidos?.charAt(0)}
+                  </div>
+                  <span className={`ul-role-pill ${PILL[roleKey] || 'pill--miembro'}`}>
+                    {m.rol || 'MIEMBRO'}
+                  </span>
+                </div>
+
+                {/* Nombre */}
+                <div className="ul-card-name">{m.nombres} {m.apellidos}</div>
+
+                {/* Datos de contacto */}
+                <div className="ul-card-contact">
+                  <div className="ul-contact-row">
+                    <span className="ul-contact-label">Usuario</span>
+                    <span className="ul-contact-value">@{m.username}</span>
+                  </div>
+                  <div className="ul-contact-row">
+                    <span className="ul-contact-label">Email</span>
+                    <span className="ul-contact-value ul-contact-value--email">{m.email}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
 
 export default UsuariosList;
-
