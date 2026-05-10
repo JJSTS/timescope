@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://timescope-api.loca.lt/api/v1';
+const API_URL = '${process.env.REACT_APP_API_URL}';
 
 interface LoginResponse {
   token: string;

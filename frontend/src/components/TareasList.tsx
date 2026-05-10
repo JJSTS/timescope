@@ -51,7 +51,7 @@ const TareasList: React.FC = () => {
 
   useEffect(() => {
     if (!token) return;
-    fetch('http://localhost:8080/api/v1/usuarios/me', {
+    fetch('${process.env.REACT_APP_API_URL}/usuarios/me', {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(r => r.ok ? r.json() : null)
@@ -73,8 +73,8 @@ const TareasList: React.FC = () => {
 
     const isDeveloper = userRole?.toLowerCase() === 'desarrollador';
     const endpoint = isDeveloper
-      ? `http://localhost:8080/api/v1/tareas/me?page=${page}&size=10`
-      : `http://localhost:8080/api/v1/tareas?page=${page}&size=10`;
+      ? `${process.env.REACT_APP_API_URL}/tareas/me?page=${page}&size=10`
+      : `${process.env.REACT_APP_API_URL}/tareas?page=${page}&size=10`;
 
     try {
       const response = await axios.get<PageResponse>(endpoint, {

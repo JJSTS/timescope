@@ -73,7 +73,7 @@ const UserProfile: React.FC = () => {
         }
 
         const headers = { Authorization: `Bearer ${token}` };
-        const BASE = 'http://localhost:8080/api/v1';
+        const BASE = '${process.env.REACT_APP_API_URL}';
 
         // Usuario autenticado
         const userResponse = await fetch(`${BASE}/usuarios/me`, { headers });
@@ -127,7 +127,7 @@ const UserProfile: React.FC = () => {
     const token = localStorage.getItem('token');
     setMemberLoading(true);
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/usuarios/${memberId}`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/usuarios/${memberId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setSelectedMember(await res.json());

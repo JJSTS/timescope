@@ -32,7 +32,7 @@ const OrganizacionModal: React.FC<Props> = ({ orgId, onClose }) => {
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
-          `http://localhost:8080/api/v1/organizaciones?id=${orgId}&size=1`,
+          `${process.env.REACT_APP_API_URL}/organizaciones?id=${orgId}&size=1`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (!res.ok) throw new Error('No se pudo cargar la organización');
@@ -56,7 +56,7 @@ const OrganizacionModal: React.FC<Props> = ({ orgId, onClose }) => {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `http://localhost:8080/api/v1/solicitud/enviar/${encodeURIComponent(org.nombre)}`,
+        `${process.env.REACT_APP_API_URL}/solicitud/enviar/${encodeURIComponent(org.nombre)}`,
         { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
       );
       if (!res.ok) {

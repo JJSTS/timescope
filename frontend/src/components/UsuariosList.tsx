@@ -43,7 +43,7 @@ const UsuariosList: React.FC = () => {
     setError(null);
     try {
       const response = await axios.get<PageResponse>(
-        `http://localhost:8080/api/v1/usuarios?page=${page}&size=10`,
+        `${process.env.REACT_APP_API_URL}/usuarios?page=${page}&size=10`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -83,7 +83,7 @@ const UsuariosList: React.FC = () => {
     if (editingId) {
       try {
         await axios.put(
-          `http://localhost:8080/api/v1/usuarios/${editingId}`,
+          `${process.env.REACT_APP_API_URL}/usuarios/${editingId}`,
           editForm,
           { headers: { Authorization: `Bearer ${token}` } }
         );

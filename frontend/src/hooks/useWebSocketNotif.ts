@@ -16,7 +16,7 @@ export function useWebSocketNotif(
     if (!token) return;
 
     const client = new Client({
-      webSocketFactory: () => new (SockJS as any)('http://localhost:8080/ws'),
+      webSocketFactory: () => new (SockJS as any)(process.env.REACT_APP_WS_URL),
       connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 5000,
       onConnect: () => {

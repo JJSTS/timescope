@@ -25,7 +25,7 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
   useEffect(() => {
     if (!organizacionId) return;
     const token = localStorage.getItem('token');
-    fetch(`http://localhost:8080/api/v1/organizaciones/${organizacionId}/proyectos`, {
+    fetch(`${process.env.REACT_APP_API_URL}/organizaciones/${organizacionId}/proyectos`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(r => r.ok ? r.json() : [])
@@ -50,7 +50,7 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
       if (horasEstimadas) body.horasEstimadas = parseFloat(horasEstimadas);
       if (proyectoId) body.proyectoId = parseInt(proyectoId, 10);
 
-      const res = await fetch('http://localhost:8080/api/v1/tareas', {
+      const res = await fetch('${process.env.REACT_APP_API_URL}/tareas', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

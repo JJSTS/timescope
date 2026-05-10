@@ -108,7 +108,7 @@ const ProyectoDetail: React.FC = () => {
     setError(null);
     try {
       const { data: proy } = await axios.get<Proyecto>(
-        `http://localhost:8080/api/v1/proyectos/${id}`,
+        `${process.env.REACT_APP_API_URL}/proyectos/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setProyecto(proy);
@@ -116,7 +116,7 @@ const ProyectoDetail: React.FC = () => {
       if (proy.usuarios && proy.usuarios.length > 0) {
         try {
           const { data: usersPage } = await axios.get(
-            `http://localhost:8080/api/v1/usuarios?page=0&size=100`,
+            `${process.env.REACT_APP_API_URL}/usuarios?page=0&size=100`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           const todos: Usuario[] = Array.isArray(usersPage) ? usersPage : usersPage.content ?? [];
@@ -138,7 +138,7 @@ const ProyectoDetail: React.FC = () => {
     setTareasLoading(true);
     try {
       const { data } = await axios.get(
-        `http://localhost:8080/api/v1/tareas/proyecto/${id}?page=0&size=100`,
+        `${process.env.REACT_APP_API_URL}/tareas/proyecto/${id}?page=0&size=100`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setTareas(Array.isArray(data) ? data : data.content ?? []);
@@ -157,7 +157,7 @@ const ProyectoDetail: React.FC = () => {
     setAddSuccess(null);
     try {
       await axios.put(
-        `http://localhost:8080/api/v1/proyectos/usuario/${id}?username=${encodeURIComponent(addUsername.trim())}`,
+        `${process.env.REACT_APP_API_URL}/proyectos/usuario/${id}?username=${encodeURIComponent(addUsername.trim())}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -178,7 +178,7 @@ const ProyectoDetail: React.FC = () => {
     setRoleFeedback(prev => ({ ...prev, [usuarioId]: { ok: false, msg: '' } }));
     try {
       await axios.patch(
-        `http://localhost:8080/api/v1/usuarios/${usuarioId}/asingRol?role=${role}`,
+        `${process.env.REACT_APP_API_URL}/usuarios/${usuarioId}/asingRol?role=${role}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

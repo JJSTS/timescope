@@ -103,8 +103,8 @@ const ProyectosList: React.FC = () => {
     setError(null);
     try {
       const url = filtroEstado !== 'Todos'
-        ? `http://localhost:8080/api/v1/proyectos/estado/${filtroEstado}?page=${page}&size=9`
-        : `http://localhost:8080/api/v1/proyectos?page=${page}&size=9`;
+        ? `${process.env.REACT_APP_API_URL}/proyectos/estado/${filtroEstado}?page=${page}&size=9`
+        : `${process.env.REACT_APP_API_URL}/proyectos?page=${page}&size=9`;
       const response = await axios.get<PageResponse>(
         url,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -117,7 +117,7 @@ const ProyectosList: React.FC = () => {
       }
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Error al cargar los proyectos');
-      const response = await axios.get<PageResponse>('https://timescope-api.loca.lt/api/v1/proyectos', {
+      const response = await axios.get<PageResponse>('${process.env.REACT_APP_API_URL}/proyectos', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

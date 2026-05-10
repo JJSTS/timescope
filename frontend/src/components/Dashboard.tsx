@@ -77,14 +77,14 @@ const Dashboard: React.FC = () => {
 
     const token = localStorage.getItem('token');
     if (!token) return;
-    fetch('http://localhost:8080/api/v1/usuarios/me', {
+    fetch('${process.env.REACT_APP_API_URL}/usuarios/me', {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(r => r.ok ? r.json() : null)
       .then(async userData => {
         if (!userData?.organizacionId) return;
         const orgRes = await fetch(
-          `http://localhost:8080/api/v1/organizaciones?id=${userData.organizacionId}&size=1`,
+          `${process.env.REACT_APP_API_URL}/organizaciones?id=${userData.organizacionId}&size=1`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (!orgRes.ok) return;

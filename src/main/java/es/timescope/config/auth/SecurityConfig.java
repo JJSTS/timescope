@@ -40,10 +40,13 @@ public class SecurityConfig {
   @Value("${api.version}")
   private String apiVersion;
 
+  @Value("${cors.allowed-origins:http://localhost:3000,https://timescope-app.loca.lt,https://timescope-api.loca.lt}")
+  private String allowedOriginsRaw;
+
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOriginPatterns(List.of("https://timescope-app.loca.lt", "https://timescope-api.loca.lt"));
+    configuration.setAllowedOriginPatterns(Arrays.asList(allowedOriginsRaw.split(",")));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Total-Count", "Link"));
