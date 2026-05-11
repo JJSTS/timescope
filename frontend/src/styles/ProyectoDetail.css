@@ -42,10 +42,7 @@
 .pd-logo-text {
   font-size: 1.15rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #0f172a;
 }
 
 .pd-back-btn {
@@ -125,6 +122,49 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
+
+.pd-hero-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+.pd-estado-change {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.pd-estado-select {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8rem;
+  color: #374151;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.pd-estado-select:focus { border-color: #667eea; }
+
+.pd-estado-btn {
+  background: #667eea;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.pd-estado-btn:hover:not(:disabled) { background: #5a67d8; }
+.pd-estado-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ---- Métricas rápidas ---- */
 .pd-metrics {

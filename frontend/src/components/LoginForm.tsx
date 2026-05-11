@@ -78,8 +78,9 @@ export const Login: React.FC = () => {
     setError('');
     setLoading(true);
     try {
-      const response = await authService.login(loginData.username, loginData.password, loginData.orgNombre);
-      await login(loginData.username, response.token);
+      const username = loginData.username.trim().toLowerCase();
+      const response = await authService.login(username, loginData.password, loginData.orgNombre);
+      await login(username, response.token);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Error al iniciar sesión');
@@ -97,15 +98,16 @@ export const Login: React.FC = () => {
         setError('Las contraseñas no coinciden');
         return;
       }
+      const username = registerData.username.trim().toLowerCase();
       const response = await authService.register(
         registerData.nombre,
         registerData.apellidos,
         registerData.email,
-        registerData.username,
+        username,
         registerData.password,
         registerData.passwordComprobacion,
       );
-      await login(registerData.username, response.token);
+      await login(username, response.token);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Error al crear la cuenta');

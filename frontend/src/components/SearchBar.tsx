@@ -6,7 +6,7 @@ type Tab = 'perfil' | 'equipo' | 'tareas' | 'proyectos';
 interface SearchResult {
   id: number;
   nombre: string;
-  type: 'proyecto' | 'tarea' | 'organizacion';
+  type: 'proyecto' | 'tarea';
   estado?: string;
 }
 
@@ -20,7 +20,6 @@ const BASE = `${process.env.REACT_APP_API_URL}`;
 const TYPE_LABEL: Record<SearchResult['type'], string> = {
   proyecto: 'Proyecto',
   tarea: 'Tarea',
-  organizacion: 'Organización',
 };
 
 const SearchBar: React.FC<Props> = ({ onNavigate, onSelectOrg }) => {
@@ -60,9 +59,8 @@ const SearchBar: React.FC<Props> = ({ onNavigate, onSelectOrg }) => {
       const headers = { Authorization: `Bearer ${token}` };
       const q = encodeURIComponent(query.trim());
 
-      const [proyRes, orgRes, tarRes] = await Promise.allSettled([
+      const [proyRes, tarRes] = await Promise.allSettled([
         fetch(`${BASE}/proyectos?nombre=${q}&size=5`, { headers }).then(r => r.json()),
-        fetch(`${BASE}/organizaciones?nombre=${q}&size=5`, { headers }).then(r => r.json()),
         fetch(`${BASE}/tareas?size=100`, { headers }).then(r => r.json()),
       ]);
 
@@ -71,11 +69,6 @@ const SearchBar: React.FC<Props> = ({ onNavigate, onSelectOrg }) => {
       if (proyRes.status === 'fulfilled') {
         (proyRes.value?.content ?? []).slice(0, 5).forEach((p: any) =>
           combined.push({ id: p.id, nombre: p.nombre, type: 'proyecto', estado: p.estado })
-        );
-      }
-      if (orgRes.status === 'fulfilled') {
-        (orgRes.value?.content ?? []).slice(0, 5).forEach((o: any) =>
-          combined.push({ id: o.id, nombre: o.nombre, type: 'organizacion' })
         );
       }
       if (tarRes.status === 'fulfilled') {
@@ -98,7 +91,6 @@ const SearchBar: React.FC<Props> = ({ onNavigate, onSelectOrg }) => {
   const handleResultClick = (result: SearchResult) => {
     if (result.type === 'proyecto') onNavigate('proyectos', result.id);
     else if (result.type === 'tarea') onNavigate('tareas', result.id);
-    else if (result.type === 'organizacion') onSelectOrg(result.id);
     clearResults();
     setFocused(false);
   };
@@ -118,7 +110,7 @@ const SearchBar: React.FC<Props> = ({ onNavigate, onSelectOrg }) => {
         <input
           className="sb-input"
           type="text"
-          placeholder="Buscar proyectos, tareas, organizaciones…"
+          placeholder="Buscar proyectos, tareas…"
           value={query}
           onChange={e => setQuery(e.target.value)}
           onFocus={() => setFocused(true)}
@@ -138,7 +130,7 @@ const SearchBar: React.FC<Props> = ({ onNavigate, onSelectOrg }) => {
           {results.length === 0 && !loading && (
             <div className="sb-empty">Sin resultados para "{query}"</div>
           )}
-          {(['proyecto', 'tarea', 'organizacion'] as const).map(type => {
+          {(['proyecto', 'tarea'] as const).map(type => {
             const group = results.filter(r => r.type === type);
             if (group.length === 0) return null;
             return (

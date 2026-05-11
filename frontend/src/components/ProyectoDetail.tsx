@@ -84,6 +84,11 @@ const ProyectoDetail: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'equipo' | 'tareas'>('info');
 
+  // cambiar estado state
+  const [nuevoEstado, setNuevoEstado] = useState('');
+  const [estadoLoading, setEstadoLoading] = useState(false);
+  const [estadoError, setEstadoError] = useState<string | null>(null);
+
   // addUsuario state
   const [addUsername, setAddUsername] = useState('');
   const [addLoading, setAddLoading] = useState(false);
@@ -171,19 +176,39 @@ const ProyectoDetail: React.FC = () => {
     }
   };
 
+  const handleCambiarEstado = async () => {
+    if (!nuevoEstado) return;
+    setEstadoLoading(true);
+    setEstadoError(null);
+    try {
+      await axios.patch(
+        `${process.env.REACT_APP_API_URL}/proyectos/${id}/estado?estado=${nuevoEstado}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setProyecto(prev => prev ? { ...prev, estado: nuevoEstado } : prev);
+      setNuevoEstado('');
+    } catch (err: any) {
+      setEstadoError(err.response?.data?.message || 'No se pudo cambiar el estado.');
+    } finally {
+      setEstadoLoading(false);
+    }
+  };
+
   const handleAddUsuario = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!addUsername.trim()) return;
+    const usernameNorm = addUsername.trim().toLowerCase();
+    if (!usernameNorm) return;
     setAddLoading(true);
     setAddError(null);
     setAddSuccess(null);
     try {
       await axios.put(
-        `${process.env.REACT_APP_API_URL}/proyectos/usuario/${id}?username=${encodeURIComponent(addUsername.trim())}`,
+        `${process.env.REACT_APP_API_URL}/proyectos/usuario/${id}?username=${encodeURIComponent(usernameNorm)}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setAddSuccess(`Usuario "${addUsername.trim()}" añadido correctamente.`);
+      setAddSuccess(`Usuario "${usernameNorm}" añadido correctamente.`);
       setAddUsername('');
       fetchProyecto();
     } catch (err: any) {
@@ -273,12 +298,41 @@ const ProyectoDetail: React.FC = () => {
               <span className="pd-hero-lider">Líder: {proyecto.liderNombre}</span>
             )}
           </div>
-          <span
-            className="pd-hero-badge"
-            style={{ background: meta?.bg ?? '#f3f4f6', color: meta?.color ?? '#6b7280' }}
-          >
-            {meta?.label ?? proyecto.estado ?? '—'}
-          </span>
+          <div className="pd-hero-right">
+            <span
+              className="pd-hero-badge"
+              style={{ background: meta?.bg ?? '#f3f4f6', color: meta?.color ?? '#6b7280' }}
+            >
+              {meta?.label ?? proyecto.estado ?? '—'}
+            </span>
+            {(isDirector || isLider) && (
+              <div className="pd-estado-change">
+                <select
+                  className="pd-estado-select"
+                  value={nuevoEstado}
+                  onChange={e => { setNuevoEstado(e.target.value); setEstadoError(null); }}
+                  disabled={estadoLoading}
+                >
+                  <option value="">Cambiar estado…</option>
+                  {['ACTIVO', 'COMPLETADO', 'SUSPENDIDO']
+                    .filter(e => e !== proyecto.estado)
+                    .map(e => (
+                      <option key={e} value={e}>
+                        {e.charAt(0) + e.slice(1).toLowerCase()}
+                      </option>
+                    ))}
+                </select>
+                <button
+                  className="pd-estado-btn"
+                  onClick={handleCambiarEstado}
+                  disabled={estadoLoading || !nuevoEstado}
+                >
+                  {estadoLoading ? '…' : 'Aplicar'}
+                </button>
+                {estadoError && <p className="pd-add-error">{estadoError}</p>}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Métricas rápidas */}
