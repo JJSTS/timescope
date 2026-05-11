@@ -15,6 +15,7 @@ export interface NotificacionDto {
   tipo: TipoNotificacion;
   mensaje: string;
   fecha: string;
+  solicitudId?: number;
 }
 
 const authHeaders = () => ({

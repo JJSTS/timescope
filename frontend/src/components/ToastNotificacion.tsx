@@ -11,7 +11,7 @@ interface Props {
   onRemove: (id: number) => void;
 }
 
-const DURACION_MS = 5000;
+const DURACION_MS = 7000;
 
 const ToastSingle: React.FC<{ toast: ToastItem; onRemove: (id: number) => void }> = ({ toast, onRemove }) => {
   useEffect(() => {

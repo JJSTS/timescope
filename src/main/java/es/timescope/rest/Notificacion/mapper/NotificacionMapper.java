@@ -12,23 +12,29 @@ import java.util.List;
 @Component
 public class NotificacionMapper {
 
-    public Notificacion toNotificacion (Usuario usuario, String mensaje, Tipo tipo) {
+    public Notificacion toNotificacion(Usuario usuario, String mensaje, Tipo tipo) {
+        return toNotificacion(usuario, mensaje, tipo, null);
+    }
+
+    public Notificacion toNotificacion(Usuario usuario, String mensaje, Tipo tipo, Long solicitudId) {
         return Notificacion.builder()
                 .usuario(usuario)
                 .mensaje(mensaje)
                 .tipo(tipo)
+                .solicitudId(solicitudId)
                 .leido(false)
                 .fechaCreada(LocalDateTime.now())
                 .build();
     }
 
-    public NotificacionResponseDto toNotificacionResponseDto (Notificacion notificacion) {
+    public NotificacionResponseDto toNotificacionResponseDto(Notificacion notificacion) {
         return NotificacionResponseDto.builder()
                 .id(notificacion.getId())
                 .username(notificacion.getUsuario().getUsername())
                 .tipo(notificacion.getTipo())
                 .mensaje(notificacion.getMensaje())
                 .fecha(notificacion.getFechaCreada())
+                .solicitudId(notificacion.getSolicitudId())
                 .build();
     }
 

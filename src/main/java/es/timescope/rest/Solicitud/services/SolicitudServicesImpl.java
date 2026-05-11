@@ -69,12 +69,13 @@ public class SolicitudServicesImpl implements SolicitudServices {
                 .organizacion(organizacion)
                 .build();
 
-        solicitudRepository.save(solicitud);
+        Solicitud solicitudGuardada = solicitudRepository.save(solicitud);
 
         notificacionService.enviarNotificacion(
                 organizacion.getAdmin().getUsername(),
-                usuario.getNombres()+ " " + usuario.getApellidos() + " ha enviado una solicitud para unirse!",
-                Tipo.SOLICITUD_RECIBIDA
+                usuario.getNombres() + " " + usuario.getApellidos() + " ha enviado una solicitud para unirse!",
+                Tipo.SOLICITUD_RECIBIDA,
+                solicitudGuardada.getId()
         );
 
         return solicitudMapper.toResponseDto(solicitud);

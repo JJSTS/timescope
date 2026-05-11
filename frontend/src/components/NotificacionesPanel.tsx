@@ -25,7 +25,8 @@ const TIPO_ICONS: Record<TipoNotificacion, string> = {
 };
 
 function formatFecha(fechaStr: string): string {
-  const fecha = new Date(fechaStr);
+  const fechaUtc = fechaStr.endsWith('Z') || fechaStr.includes('+') ? fechaStr : fechaStr + 'Z';
+  const fecha = new Date(fechaUtc);
   const ahora = new Date();
   const diffMin = Math.floor((ahora.getTime() - fecha.getTime()) / 60000);
   const diffH = Math.floor(diffMin / 60);
@@ -140,11 +141,8 @@ const NotificacionesPanel: React.FC<Props> = ({ onClose, onPendientesChange }) =
 
   // Para emparejar la i-ésima notificación SOLICITUD_RECIBIDA con la i-ésima solicitud pendiente
   const getSolicitudParaNotif = (notif: NotificacionDto): SolicitudDto | null => {
-    if (notif.tipo !== 'SOLICITUD_RECIBIDA') return null;
-    const idx = pendientes
-      .filter(n => n.tipo === 'SOLICITUD_RECIBIDA')
-      .indexOf(notif);
-    return solicitudes[idx] ?? null;
+    if (notif.tipo !== 'SOLICITUD_RECIBIDA' || !notif.solicitudId) return null;
+    return solicitudes.find(s => s.id === notif.solicitudId) ?? null;
   };
 
   const lista = tab === 'pendientes' ? pendientes : historial;
