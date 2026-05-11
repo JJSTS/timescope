@@ -4,6 +4,35 @@
 
 ---
 
+### [2026-05-12] — Eliminar usuario de un proyecto (con sus tareas asignadas)
+
+**Backend**
+- `TareasRepository`: nueva query `findByProyectoIdAndUsuarioId(Long, Long)`.
+- `ProyectoServices` + `ProyectoServicesImpl`: nuevo método `removeUsuario(Long proyectoId, Long usuarioId)` — quita al usuario de la lista del proyecto, guarda, y borra todas sus tareas en ese proyecto.
+- `ProyectoServicesImpl`: inyectado `TareasRepository`.
+- `ProyectosRestController`: nuevo endpoint `DELETE /proyectos/{id}/usuario/{usuarioId}` con `@PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")`.
+
+**Frontend**
+- `ProyectoDetail.tsx`: estado `confirmRemoveUser`, `removingUser`, `removeUserError` y función `handleRemoveUsuario`. En el tab Equipo, cada tarjeta de miembro (excepto el propio usuario) muestra botón "Quitar del proyecto" con confirmación de dos pasos.
+- `ProyectoDetail.css`: estilos `.pd-remove-user-btn`, `.pd-remove-user-confirm`, `.pd-remove-user-text`.
+
+---
+
+### [2026-05-12] — Borrado de tareas y proyectos para DIRECTOR y LIDER
+
+**Backend**
+- `TareasServices` + `TareasServicesImpl`: nuevo método `deleteById(Long id)`.
+- `TareasRestController`: nuevo endpoint `DELETE /tareas/{id}` con `@PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")`.
+- `ProyectosRestController`: `DELETE /proyectos/{id}` ampliado de solo DIRECTOR a `hasAnyRole('DIRECTOR','LIDER')`.
+
+**Frontend**
+- `TaskDetailModal.tsx`: botón "Eliminar" con confirmación en dos pasos (visible para DIRECTOR/LIDER). Llama a `DELETE /tareas/{id}` y cierra el modal tras el borrado.
+- `ProyectoDetail.tsx`: botón "Eliminar proyecto" con confirmación en dos pasos (visible para DIRECTOR/LIDER). Llama a `DELETE /proyectos/{id}` y redirige al dashboard.
+- `TaskDetailModal.css`: estilos `.task-action-btn--eliminar`, `.task-delete-confirm`, `.task-delete-confirm-text`.
+- `ProyectoDetail.css`: estilos `.pd-delete-btn`, `.pd-delete-confirm`, `.pd-delete-confirm-text`, `.pd-delete-cancel-btn`.
+
+---
+
 ### [2026-05-11] — Mover gestión de roles a UsuariosList
 
 - `UsuariosList.tsx`: añadidos `useAuth`, `ROLE_LEVEL`, estados de rol (`roleSelections`, `roleLoading`, `roleFeedback`), lógica `canManageRoles`/`canChangeRoleOf`/`rolesAsignables`, función `handleAsignarRol` y UI de select + botón "Asignar" en cada tarjeta de miembro.

@@ -244,6 +244,35 @@
   background: #fecaca;
 }
 
+/* Eliminar tarea */
+.task-action-btn--eliminar {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+.task-action-btn--eliminar:hover:not(:disabled) {
+  background: #fecaca;
+}
+
+.task-delete-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+}
+
+.task-delete-confirm-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #991b1b;
+  flex: 1;
+  min-width: 120px;
+}
+
 /* Editar tarea */
 .task-edit-btn {
   width: 100%;

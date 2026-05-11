@@ -137,6 +137,14 @@ public class TareasRestController {
         return ResponseEntity.ok(tareasServices.updateTarea(id, tareaUpdateDto));
     }
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
+    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+        log.info("Eliminando tarea con id: {}", id);
+        tareasServices.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/addTarea")
     @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
     public ResponseEntity<TareaResponseDto> addTarea(@Valid @RequestBody TareaAddDto tareaAddDto) {

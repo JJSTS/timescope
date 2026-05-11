@@ -16,12 +16,12 @@ const TIPO_LABELS: Record<TipoNotificacion, string> = {
   EQUIPO_UNIDO: 'Equipo unido',
 };
 
-const TIPO_ICONS: Record<TipoNotificacion, string> = {
-  SOLICITUD_RECIBIDA: '📩',
-  SOLICITUD_ACEPTADA: '✅',
-  SOLICITUD_RECHAZADA: '❌',
-  TAREA_ASIGNADA: '📋',
-  EQUIPO_UNIDO: '👥',
+const TIPO_ICON_CLASS: Record<TipoNotificacion, string> = {
+  SOLICITUD_RECIBIDA:  'bi bi-envelope-arrow-down-fill',
+  SOLICITUD_ACEPTADA:  'bi bi-check-circle-fill',
+  SOLICITUD_RECHAZADA: 'bi bi-x-circle-fill',
+  TAREA_ASIGNADA:      'bi bi-clipboard2-check-fill',
+  EQUIPO_UNIDO:        'bi bi-people-fill',
 };
 
 function formatFecha(fechaStr: string): string {
@@ -192,7 +192,7 @@ const NotificacionesPanel: React.FC<Props> = ({ onClose, onPendientesChange }) =
           return (
             <div key={notif.id} className="notif-item">
               <div className="notif-item-icon" aria-hidden="true">
-                {TIPO_ICONS[notif.tipo]}
+                <i className={TIPO_ICON_CLASS[notif.tipo]} />
               </div>
 
               <div className="notif-item-body">

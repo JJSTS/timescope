@@ -190,6 +190,13 @@ public class TareasServicesImpl implements TareasServices {
     }
 
     @Override
+    public void deleteById(Long id) {
+        log.info("Eliminando tarea con id: {}", id);
+        tareasRepository.findById(id).orElseThrow(() -> new TareaNotFound(id));
+        tareasRepository.deleteById(id);
+    }
+
+    @Override
     public TareaResponseDto addTarea(TareaAddDto tareaAddDto) {
         log.info("Asignando tarea con id '{}' al usuario con username: {}", tareaAddDto.getTareaId(), tareaAddDto.getUsername());
         

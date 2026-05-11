@@ -140,8 +140,18 @@ public class ProyectosRestController {
         return ResponseEntity.ok(proyectoServices.cambiarEstado(id, estado));
     }
 
+    @DeleteMapping("/{id}/usuario/{usuarioId}")
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
+    public ResponseEntity<Void> removeUsuario(
+            @PathVariable Long id,
+            @PathVariable Long usuarioId) {
+        log.info("Eliminando usuario {} del proyecto {}", usuarioId, id);
+        proyectoServices.removeUsuario(id, usuarioId);
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('DIRECTOR')")
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
         log.info("Eliminando proyecto con id: {}", id);
 

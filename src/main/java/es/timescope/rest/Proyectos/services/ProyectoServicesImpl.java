@@ -13,6 +13,7 @@ import es.timescope.rest.Proyectos.repositories.ProyectosRepository;
 import es.timescope.rest.Proyectos.exceptions.ProyectoNotFoundException;
 import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
+import es.timescope.rest.Tareas.repositories.TareasRepository;
 import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
 
 import jakarta.persistence.criteria.Join;
@@ -37,6 +38,7 @@ import java.util.Optional;
 public class ProyectoServicesImpl implements ProyectoServices {
     private final ProyectosRepository proyectosRepository;
     private final UsuariosRepository usuariosRepository;
+    private final TareasRepository tareasRepository;
     private final ProyectosMapper proyectoMapper;
     private final NotificacionService notificacionService;
     private final AuthUtils authUtils;
@@ -191,6 +193,33 @@ public class ProyectoServicesImpl implements ProyectoServices {
     public void deleteById(Long id) {
         proyectosRepository.findById(id).orElseThrow(() -> new ProyectoNotFoundException(id));
         proyectosRepository.deleteById(id);
+    }
+
+    @Override
+    public void removeUsuario(Long proyectoId, Long usuarioId) {
+        log.info("Eliminando usuario {} del proyecto {}", usuarioId, proyectoId);
+        Proyecto proyecto = proyectosRepository.findById(proyectoId)
+                .orElseThrow(() -> new ProyectoNotFoundException(proyectoId));
+
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+        if (!tieneAccesoTotal()) {
+            boolean estaEnProyecto = proyecto.getUsuarios().stream()
+                    .anyMatch(u -> u.getId().equals(caller.getId()));
+            if (!estaEnProyecto) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "Solo puedes gestionar proyectos en los que participas");
+            }
+        }
+
+        Usuario usuario = usuariosRepository.findById(usuarioId)
+                .orElseThrow(() -> new ProyectoBadRequestException("Usuario con id " + usuarioId + " no encontrado"));
+
+        proyecto.getUsuarios().remove(usuario);
+        proyectosRepository.save(proyecto);
+
+        // Borrar las tareas del usuario en este proyecto
+        tareasRepository.findByProyectoIdAndUsuarioId(proyectoId, usuarioId)
+                .forEach(t -> tareasRepository.deleteById(t.getId()));
     }
 
     private List<Usuario> checkUsuarios(List<Long> usuariosIds) {

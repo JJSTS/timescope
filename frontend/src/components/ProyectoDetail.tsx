@@ -89,11 +89,21 @@ const ProyectoDetail: React.FC = () => {
   const [estadoLoading, setEstadoLoading] = useState(false);
   const [estadoError, setEstadoError] = useState<string | null>(null);
 
+  // eliminar proyecto state
+  const [confirmDeleteProy, setConfirmDeleteProy] = useState(false);
+  const [deletingProy, setDeletingProy] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   // addUsuario state
   const [addUsername, setAddUsername] = useState('');
   const [addLoading, setAddLoading] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
   const [addSuccess, setAddSuccess] = useState<string | null>(null);
+
+  // eliminar usuario state
+  const [confirmRemoveUser, setConfirmRemoveUser] = useState<number | null>(null);
+  const [removingUser, setRemovingUser] = useState(false);
+  const [removeUserError, setRemoveUserError] = useState<string | null>(null);
 
   // asignarRol state
   const [roleSelections, setRoleSelections] = useState<Record<number, string>>({});
@@ -241,6 +251,42 @@ const ProyectoDetail: React.FC = () => {
     }
   };
 
+  const handleRemoveUsuario = async (usuarioId: number) => {
+    setRemovingUser(true);
+    setRemoveUserError(null);
+    try {
+      await axios.delete(
+        `${process.env.REACT_APP_API_URL}/proyectos/${id}/usuario/${usuarioId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setConfirmRemoveUser(null);
+      fetchProyecto();
+      fetchTareas();
+    } catch (err: any) {
+      setRemoveUserError(err.response?.data?.message || 'No se pudo eliminar al usuario.');
+      setConfirmRemoveUser(null);
+    } finally {
+      setRemovingUser(false);
+    }
+  };
+
+  const handleDeleteProyecto = async () => {
+    setDeletingProy(true);
+    setDeleteError(null);
+    try {
+      await axios.delete(
+        `${process.env.REACT_APP_API_URL}/proyectos/${id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      navigate('/dashboard');
+    } catch (err: any) {
+      setDeleteError(err.response?.data?.message || 'No se pudo eliminar el proyecto.');
+      setConfirmDeleteProy(false);
+    } finally {
+      setDeletingProy(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="pd-page">
@@ -332,6 +378,29 @@ const ProyectoDetail: React.FC = () => {
                 {estadoError && <p className="pd-add-error">{estadoError}</p>}
               </div>
             )}
+
+            {/* Eliminar proyecto */}
+            {(isDirector || isLider) && !confirmDeleteProy && (
+              <button
+                className="pd-delete-btn"
+                onClick={() => setConfirmDeleteProy(true)}
+                disabled={deletingProy}
+              >
+                <i className="bi bi-trash3" /> Eliminar proyecto
+              </button>
+            )}
+            {(isDirector || isLider) && confirmDeleteProy && (
+              <div className="pd-delete-confirm">
+                <span className="pd-delete-confirm-text">¿Eliminar este proyecto?</span>
+                <button className="pd-delete-btn" onClick={handleDeleteProyecto} disabled={deletingProy}>
+                  {deletingProy ? 'Eliminando…' : 'Sí, eliminar'}
+                </button>
+                <button className="pd-delete-cancel-btn" onClick={() => setConfirmDeleteProy(false)} disabled={deletingProy}>
+                  Cancelar
+                </button>
+              </div>
+            )}
+            {deleteError && <p className="pd-add-error">{deleteError}</p>}
           </div>
         </div>
 
@@ -512,6 +581,39 @@ const ProyectoDetail: React.FC = () => {
                           <p className={roleFeedback[u.id].ok ? 'pd-add-success' : 'pd-add-error'}>
                             {roleFeedback[u.id].msg}
                           </p>
+                        )}
+
+                        {/* Eliminar usuario del proyecto */}
+                        {(isDirector || isLider) && u.username !== currentUsername && (
+                          confirmRemoveUser === u.id ? (
+                            <div className="pd-remove-user-confirm">
+                              <span className="pd-remove-user-text">¿Quitar y borrar sus tareas?</span>
+                              <button
+                                className="pd-delete-btn"
+                                onClick={() => handleRemoveUsuario(u.id)}
+                                disabled={removingUser}
+                              >
+                                {removingUser ? 'Quitando…' : 'Sí, quitar'}
+                              </button>
+                              <button
+                                className="pd-delete-cancel-btn"
+                                onClick={() => { setConfirmRemoveUser(null); setRemoveUserError(null); }}
+                                disabled={removingUser}
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              className="pd-remove-user-btn"
+                              onClick={() => setConfirmRemoveUser(u.id)}
+                            >
+                              <i className="bi bi-person-dash" /> Quitar del proyecto
+                            </button>
+                          )
+                        )}
+                        {removeUserError && confirmRemoveUser === null && (
+                          <p className="pd-add-error">{removeUserError}</p>
                         )}
                       </div>
                     </div>
