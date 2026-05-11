@@ -111,17 +111,6 @@ const TareasList: React.FC = () => {
     }
   };
 
-  if (loading) return (
-    <div className="tl-state">
-      <span className="tl-state__dot tl-state__dot--loading" />
-      Cargando tareas…
-    </div>
-  );
-  if (error) return <div className="tl-state tl-state--error">{error}</div>;
-  if (tareas.length === 0) return (
-    <div className="tl-state">Sin tareas disponibles</div>
-  );
-
   return (
     <>
       <div className="tl-shell">
@@ -141,6 +130,20 @@ const TareasList: React.FC = () => {
             )}
           </div>
         </header>
+
+        {loading && (
+          <div className="tl-state">
+            <span className="tl-state__dot tl-state__dot--loading" />
+            Cargando tareas…
+          </div>
+        )}
+        {!loading && error && <div className="tl-state tl-state--error">{error}</div>}
+        {!loading && !error && tareas.length === 0 && (
+          <div className="tl-state">Sin tareas disponibles</div>
+        )}
+
+        {/* TABLA — solo si hay datos */}
+        {!loading && !error && tareas.length > 0 && <>
 
         {/* COLUMNAS */}
         <div className="tl-cols-label">
@@ -204,6 +207,8 @@ const TareasList: React.FC = () => {
             Siguiente <i className="bi bi-arrow-right" />
           </button>
         </footer>
+
+        </>}
 
       </div>
 

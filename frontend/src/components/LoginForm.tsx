@@ -68,7 +68,7 @@ export const Login: React.FC = () => {
 
   const handleRegisterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setRegisterData(prev => ({ ...prev, [name]: value }));
+    setRegisterData(prev => ({ ...prev, [name]: name === 'username' ? value.toLowerCase() : value }));
   };
 
   const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

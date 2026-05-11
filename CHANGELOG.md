@@ -4,6 +4,14 @@
 
 ---
 
+### [2026-05-11] — Mejoras de responsividad móvil en Dashboard
+
+- `Dashboard.tsx`: añadido estado `showMobileMenu`, botón hamburguesa (`.menu-btn.mobile-only`) y menú desplegable móvil con los tabs de navegación e ícono de logout.
+- `Dashboard.tsx`: `SearchBar` envuelto en `.header-search-wrapper` para poder ocultarlo en móvil.
+- `Dashboard.css`: clases `.mobile-only` y `.header-search-wrapper`; breakpoints rediseñados a 768 px y 480 px: oculta `.header-nav` y barra de búsqueda, muestra hamburguesa, reduce padding del header y del contenido, y ajusta el menú móvil a ancho completo.
+
+---
+
 ### [2026-05-08] — Implementación de roles y permisos
 
 **1. Auto-asignación de DIRECTOR al crear organización**

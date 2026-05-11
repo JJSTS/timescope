@@ -22,6 +22,7 @@ const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'perfil' | 'tareas' | 'proyectos' | 'equipo'>('perfil');
   const [notifOpen, setNotifOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showCrearOrg, setShowCrearOrg] = useState(false);
@@ -278,7 +279,9 @@ const Dashboard: React.FC = () => {
         </div>
 
         <div className="header-right-section">
-          <SearchBar onNavigate={setActiveTab} onSelectOrg={setSelectedOrgId} />
+          <div className="header-search-wrapper">
+            <SearchBar onNavigate={setActiveTab} onSelectOrg={setSelectedOrgId} />
+          </div>
 
           <div style={{ position: 'relative' }}>
             <button
@@ -313,7 +316,44 @@ const Dashboard: React.FC = () => {
               </button>
             </div>
           </div>
+
+          <button
+            type="button"
+            className="menu-btn mobile-only"
+            aria-label="Menú"
+            aria-expanded={showMobileMenu}
+            onClick={() => setShowMobileMenu(prev => !prev)}
+          >
+            <i className={`bi ${showMobileMenu ? 'bi-x-lg' : 'bi-list'} dashboard-icon`} />
+          </button>
         </div>
+
+        {showMobileMenu && (
+          <div className="mobile-menu">
+            <button className={`mobile-menu-item ${activeTab === 'perfil' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('perfil'); setShowMobileMenu(false); }}>
+              <i className="bi bi-person" /> Mi Perfil
+            </button>
+            <button className={`mobile-menu-item ${activeTab === 'tareas' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('tareas'); setShowMobileMenu(false); }}>
+              <i className="bi bi-check2-square" /> Tareas
+            </button>
+            <button className={`mobile-menu-item ${activeTab === 'proyectos' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('proyectos'); setShowMobileMenu(false); }}>
+              <i className="bi bi-folder" /> Proyectos
+            </button>
+            {userRole?.toLowerCase() !== 'desarrollador' && (
+              <button className={`mobile-menu-item ${activeTab === 'equipo' ? 'active' : ''}`}
+                onClick={() => { setActiveTab('equipo'); setShowMobileMenu(false); }}>
+                <i className="bi bi-people" /> Equipo
+              </button>
+            )}
+            <hr />
+            <button className="mobile-menu-item logout" onClick={logout}>
+              <i className="bi bi-box-arrow-right" /> Cerrar sesión
+            </button>
+          </div>
+        )}
       </header>
 
       <main className="dashboard-content">

@@ -48,8 +48,10 @@ interface MemberDetail {
   tareas?: string[];
 }
 
+const ROLE_LEVEL: Record<string, number> = { DIRECTOR: 3, LIDER: 2, COORDINADOR: 1, DESARROLLADOR: 1 };
+
 const UserProfile: React.FC = () => {
-  const { username } = useAuth();
+  const { username, userRole } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -60,6 +62,43 @@ const UserProfile: React.FC = () => {
   const [selectedMember, setSelectedMember] = useState<MemberDetail | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [memberLoading, setMemberLoading] = useState(false);
+
+  // --- ROLE MANAGEMENT ---
+  const [roleSelections, setRoleSelections] = useState<Record<number, string>>({});
+  const [roleLoading, setRoleLoading] = useState<Record<number, boolean>>({});
+  const [roleFeedback, setRoleFeedback] = useState<Record<number, { ok: boolean; msg: string }>>({});
+
+  const isDirector = userRole?.toUpperCase() === 'DIRECTOR';
+  const isLider    = userRole?.toUpperCase() === 'LIDER';
+  const canManageRoles = isDirector || isLider;
+  const rolesAsignables = canManageRoles ? ['LIDER', 'DESARROLLADOR'] : [];
+  const callerLevel = ROLE_LEVEL[userRole?.toUpperCase() ?? ''] ?? 0;
+  const canChangeRoleOf = (m: TeamMember) => {
+    if (m.username === username) return false;
+    return (ROLE_LEVEL[m.rol?.toUpperCase() ?? ''] ?? 0) < callerLevel;
+  };
+
+  const handleAsignarRol = async (miembroId: number) => {
+    const role = roleSelections[miembroId];
+    if (!role) return;
+    setRoleLoading(prev => ({ ...prev, [miembroId]: true }));
+    setRoleFeedback(prev => ({ ...prev, [miembroId]: { ok: false, msg: '' } }));
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(
+        `${process.env.REACT_APP_API_URL}/usuarios/${miembroId}/asingRol?role=${role}`,
+        { method: 'PATCH', headers: { Authorization: `Bearer ${token}` } }
+      );
+      setRoleFeedback(prev => ({ ...prev, [miembroId]: { ok: true, msg: 'Rol asignado correctamente.' } }));
+      setTeamMembers(prev => prev.map(m => m.id === miembroId ? { ...m, rol: role } : m));
+      setRoleSelections(prev => ({ ...prev, [miembroId]: '' }));
+    } catch {
+      setRoleFeedback(prev => ({ ...prev, [miembroId]: { ok: false, msg: 'No se pudo asignar el rol.' } }));
+    } finally {
+      setRoleLoading(prev => ({ ...prev, [miembroId]: false }));
+    }
+  };
+  // -----------------------
 
   // --- FILTER STATE ---
   const [filterOpen, setFilterOpen] = useState(false);
@@ -450,38 +489,61 @@ const UserProfile: React.FC = () => {
                   <h3 className="team-card-title">Equipo</h3>
                   {orgNombre && <p className="team-card-org">{orgNombre}</p>}
                 </div>
-                <span className="team-count-badge">
-                  {teamMembers.filter(m => m.rol === 'DIRECTOR' || m.rol === 'LIDER').length}
-                </span>
+                <span className="team-count-badge">{teamMembers.length}</span>
               </div>
               <div className="team-members-list">
-                {(() => {
-                  const ROLE_ORDER: Record<string, number> = { DIRECTOR: 0, LIDER: 1 };
-                  const lideres = teamMembers
-                    .filter(m => m.rol === 'DIRECTOR' || m.rol === 'LIDER')
-                    .sort((a, b) => (ROLE_ORDER[a.rol ?? ''] ?? 9) - (ROLE_ORDER[b.rol ?? ''] ?? 9));
-                  return lideres.length === 0 ? (
-                    <p className="team-empty">Sin líderes registrados</p>
-                  ) : lideres.map(member => (
-                  <div
-                    key={member.id}
-                    className="team-member-row"
-                    onClick={() => handleMemberClick(member.id)}
-                    title={`Ver perfil de ${member.nombres}`}
-                  >
-                    <div className={`team-member-avatar role-${member.rol?.toLowerCase() || 'miembro'}`}>
-                      {member.nombres?.charAt(0)}{member.apellidos?.charAt(0)}
-                    </div>
-                    <div className="team-member-info">
-                      <span className="team-member-name">{member.nombres} {member.apellidos}</span>
-                      <span className="team-member-username">@{member.username}</span>
-                    </div>
-                    <span className={`team-role-pill role-pill--${member.rol?.toLowerCase() || 'miembro'}`}>
-                      {member.rol || 'MIEMBRO'}
-                    </span>
-                  </div>
-                  ));
-                })()}
+                {teamMembers.length === 0 ? (
+                  <p className="team-empty">Sin miembros registrados</p>
+                ) : (
+                  [...teamMembers]
+                    .sort((a, b) => (ROLE_LEVEL[b.rol?.toUpperCase() ?? ''] ?? 0) - (ROLE_LEVEL[a.rol?.toUpperCase() ?? ''] ?? 0))
+                    .map(member => (
+                      <div key={member.id} className="team-member-row">
+                        <div
+                          className={`team-member-avatar role-${member.rol?.toLowerCase() || 'miembro'}`}
+                          onClick={() => handleMemberClick(member.id)}
+                          title={`Ver perfil de ${member.nombres}`}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {member.nombres?.charAt(0)}{member.apellidos?.charAt(0)}
+                        </div>
+                        <div className="team-member-info">
+                          <span className="team-member-name">{member.nombres} {member.apellidos}</span>
+                          <span className="team-member-username">@{member.username}</span>
+                          {canManageRoles && canChangeRoleOf(member) && (
+                            <div className="team-role-assign">
+                              <select
+                                className="team-role-select"
+                                value={roleSelections[member.id] ?? ''}
+                                onChange={e => setRoleSelections(prev => ({ ...prev, [member.id]: e.target.value }))}
+                                disabled={roleLoading[member.id]}
+                              >
+                                <option value="">Cambiar rol…</option>
+                                {rolesAsignables.map(r => (
+                                  <option key={r} value={r}>{r}</option>
+                                ))}
+                              </select>
+                              <button
+                                className="team-role-btn"
+                                onClick={() => handleAsignarRol(member.id)}
+                                disabled={roleLoading[member.id] || !roleSelections[member.id]}
+                              >
+                                {roleLoading[member.id] ? '…' : 'Asignar'}
+                              </button>
+                              {roleFeedback[member.id]?.msg && (
+                                <span className={roleFeedback[member.id].ok ? 'team-role-ok' : 'team-role-err'}>
+                                  {roleFeedback[member.id].msg}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <span className={`team-role-pill role-pill--${member.rol?.toLowerCase() || 'miembro'}`}>
+                          {member.rol || 'MIEMBRO'}
+                        </span>
+                      </div>
+                    ))
+                )}
               </div>
             </div>
           </aside>
