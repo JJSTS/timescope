@@ -63,43 +63,6 @@ const UserProfile: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [memberLoading, setMemberLoading] = useState(false);
 
-  // --- ROLE MANAGEMENT ---
-  const [roleSelections, setRoleSelections] = useState<Record<number, string>>({});
-  const [roleLoading, setRoleLoading] = useState<Record<number, boolean>>({});
-  const [roleFeedback, setRoleFeedback] = useState<Record<number, { ok: boolean; msg: string }>>({});
-
-  const isDirector = userRole?.toUpperCase() === 'DIRECTOR';
-  const isLider    = userRole?.toUpperCase() === 'LIDER';
-  const canManageRoles = isDirector || isLider;
-  const rolesAsignables = canManageRoles ? ['LIDER', 'DESARROLLADOR'] : [];
-  const callerLevel = ROLE_LEVEL[userRole?.toUpperCase() ?? ''] ?? 0;
-  const canChangeRoleOf = (m: TeamMember) => {
-    if (m.username === username) return false;
-    return (ROLE_LEVEL[m.rol?.toUpperCase() ?? ''] ?? 0) < callerLevel;
-  };
-
-  const handleAsignarRol = async (miembroId: number) => {
-    const role = roleSelections[miembroId];
-    if (!role) return;
-    setRoleLoading(prev => ({ ...prev, [miembroId]: true }));
-    setRoleFeedback(prev => ({ ...prev, [miembroId]: { ok: false, msg: '' } }));
-    try {
-      const token = localStorage.getItem('token');
-      await fetch(
-        `${process.env.REACT_APP_API_URL}/usuarios/${miembroId}/asingRol?role=${role}`,
-        { method: 'PATCH', headers: { Authorization: `Bearer ${token}` } }
-      );
-      setRoleFeedback(prev => ({ ...prev, [miembroId]: { ok: true, msg: 'Rol asignado correctamente.' } }));
-      setTeamMembers(prev => prev.map(m => m.id === miembroId ? { ...m, rol: role } : m));
-      setRoleSelections(prev => ({ ...prev, [miembroId]: '' }));
-    } catch {
-      setRoleFeedback(prev => ({ ...prev, [miembroId]: { ok: false, msg: 'No se pudo asignar el rol.' } }));
-    } finally {
-      setRoleLoading(prev => ({ ...prev, [miembroId]: false }));
-    }
-  };
-  // -----------------------
-
   // --- FILTER STATE ---
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterFecha, setFilterFecha] = useState<'asc' | 'desc' | 'none'>('none');
@@ -510,33 +473,6 @@ const UserProfile: React.FC = () => {
                         <div className="team-member-info">
                           <span className="team-member-name">{member.nombres} {member.apellidos}</span>
                           <span className="team-member-username">@{member.username}</span>
-                          {canManageRoles && canChangeRoleOf(member) && (
-                            <div className="team-role-assign">
-                              <select
-                                className="team-role-select"
-                                value={roleSelections[member.id] ?? ''}
-                                onChange={e => setRoleSelections(prev => ({ ...prev, [member.id]: e.target.value }))}
-                                disabled={roleLoading[member.id]}
-                              >
-                                <option value="">Cambiar rol…</option>
-                                {rolesAsignables.map(r => (
-                                  <option key={r} value={r}>{r}</option>
-                                ))}
-                              </select>
-                              <button
-                                className="team-role-btn"
-                                onClick={() => handleAsignarRol(member.id)}
-                                disabled={roleLoading[member.id] || !roleSelections[member.id]}
-                              >
-                                {roleLoading[member.id] ? '…' : 'Asignar'}
-                              </button>
-                              {roleFeedback[member.id]?.msg && (
-                                <span className={roleFeedback[member.id].ok ? 'team-role-ok' : 'team-role-err'}>
-                                  {roleFeedback[member.id].msg}
-                                </span>
-                              )}
-                            </div>
-                          )}
                         </div>
                         <span className={`team-role-pill role-pill--${member.rol?.toLowerCase() || 'miembro'}`}>
                           {member.rol || 'MIEMBRO'}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import '../styles/UsuariosList.css';
 
 interface Usuario {
@@ -17,15 +18,53 @@ const PILL: Record<string, string> = {
   desarrollador: 'pill--desarrollador',
 };
 
+const ROLE_LEVEL: Record<string, number> = { DIRECTOR: 3, LIDER: 2, COORDINADOR: 1, DESARROLLADOR: 1 };
+
 const UsuariosList: React.FC = () => {
+  const { userRole, username } = useAuth();
   const [miembros, setMiembros]   = useState<Usuario[]>([]);
   const [orgNombre, setOrgNombre] = useState<string>('');
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState<string | null>(null);
   const [search, setSearch]       = useState('');
 
+  const [roleSelections, setRoleSelections] = useState<Record<number, string>>({});
+  const [roleLoading, setRoleLoading]       = useState<Record<number, boolean>>({});
+  const [roleFeedback, setRoleFeedback]     = useState<Record<number, { ok: boolean; msg: string }>>({});
+
+  const callerLevel    = ROLE_LEVEL[userRole?.toUpperCase() ?? ''] ?? 0;
+  const canManageRoles = callerLevel >= 2;
+  const rolesAsignables = canManageRoles ? ['LIDER', 'DESARROLLADOR'] : [];
+
+  const canChangeRoleOf = (m: Usuario) => {
+    if (m.username === username) return false;
+    return (ROLE_LEVEL[m.rol?.toUpperCase() ?? ''] ?? 0) < callerLevel;
+  };
+
+  const handleAsignarRol = async (miembroId: number) => {
+    const role = roleSelections[miembroId];
+    if (!role) return;
+    setRoleLoading(prev => ({ ...prev, [miembroId]: true }));
+    setRoleFeedback(prev => ({ ...prev, [miembroId]: { ok: false, msg: '' } }));
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/usuarios/${miembroId}/asingRol?role=${role}`,
+        { method: 'PATCH', headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.ok) throw new Error();
+      setRoleFeedback(prev => ({ ...prev, [miembroId]: { ok: true, msg: 'Rol asignado.' } }));
+      setMiembros(prev => prev.map(m => m.id === miembroId ? { ...m, rol: role } : m));
+      setRoleSelections(prev => ({ ...prev, [miembroId]: '' }));
+    } catch {
+      setRoleFeedback(prev => ({ ...prev, [miembroId]: { ok: false, msg: 'No se pudo asignar el rol.' } }));
+    } finally {
+      setRoleLoading(prev => ({ ...prev, [miembroId]: false }));
+    }
+  };
+
   const token = localStorage.getItem('token');
-  const BASE = process.env.REACT_APP_API_URL;
+  const BASE  = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     const load = async () => {
@@ -119,6 +158,34 @@ const UsuariosList: React.FC = () => {
                     <span className="ul-contact-value ul-contact-value--email">{m.email}</span>
                   </div>
                 </div>
+
+                {canManageRoles && canChangeRoleOf(m) && (
+                  <div className="ul-role-assign">
+                    <select
+                      className="ul-role-select"
+                      value={roleSelections[m.id] ?? ''}
+                      onChange={e => setRoleSelections(prev => ({ ...prev, [m.id]: e.target.value }))}
+                      disabled={roleLoading[m.id]}
+                    >
+                      <option value="">Cambiar rol…</option>
+                      {rolesAsignables.map(r => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
+                    <button
+                      className="ul-role-btn"
+                      onClick={() => handleAsignarRol(m.id)}
+                      disabled={roleLoading[m.id] || !roleSelections[m.id]}
+                    >
+                      {roleLoading[m.id] ? '…' : 'Asignar'}
+                    </button>
+                    {roleFeedback[m.id]?.msg && (
+                      <span className={roleFeedback[m.id].ok ? 'ul-role-ok' : 'ul-role-err'}>
+                        {roleFeedback[m.id].msg}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}

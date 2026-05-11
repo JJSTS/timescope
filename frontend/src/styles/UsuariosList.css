@@ -186,6 +186,66 @@
   color: #6b7280;
 }
 
+/* ── ROLE ASSIGN ── */
+.ul-role-assign {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  border-top: 1px solid #f3f4f6;
+  padding-top: 0.9rem;
+}
+
+.ul-role-select {
+  flex: 1;
+  min-width: 0;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #374151;
+  background: #f9fafb;
+  cursor: pointer;
+}
+
+.ul-role-select:focus {
+  outline: none;
+  border-color: var(--ts-navy, #2d4a6b);
+}
+
+.ul-role-btn {
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  border: none;
+  background: var(--ts-navy, #2d4a6b);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+
+.ul-role-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ul-role-btn:not(:disabled):hover {
+  opacity: 0.85;
+}
+
+.ul-role-ok,
+.ul-role-err {
+  width: 100%;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.2rem 0;
+}
+
+.ul-role-ok  { color: #15803d; }
+.ul-role-err { color: #dc2626; }
+
 /* ── STATES ── */
 .ul-state {
   padding: 3rem 2rem;

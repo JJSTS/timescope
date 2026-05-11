@@ -4,6 +4,21 @@
 
 ---
 
+### [2026-05-11] — Mover gestión de roles a UsuariosList
+
+- `UsuariosList.tsx`: añadidos `useAuth`, `ROLE_LEVEL`, estados de rol (`roleSelections`, `roleLoading`, `roleFeedback`), lógica `canManageRoles`/`canChangeRoleOf`/`rolesAsignables`, función `handleAsignarRol` y UI de select + botón "Asignar" en cada tarjeta de miembro.
+- `UserProfile.tsx`: eliminados todos los estados, funciones y JSX de gestión de roles del sidebar de equipo. `ROLE_LEVEL` se conserva para el ordenamiento de miembros.
+- `UsuariosList.css`: añadidos estilos `.ul-role-assign`, `.ul-role-select`, `.ul-role-btn`, `.ul-role-ok`, `.ul-role-err`.
+
+---
+
+### [2026-05-11] — Corrección de bugs en creación de tareas (TareaCreateModal)
+
+- **URL de asignación incorrecta**: el frontend llamaba `POST /tareas/{id}/usuario` que no existe. Corregido a `POST /tareas/addTarea` con body `{ tareaId, username }` (endpoint real del backend).
+- **Proyecto NULL en BD**: el campo `select` de proyecto tenía `required + disabled`, lo que permite al navegador omitir la validación. Añadida validación explícita en `handleSubmit` que bloquea el envío si `proyectoId` está vacío.
+
+---
+
 ### [2026-05-11] — Mejoras de responsividad móvil en Dashboard
 
 - `Dashboard.tsx`: añadido estado `showMobileMenu`, botón hamburguesa (`.menu-btn.mobile-only`) y menú desplegable móvil con los tabs de navegación e ícono de logout.

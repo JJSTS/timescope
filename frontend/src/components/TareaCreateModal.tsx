@@ -58,6 +58,12 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!proyectoId) {
+      setError('Debes seleccionar un proyecto');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -89,10 +95,10 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
       const tareaCreada = await createRes.json();
 
       if (canAssign && usuarioUsername) {
-        const assignRes = await fetch(`${BASE}/tareas/${tareaCreada.id}/usuario`, {
+        const assignRes = await fetch(`${BASE}/tareas/addTarea`, {
           method: 'POST',
           headers,
-          body: JSON.stringify({ username: usuarioUsername }),
+          body: JSON.stringify({ tareaId: tareaCreada.id, username: usuarioUsername }),
         });
         if (!assignRes.ok) {
           const data = await assignRes.json().catch(() => ({}));
