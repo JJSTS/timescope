@@ -117,18 +117,8 @@ const ProyectosList: React.FC = () => {
       }
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Error al cargar los proyectos');
-      const response = await axios.get<PageResponse>(`${process.env.REACT_APP_API_URL}/proyectos`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const proyectosData = Array.isArray(response.data)
-        ? response.data
-        : response.data.content || [];
-
-      setProyectos(proyectosData);
+    } finally {
+      setLoading(false);
     }
   };
 
