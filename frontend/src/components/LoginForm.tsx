@@ -8,7 +8,6 @@ import '../styles/LoginForm.css';
 interface LoginFormData {
   username: string;
   password: string;
-  orgNombre: string;
 }
 
 interface RegisterFormData {
@@ -51,7 +50,6 @@ export const Login: React.FC = () => {
   const [loginData, setLoginData] = useState<LoginFormData>({
     username: '',
     password: '',
-    orgNombre: '',
   });
 
   const [registerData, setRegisterData] = useState<RegisterFormData>({
@@ -79,7 +77,7 @@ export const Login: React.FC = () => {
     setLoading(true);
     try {
       const username = loginData.username.trim().toLowerCase();
-      const response = await authService.login(username, loginData.password, loginData.orgNombre);
+      const response = await authService.login(username, loginData.password);
       await login(username, response.token);
       navigate('/dashboard');
     } catch (err: any) {
@@ -197,22 +195,6 @@ export const Login: React.FC = () => {
                     <EyeIcon visible={showPasswords.login} />
                   </button>
                 </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="login-org" className="form-label">
-                  Organización <span className="form-label-optional">(opcional)</span>
-                </label>
-                <input
-                  id="login-org"
-                  name="orgNombre"
-                  type="text"
-                  value={loginData.orgNombre}
-                  onChange={handleLoginChange}
-                  className="form-input"
-                  placeholder="Deja en blanco si aún no tienes organización"
-                  disabled={loading}
-                />
               </div>
 
               <button type="submit" className="submit-btn" disabled={loading}>

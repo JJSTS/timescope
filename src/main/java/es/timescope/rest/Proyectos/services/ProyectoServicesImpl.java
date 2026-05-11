@@ -141,8 +141,11 @@ public class ProyectoServicesImpl implements ProyectoServices {
         Usuario usuario = usuariosRepository.findByUsername(username)
                 .orElseThrow(() -> new ProyectoBadRequestException("Usuario con username: " + username + " no encontrado"));
 
-        // El usuario debe pertenecer a la misma organización que el caller (org del JWT)
+        // El usuario debe pertenecer a la misma organización que el caller
         Long callerOrgId = authUtils.getCallerOrgId();
+        if (callerOrgId == null && caller.getOrganizacion() != null) {
+            callerOrgId = caller.getOrganizacion().getId();
+        }
         if (callerOrgId == null || usuario.getOrganizacion() == null
                 || !usuario.getOrganizacion().getId().equals(callerOrgId)) {
             throw new ProyectoBadRequestException(
