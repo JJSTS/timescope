@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "java -jar -Dspring.profiles.active=prod target/*.jar",
+    "startCommand": "java -Xms256m -Xmx700m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -jar -Dspring.profiles.active=prod target/*.jar",
     "restartPolicyType": "ON_FAILURE"
   }
 }
