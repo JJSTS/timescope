@@ -125,6 +125,7 @@ public class TareasRestController {
     }
 
     @PostMapping()
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
     public ResponseEntity<TareaResponseDto> createTarea(
             @Valid @RequestBody TareaCreateDto tareaCreateDto){
         log.info("Creando tarea: {}", tareaCreateDto);

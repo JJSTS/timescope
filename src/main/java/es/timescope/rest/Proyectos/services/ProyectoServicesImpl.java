@@ -250,6 +250,18 @@ public class ProyectoServicesImpl implements ProyectoServices {
         Usuario usuario = usuariosRepository.findById(usuarioId)
                 .orElseThrow(() -> new ProyectoBadRequestException("Usuario con id " + usuarioId + " no encontrado"));
 
+        if (proyecto.getOrganizacion() != null
+                && proyecto.getOrganizacion().getAdmin() != null
+                && proyecto.getOrganizacion().getAdmin().getId().equals(usuarioId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "No se puede eliminar al administrador de la organización del proyecto");
+        }
+
+        if (!tieneAccesoTotal() && usuario.getRol() == Roles.DIRECTOR) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "No puedes eliminar a un director del proyecto");
+        }
+
         proyecto.getUsuarios().remove(usuario);
         proyectosRepository.save(proyecto);
 

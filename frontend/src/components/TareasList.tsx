@@ -53,7 +53,7 @@ const TareasList: React.FC = () => {
       .catch(() => {});
   }, [token]);
 
-  const canCreate = ['DIRECTOR', 'COORDINADOR', 'LIDER'].includes(userRole?.toUpperCase() ?? '');
+  const canCreate = ['DIRECTOR', 'LIDER'].includes(userRole?.toUpperCase() ?? '');
 
   useEffect(() => {
     if (userRole) {

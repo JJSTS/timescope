@@ -175,7 +175,9 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
         var usuario = usuariosRepository.findById(usuarioId).orElseThrow();
 
         usuario.setOrganizacion(org);
+        usuario.setRol(Roles.DESARROLLADOR);
         org.getUsuarios().add(usuario);
+        usuariosRepository.save(usuario);
 
         usuarioOrgRolRepository.deleteByUsuarioIdAndOrganizacionId(usuarioId, orgId);
         usuarioOrgRolRepository.save(UsuarioOrgRol.builder()
