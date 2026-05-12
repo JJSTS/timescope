@@ -117,6 +117,7 @@ export const Login: React.FC = () => {
   };
 
   return (
+    <>
     <div className="login-container">
       {/* Left Side - Hero */}
       <div className="login-hero">
@@ -331,6 +332,7 @@ export const Login: React.FC = () => {
     </div>
 
       {showForgot && <ForgotPasswordModal onClose={() => setShowForgot(false)} />}
+    </>
   );
 };
 
