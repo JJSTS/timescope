@@ -17,6 +17,7 @@ import es.timescope.rest.Tareas.repositories.TareasRepository;
 import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
 
 import jakarta.persistence.criteria.Join;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;
