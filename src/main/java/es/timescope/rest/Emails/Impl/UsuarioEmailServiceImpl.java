@@ -53,6 +53,35 @@ public class UsuarioEmailServiceImpl implements UsuarioEmailService {
     }
 
     @Override
+    public void enviarCodigoRecuperacion(String email, String nombre, String code) {
+        try {
+            log.info("Enviando código de recuperación a: {}", email);
+            String subject = "Código de recuperación de contraseña — TimeScope";
+            String body = String.format("""
+                            Hola %s,
+
+                            Has solicitado restablecer tu contraseña en TimeScope.
+
+                            Tu código de verificación es:
+
+                                  %s
+
+                            Este código es válido durante 15 minutos.
+
+                            Si no has solicitado este cambio, puedes ignorar este email.
+
+                            Saludos,
+                            El equipo de TimeScope
+                            """,
+                    nombre, code
+            );
+            emailService.sendSimpleEmail(email, subject, body);
+        } catch (Exception e) {
+            log.error("Error al enviar el código de recuperación a {}: {}", email, e.getMessage());
+        }
+    }
+
+    @Override
     public void enviarCambioContrasenia(Usuario usuario) {
         try{
             log.info("¡Se ha cambiado la contraseña correctamente!");

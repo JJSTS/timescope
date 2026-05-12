@@ -59,6 +59,22 @@ export const authService = {
     }
   },
 
+  async forgotPassword(username: string): Promise<void> {
+    try {
+      await axios.post(`${API_URL}/auth/forgot-password`, { username });
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Error al enviar el código');
+    }
+  },
+
+  async resetPassword(username: string, code: string, newPassword: string, passwordConfirm: string): Promise<void> {
+    try {
+      await axios.post(`${API_URL}/auth/reset-password`, { username, code, newPassword, passwordConfirm });
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Error al restablecer la contraseña');
+    }
+  },
+
   logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('username');

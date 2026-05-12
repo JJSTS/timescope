@@ -257,9 +257,12 @@ public class ProyectoServicesImpl implements ProyectoServices {
                     "No se puede eliminar al administrador de la organización del proyecto");
         }
 
-        if (!tieneAccesoTotal() && usuario.getRol() == Roles.DIRECTOR) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "No puedes eliminar a un director del proyecto");
+        if (!tieneAccesoTotal()) {
+            Roles rolObjetivo = usuario.getRol();
+            if (rolObjetivo == Roles.DIRECTOR || rolObjetivo == Roles.LIDER) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "No puedes eliminar a un director o líder del proyecto");
+            }
         }
 
         proyecto.getUsuarios().remove(usuario);

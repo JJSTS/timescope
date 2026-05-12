@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
+import ForgotPasswordModal from './ForgotPasswordModal';
 import faviconImage from '../images/Favicon.png';
 import '../styles/LoginForm.css';
 
@@ -41,6 +42,7 @@ export const Login: React.FC = () => {
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [showForgot, setShowForgot] = useState(false);
   const [showPasswords, setShowPasswords] = useState({ login: false, register: false, registerConfirm: false });
 
   const toggleShow = (field: keyof typeof showPasswords) => {
@@ -202,7 +204,9 @@ export const Login: React.FC = () => {
               </button>
 
               <div className="forgot-password">
-                <button type="button" className="forgot-link">¿Olvidaste tu contraseña?</button>
+                <button type="button" className="forgot-link" onClick={() => setShowForgot(true)}>
+                  ¿Olvidaste tu contraseña?
+                </button>
               </div>
             </form>
           )}
@@ -325,6 +329,8 @@ export const Login: React.FC = () => {
         </div>
       </div>
     </div>
+
+      {showForgot && <ForgotPasswordModal onClose={() => setShowForgot(false)} />}
   );
 };
 

@@ -95,7 +95,7 @@ public class ProyectosRestController {
 
 
     @PutMapping("/usuario/{id}")
-    @PreAuthorize("hasRole('DIRECTOR')")
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
     public ResponseEntity<ProyectoResponseDto> addUsuario(
             @PathVariable Long id,
             @RequestParam String username
