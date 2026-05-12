@@ -18,9 +18,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UsuarioEmailServiceImpl implements UsuarioEmailService {
     private final EmailService emailService;
-    private final UsuariosRepository usuariosRepository;
 
-    @Value("${URL:http://localhost:3000/dashboard}")
+    @Value("${FRONTEND_URL:https://timescope-app.vercel.app/dashboard}")
     private String url;
 
     @Override
