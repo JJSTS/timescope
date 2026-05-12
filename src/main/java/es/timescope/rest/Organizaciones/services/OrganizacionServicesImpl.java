@@ -263,6 +263,7 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
                 .orElseThrow(() -> new UsuarioNotFound(usuarioId.toString()));
 
         usuario.setOrganizacion(null);
+        usuario.setRol(Roles.DESARROLLADOR);
         usuariosRepository.save(usuario);
 
         org.getUsuarios().removeIf(u -> u.getId().equals(usuarioId));
