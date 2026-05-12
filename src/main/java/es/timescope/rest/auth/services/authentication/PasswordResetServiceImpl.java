@@ -36,9 +36,16 @@ public class PasswordResetServiceImpl implements PasswordResetService {
                         "No existe ningún usuario con ese nombre de usuario"));
 
         String code = String.format("%06d", new Random().nextInt(1_000_000));
-        codes.put(username, new ResetEntry(code, LocalDateTime.now().plusMinutes(15)));
 
-        usuarioEmailService.enviarCodigoRecuperacion(user.getEmail(), user.getNombres(), code);
+        try {
+            usuarioEmailService.enviarCodigoRecuperacion(user.getEmail(), user.getNombres(), code);
+        } catch (Exception e) {
+            log.error("No se pudo enviar el email de recuperación a {}: {}", user.getEmail(), e.getMessage());
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+                    "No se pudo enviar el correo de recuperación. Inténtalo de nuevo más tarde.");
+        }
+
+        codes.put(username, new ResetEntry(code, LocalDateTime.now().plusMinutes(15)));
         log.info("Código de recuperación enviado al usuario: {}", username);
     }
 
