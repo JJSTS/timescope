@@ -39,13 +39,15 @@ const ChangePasswordModal: React.FC<Props> = ({ onClose }) => {
     setShow(prev => ({ ...prev, [field]: !prev[field] }));
   };
 
+  const passwordMismatch = form.newPassword.length > 0 && form.passwordComprobacion.length > 0 && form.newPassword !== form.passwordComprobacion;
+  const sameAsOld = form.newPassword.length > 0 && form.newPassword === form.password;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (form.newPassword !== form.passwordComprobacion) {
-      setError('La nueva contraseña y su confirmación no coinciden.');
-      return;
-    }
+    if (!form.password) { setError('Introduce tu contraseña actual.'); return; }
+    if (form.newPassword.length < 5) { setError('La nueva contraseña debe tener al menos 5 caracteres.'); return; }
+    if (sameAsOld) { setError('La nueva contraseña no puede ser igual a la actual.'); return; }
+    if (passwordMismatch) { setError('Las contraseñas no coinciden.'); return; }
 
     setLoading(true);
     try {
@@ -110,6 +112,7 @@ const ChangePasswordModal: React.FC<Props> = ({ onClose }) => {
                   <EyeIcon visible={show.newPassword} />
                 </button>
               </div>
+              {sameAsOld && <p className="cp-field-error">La nueva contraseña no puede ser igual a la actual.</p>}
             </div>
 
             <div className="cp-field">
@@ -129,6 +132,7 @@ const ChangePasswordModal: React.FC<Props> = ({ onClose }) => {
                   <EyeIcon visible={show.passwordComprobacion} />
                 </button>
               </div>
+              {passwordMismatch && <p className="cp-field-error">Las contraseñas no coinciden.</p>}
             </div>
 
             {error && <p className="cp-error">{error}</p>}

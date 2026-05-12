@@ -169,12 +169,20 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
     }
 
     @Override
+    @Transactional
     public OrganizacionResponseDto addUsuario(Long orgId, Long usuarioId) {
         var org = getEntity(orgId);
         var usuario = usuariosRepository.findById(usuarioId).orElseThrow();
 
         usuario.setOrganizacion(org);
         org.getUsuarios().add(usuario);
+
+        usuarioOrgRolRepository.deleteByUsuarioIdAndOrganizacionId(usuarioId, orgId);
+        usuarioOrgRolRepository.save(UsuarioOrgRol.builder()
+                .usuario(usuario)
+                .organizacion(org)
+                .rol(Roles.DESARROLLADOR)
+                .build());
 
         return OrganizacionesMapper.toDto(repository.save(org));
     }

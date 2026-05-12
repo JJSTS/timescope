@@ -259,7 +259,11 @@ const ProyectosList: React.FC = () => {
       {showCreateModal && (
         <ProyectoCreateModal
           onClose={() => setShowCreateModal(false)}
-          onCreated={() => fetchProyectos(currentPage)}
+          onCreated={() => {
+            setFiltroEstado('Todos');
+            setCurrentPage(0);
+            fetchProyectos(0);
+          }}
         />
       )}
     </>

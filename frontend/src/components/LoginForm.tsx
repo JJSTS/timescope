@@ -87,15 +87,15 @@ export const Login: React.FC = () => {
     }
   };
 
+  const registerPasswordMismatch = registerData.passwordComprobacion.length > 0 && registerData.password !== registerData.passwordComprobacion;
+
   const handleRegisterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
+    if (registerData.password.length < 5) { setError('La contraseña debe tener al menos 5 caracteres.'); return; }
+    if (registerPasswordMismatch) { setError('Las contraseñas no coinciden.'); return; }
     setLoading(true);
     try {
-      if (registerData.password !== registerData.passwordComprobacion) {
-        setError('Las contraseñas no coinciden');
-        return;
-      }
       const username = registerData.username.trim().toLowerCase();
       const response = await authService.register(
         registerData.nombre,
@@ -300,7 +300,7 @@ export const Login: React.FC = () => {
                     type={showPasswords.registerConfirm ? 'text' : 'password'}
                     value={registerData.passwordComprobacion}
                     onChange={handleRegisterChange}
-                    className="form-input"
+                    className={`form-input${registerPasswordMismatch ? ' form-input--error' : ''}`}
                     placeholder="Repite tu contraseña"
                     required
                     minLength={5}
@@ -310,6 +310,7 @@ export const Login: React.FC = () => {
                     <EyeIcon visible={showPasswords.registerConfirm} />
                   </button>
                 </div>
+                {registerPasswordMismatch && <p className="form-field-error">Las contraseñas no coinciden.</p>}
               </div>
 
               <button type="submit" className="submit-btn" disabled={loading}>
