@@ -138,10 +138,14 @@ public class ProyectoServicesImpl implements ProyectoServices {
     }
 
     @Override
+    @Transactional
     public ProyectoResponseDto save(ProyectoCreateDto proyectoCreateDto) {
         log.info("Guardando proyecto: {}", proyectoCreateDto);
         Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
         List<Usuario> usuarios = checkUsuarios(proyectoCreateDto.getUsuarios());
+        if (usuarios.stream().noneMatch(u -> u.getId().equals(caller.getId()))) {
+            usuarios.add(caller);
+        }
         Proyecto proyecto = proyectoMapper.toProyecto(proyectoCreateDto, usuarios);
         proyecto.setOrganizacion(caller.getOrganizacion());
         return proyectoMapper.toProyectoResponseDto(proyectosRepository.save(proyecto));

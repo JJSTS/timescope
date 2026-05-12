@@ -26,7 +26,7 @@ public class Proyecto {
     @Column(unique = true, nullable = false,  length = 20)
     private String nombre;
 
-    @Column(nullable = false,  length = 300)
+    @Column(length = 300)
     private String descripcion;
 
     @Enumerated(EnumType.STRING)
