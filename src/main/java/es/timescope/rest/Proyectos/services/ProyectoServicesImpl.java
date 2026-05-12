@@ -47,11 +47,17 @@ public class ProyectoServicesImpl implements ProyectoServices {
         return authUtils.callerHasRole(Roles.DIRECTOR);
     }
 
+    private Specification<Proyecto> specOrganizacion(Usuario caller) {
+        return (root, query, cb) -> {
+            if (caller.getOrganizacion() == null) return cb.disjunction();
+            return cb.equal(root.get("organizacion").get("id"), caller.getOrganizacion().getId());
+        };
+    }
+
     @Override
     public Page<ProyectoResponseDto> findAll(Optional<Long> id, Optional<String> nombre, Optional<Boolean> isDeleted, Pageable pageable) {
         log.info("Buscando proyectos por id: {}, nombre: {} , isDeleted {}", id, nombre, isDeleted);
         Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
-        boolean restricted = !tieneAccesoTotal();
 
         Specification<Proyecto> specIdProyecto = (root, query, criteriaBuilder) ->
                 id.map(i -> criteriaBuilder.equal(root.get("id"), i))
@@ -66,7 +72,6 @@ public class ProyectoServicesImpl implements ProyectoServices {
                         .orElseGet(() -> criteriaBuilder.isTrue(criteriaBuilder.literal(true)));
 
         Specification<Proyecto> specUsuario = (root, query, cb) -> {
-            if (!restricted) return cb.isTrue(cb.literal(true));
             Join<Proyecto, Usuario> join = root.join("usuarios");
             return cb.equal(join.get("id"), caller.getId());
         };
@@ -74,7 +79,8 @@ public class ProyectoServicesImpl implements ProyectoServices {
         Specification<Proyecto> criterio = Specification.where(specIdProyecto)
                 .and(specNombreProyecto)
                 .and(specIsDeleted)
-                .and(specUsuario);
+                .and(specUsuario)
+                .and(specOrganizacion(caller));
 
         return proyectosRepository.findAll(criterio, pageable).map(proyectoMapper::toProyectoResponseDto);
     }
@@ -82,8 +88,21 @@ public class ProyectoServicesImpl implements ProyectoServices {
     @Override
     public ProyectoResponseDto findById(Long id) {
         log.info("Buscando proyecto por id: {}", id);
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
         Proyecto proyecto = proyectosRepository.findById(id)
                 .orElseThrow(() -> new ProyectoNotFoundException(id));
+
+        if (caller.getOrganizacion() == null || proyecto.getOrganizacion() == null
+                || !proyecto.getOrganizacion().getId().equals(caller.getOrganizacion().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes acceso a este proyecto");
+        }
+
+        boolean esMiembro = proyecto.getUsuarios().stream()
+                .anyMatch(u -> u.getId().equals(caller.getId()));
+        if (!esMiembro) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes acceso a este proyecto");
+        }
+
         return proyectoMapper.toProyectoResponseDto(proyecto);
     }
 
@@ -91,25 +110,30 @@ public class ProyectoServicesImpl implements ProyectoServices {
     public Page<ProyectoResponseDto> findByEstado(Estado estado, Pageable pageable) {
         log.info("Buscando proyectos por estado: {}", estado);
         Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
-        boolean restricted = !tieneAccesoTotal();
 
         Specification<Proyecto> specEstado = (root, query, cb) ->
                 cb.equal(root.get("estado"), estado);
 
         Specification<Proyecto> specUsuario = (root, query, cb) -> {
-            if (!restricted) return cb.isTrue(cb.literal(true));
             Join<Proyecto, Usuario> join = root.join("usuarios");
             return cb.equal(join.get("id"), caller.getId());
         };
 
-        return proyectosRepository.findAll(specEstado.and(specUsuario), pageable)
+        return proyectosRepository.findAll(specEstado.and(specUsuario).and(specOrganizacion(caller)), pageable)
                 .map(proyectoMapper::toProyectoResponseDto);
     }
 
     @Override
     public Page<ProyectoResponseDto> findByUsuarioId(Long usuarioId, Pageable pageable) {
         log.info("Obteniendo proyectos del usuario con id: {}", usuarioId);
-        return proyectosRepository.findByUsuarioId(usuarioId, pageable)
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+
+        Specification<Proyecto> specUsuarioId = (root, query, cb) -> {
+            Join<Proyecto, Usuario> join = root.join("usuarios");
+            return cb.equal(join.get("id"), usuarioId);
+        };
+
+        return proyectosRepository.findAll(specUsuarioId.and(specOrganizacion(caller)), pageable)
                 .map(proyectoMapper::toProyectoResponseDto);
     }
 
@@ -191,7 +215,14 @@ public class ProyectoServicesImpl implements ProyectoServices {
 
     @Override
     public void deleteById(Long id) {
-        proyectosRepository.findById(id).orElseThrow(() -> new ProyectoNotFoundException(id));
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+        Proyecto proyecto = proyectosRepository.findById(id).orElseThrow(() -> new ProyectoNotFoundException(id));
+
+        if (caller.getOrganizacion() == null || proyecto.getOrganizacion() == null
+                || !proyecto.getOrganizacion().getId().equals(caller.getOrganizacion().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes acceso a este proyecto");
+        }
+
         proyectosRepository.deleteById(id);
     }
 

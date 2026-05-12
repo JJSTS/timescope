@@ -230,6 +230,39 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
     }
 
     @Override
+    @Transactional
+    public void removeUsuario(Long orgId, Long usuarioId) {
+        Organizacion org = getEntity(orgId);
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+
+        boolean esDirectorEnOrg = usuarioOrgRolRepository
+                .existsByUsuarioIdAndOrganizacionIdAndRol(caller.getId(), orgId, Roles.DIRECTOR);
+        if (!esDirectorEnOrg && !org.getAdmin().getId().equals(caller.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo un director puede eliminar miembros");
+        }
+
+        if (org.getAdmin() != null && org.getAdmin().getId().equals(usuarioId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes eliminar al administrador de la organización");
+        }
+
+        if (caller.getId().equals(usuarioId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes eliminarte a ti mismo de la organización");
+        }
+
+        Usuario usuario = usuariosRepository.findById(usuarioId)
+                .orElseThrow(() -> new UsuarioNotFound(usuarioId.toString()));
+
+        usuario.setOrganizacion(null);
+        usuariosRepository.save(usuario);
+
+        org.getUsuarios().removeIf(u -> u.getId().equals(usuarioId));
+        repository.save(org);
+
+        usuarioOrgRolRepository.deleteByUsuarioIdAndOrganizacionId(usuarioId, orgId);
+        log.info("Usuario {} eliminado de la organización {}", usuarioId, orgId);
+    }
+
+    @Override
     public List<UsuarioResponseDto> getMiembros(Long orgId) {
         getEntity(orgId); // verifica que la org existe
         return usuariosRepository.findByOrganizacionId(orgId)

@@ -246,6 +246,90 @@
 .ul-role-ok  { color: #15803d; }
 .ul-role-err { color: #dc2626; }
 
+/* ── REMOVE MEMBER ── */
+.ul-remove-zone {
+  border-top: 1px solid #f3f4f6;
+  padding-top: 0.9rem;
+}
+
+.ul-remove-btn {
+  width: 100%;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  background: #fff;
+  color: #dc2626;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ul-remove-btn:hover {
+  background: #fee2e2;
+}
+
+.ul-remove-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ul-remove-text {
+  font-size: 0.8rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+.ul-remove-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.ul-remove-confirm-btn {
+  flex: 1;
+  padding: 0.35rem 0.5rem;
+  border: none;
+  border-radius: 6px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.ul-remove-confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ul-remove-confirm-btn:not(:disabled):hover {
+  opacity: 0.85;
+}
+
+.ul-remove-cancel-btn {
+  flex: 1;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #f9fafb;
+  color: #374151;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ul-remove-cancel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ul-remove-cancel-btn:not(:disabled):hover {
+  background: #f3f4f6;
+}
+
 /* ── STATES ── */
 .ul-state {
   padding: 3rem 2rem;

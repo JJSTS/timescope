@@ -23,7 +23,9 @@ const ROLE_LEVEL: Record<string, number> = { DIRECTOR: 3, LIDER: 2, COORDINADOR:
 const UsuariosList: React.FC = () => {
   const { userRole, username } = useAuth();
   const [miembros, setMiembros]   = useState<Usuario[]>([]);
+  const [orgId, setOrgId]         = useState<number | null>(null);
   const [orgNombre, setOrgNombre] = useState<string>('');
+  const [orgAdmin, setOrgAdmin]   = useState<string>('');
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState<string | null>(null);
   const [search, setSearch]       = useState('');
@@ -32,13 +34,25 @@ const UsuariosList: React.FC = () => {
   const [roleLoading, setRoleLoading]       = useState<Record<number, boolean>>({});
   const [roleFeedback, setRoleFeedback]     = useState<Record<number, { ok: boolean; msg: string }>>({});
 
+  const [confirmRemove, setConfirmRemove] = useState<number | null>(null);
+  const [removeLoading, setRemoveLoading] = useState<Record<number, boolean>>({});
+  const [removeError, setRemoveError]     = useState<string | null>(null);
+
   const callerLevel    = ROLE_LEVEL[userRole?.toUpperCase() ?? ''] ?? 0;
   const canManageRoles = callerLevel >= 2;
+  const canRemove      = userRole?.toUpperCase() === 'DIRECTOR';
   const rolesAsignables = canManageRoles ? ['LIDER', 'DESARROLLADOR'] : [];
 
   const canChangeRoleOf = (m: Usuario) => {
     if (m.username === username) return false;
     return (ROLE_LEVEL[m.rol?.toUpperCase() ?? ''] ?? 0) < callerLevel;
+  };
+
+  const canRemoveOf = (m: Usuario) => {
+    if (!canRemove) return false;
+    if (m.username === username) return false;
+    if (m.username === orgAdmin) return false;
+    return true;
   };
 
   const handleAsignarRol = async (miembroId: number) => {
@@ -63,6 +77,29 @@ const UsuariosList: React.FC = () => {
     }
   };
 
+  const handleRemoveMiembro = async (miembroId: number) => {
+    if (!orgId) return;
+    setRemoveLoading(prev => ({ ...prev, [miembroId]: true }));
+    setRemoveError(null);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/organizaciones/${orgId}/usuarios/${miembroId}`,
+        { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || 'Error al eliminar el miembro');
+      }
+      setMiembros(prev => prev.filter(m => m.id !== miembroId));
+      setConfirmRemove(null);
+    } catch (e: any) {
+      setRemoveError(e.message || 'No se pudo eliminar el miembro');
+    } finally {
+      setRemoveLoading(prev => ({ ...prev, [miembroId]: false }));
+    }
+  };
+
   const token = localStorage.getItem('token');
   const BASE  = process.env.REACT_APP_API_URL;
 
@@ -78,6 +115,8 @@ const UsuariosList: React.FC = () => {
 
         if (!me.organizacionId) { setLoading(false); return; }
 
+        setOrgId(me.organizacionId);
+
         const [membrosRes, orgRes] = await Promise.all([
           axios.get<Usuario[]>(
             `${BASE}/organizaciones/${me.organizacionId}/miembros`,
@@ -90,8 +129,9 @@ const UsuariosList: React.FC = () => {
         ]);
 
         setMiembros(membrosRes.data);
-        const nombre = orgRes.data?.content?.[0]?.nombre;
-        if (nombre) setOrgNombre(nombre);
+        const org = orgRes.data?.content?.[0];
+        if (org?.nombre) setOrgNombre(org.nombre);
+        if (org?.userAdmin) setOrgAdmin(org.userAdmin);
       } catch (e: any) {
         setError(e.response?.data?.message || e.message || 'Error al cargar el equipo');
       } finally {
@@ -129,12 +169,17 @@ const UsuariosList: React.FC = () => {
         </div>
       </div>
 
+      {removeError && (
+        <div className="ul-state ul-state--error">{removeError}</div>
+      )}
+
       {filtered.length === 0 ? (
         <div className="ul-state">Sin resultados</div>
       ) : (
         <div className="ul-grid">
           {filtered.map(m => {
             const roleKey = m.rol?.toLowerCase() || 'miembro';
+            const isConfirming = confirmRemove === m.id;
             return (
               <div key={m.id} className="ul-card">
                 <div className="ul-card-top">
@@ -183,6 +228,39 @@ const UsuariosList: React.FC = () => {
                       <span className={roleFeedback[m.id].ok ? 'ul-role-ok' : 'ul-role-err'}>
                         {roleFeedback[m.id].msg}
                       </span>
+                    )}
+                  </div>
+                )}
+
+                {canRemoveOf(m) && (
+                  <div className="ul-remove-zone">
+                    {!isConfirming ? (
+                      <button
+                        className="ul-remove-btn"
+                        onClick={() => { setConfirmRemove(m.id); setRemoveError(null); }}
+                      >
+                        Eliminar de la org
+                      </button>
+                    ) : (
+                      <div className="ul-remove-confirm">
+                        <span className="ul-remove-text">¿Eliminar a {m.nombres}?</span>
+                        <div className="ul-remove-actions">
+                          <button
+                            className="ul-remove-confirm-btn"
+                            onClick={() => handleRemoveMiembro(m.id)}
+                            disabled={removeLoading[m.id]}
+                          >
+                            {removeLoading[m.id] ? '…' : 'Confirmar'}
+                          </button>
+                          <button
+                            className="ul-remove-cancel-btn"
+                            onClick={() => setConfirmRemove(null)}
+                            disabled={removeLoading[m.id]}
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </div>
                 )}

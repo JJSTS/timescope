@@ -30,6 +30,8 @@ public interface OrganizacionServices {
 
     OrganizacionResponseDto removeDirector(Long orgId, Long usuarioId);
 
+    void removeUsuario(Long orgId, Long usuarioId);
+
     void asignarRolEnOrg(Long orgId, Long usuarioId, es.timescope.rest.Usuarios.models.Roles rol);
 
     List<UsuarioResponseDto> getMiembros(Long orgId);

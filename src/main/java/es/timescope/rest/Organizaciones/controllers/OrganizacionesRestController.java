@@ -122,6 +122,16 @@ public class OrganizacionesRestController {
         return ResponseEntity.ok(service.addDirector(id, usuarioId));
     }
 
+    @DeleteMapping("/{id}/usuarios/{usuarioId}")
+    @PreAuthorize("hasRole('DIRECTOR')")
+    public ResponseEntity<Void> removeUsuario(
+            @PathVariable Long id,
+            @PathVariable Long usuarioId) {
+        log.info("Eliminando usuario {} de la organización {}", usuarioId, id);
+        service.removeUsuario(id, usuarioId);
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{id}/directores/{usuarioId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<OrganizacionResponseDto> removeDirector(

@@ -22,6 +22,7 @@ import es.timescope.rest.Usuarios.repositories.UsuariosRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.*;
@@ -46,15 +47,24 @@ public class TareasServicesImpl implements TareasServices {
     private final NotificacionService notificacionService;
     private final AuthUtils authUtils;
 
+    private Specification<Tarea> specOrganizacion(Usuario caller) {
+        return (root, query, cb) -> {
+            if (caller.getOrganizacion() == null) return cb.disjunction();
+            Join<Object, Object> proyectoJoin = root.join("proyecto", JoinType.LEFT);
+            Join<Object, Object> orgJoin = proyectoJoin.join("organizacion", JoinType.LEFT);
+            return cb.equal(orgJoin.get("id"), caller.getOrganizacion().getId());
+        };
+    }
+
     @Override
     public Page<TareaResponseDto> findAll(Optional<String> usuario, Optional<String> estado, Pageable pageable){
         log.info("Buscando tareas por usuario: {}, estado: {}", usuario, estado);
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
 
         // DESARROLLADOR solo puede ver sus propias tareas
         boolean esDesarrollador = !authUtils.callerHasRole(Roles.DIRECTOR)
                 && !authUtils.callerHasRole(Roles.LIDER);
         if (esDesarrollador) {
-            Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
             usuario = Optional.of(caller.getUsername());
             log.info("Rol DESARROLLADOR: filtrando tareas solo para {}", caller.getUsername());
         }
@@ -71,50 +81,67 @@ public class TareasServicesImpl implements TareasServices {
                 estado.map(n -> criteriaBuilder.like(criteriaBuilder.lower(root.get("estado")), "%" + n.toLowerCase() + "%"))
                         .orElseGet(() -> criteriaBuilder.isTrue(criteriaBuilder.literal(true)));
 
-        // DIRECTOR/LIDER: filtra por organización activa si hay orgId en el token
-        Long orgId = authUtils.getCallerOrgId();
-        Specification<Tarea> specOrg = (root, query, criteriaBuilder) -> {
-            if (esDesarrollador || orgId == null) {
-                return criteriaBuilder.isTrue(criteriaBuilder.literal(true));
-            }
-            Join<Object, Object> proyectoJoin = root.join("proyecto", jakarta.persistence.criteria.JoinType.LEFT);
-            Join<Object, Object> orgJoin = proyectoJoin.join("organizacion", jakarta.persistence.criteria.JoinType.LEFT);
-            return criteriaBuilder.equal(orgJoin.get("id"), orgId);
-        };
-
-        Specification<Tarea> criterio = Specification.allOf(specUsuario, specEstado, specOrg);
+        Specification<Tarea> criterio = Specification.allOf(specUsuario, specEstado, specOrganizacion(caller));
 
         return tareasRepository.findAll(criterio, pageable).map(tareasMapper::toTareaResponseDto);
     }
 
-    @Cacheable(key = "#id")
     @Override
     public Page<TareaResponseDto> findByUsuarioId(Long usuarioId, Pageable pageable) {
         log.info("Buscando todas las tareas del usuario con id: {}", usuarioId);
-        return tareasRepository.findByUsuarioId(usuarioId, pageable)
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+
+        Specification<Tarea> specUsuarioId = (root, query, cb) ->
+                cb.equal(root.get("usuario").get("id"), usuarioId);
+
+        return tareasRepository.findAll(specUsuarioId.and(specOrganizacion(caller)), pageable)
                 .map(tareasMapper::toTareaResponseDto);
     }
 
     @Override
     public TareaResponseDto findById(Long id) {
         log.info("Buscando el tarea con id: {}", id);
-        return tareasRepository.findById(id)
-                .map(tareasMapper::toTareaResponseDto)
-                .orElseThrow(() -> new TareaNotFound(id));
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+        Tarea tarea = tareasRepository.findById(id).orElseThrow(() -> new TareaNotFound(id));
+
+        if (tarea.getProyecto() != null && caller.getOrganizacion() != null) {
+            Proyecto proyecto = tarea.getProyecto();
+            if (proyecto.getOrganizacion() == null
+                    || !proyecto.getOrganizacion().getId().equals(caller.getOrganizacion().getId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes acceso a esta tarea");
+            }
+        }
+
+        return tareasMapper.toTareaResponseDto(tarea);
     }
 
     @Override
     public List<TareaResponseDto> findByUsuarioId(Long usuarioId){
         log.info("Buscando todas las tareas del usuario con id: {}", usuarioId);
-        List<Tarea> tareas = tareasRepository.findByUsuarioId(usuarioId);
-        return tareasMapper.toTareaResponseDtoList(tareas);
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+
+        Specification<Tarea> specUsuarioId = (root, query, cb) ->
+                cb.equal(root.get("usuario").get("id"), usuarioId);
+
+        return tareasMapper.toTareaResponseDtoList(
+                tareasRepository.findAll(specUsuarioId.and(specOrganizacion(caller)))
+        );
     }
 
     @Override
     public List<TareaResponseDto> findByUsuarioIdAndEstado(Long usuarioId, Estado estado) {
         log.info("Buscando todas las tareas del usuario con id: {} y estado: {}", usuarioId, estado);
-        List<Tarea> tareas = tareasRepository.findByUsuarioIdAndEstado(usuarioId, estado);
-        return tareasMapper.toTareaResponseDtoList(tareas);
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+
+        Specification<Tarea> spec = (root, query, cb) ->
+                cb.and(
+                        cb.equal(root.get("usuario").get("id"), usuarioId),
+                        cb.equal(root.get("estado"), estado)
+                );
+
+        return tareasMapper.toTareaResponseDtoList(
+                tareasRepository.findAll(spec.and(specOrganizacion(caller)))
+        );
     }
 
     @Override
@@ -180,13 +207,28 @@ public class TareasServicesImpl implements TareasServices {
     @Override
     public List<TareaResponseDto> findByProyectoId(Long proyectoId) {
         log.info("Buscando tareas del proyecto con id: {}", proyectoId);
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+        Proyecto proyecto = proyectosRepository.findById(proyectoId)
+                .orElseThrow(() -> new TareaCreateException("Proyecto con id " + proyectoId + " no encontrado"));
+        validarOrgProyecto(caller, proyecto);
         return tareasMapper.toTareaResponseDtoList(tareasRepository.findByProyectoId(proyectoId));
     }
 
     @Override
     public Page<TareaResponseDto> findByProyectoId(Long proyectoId, Pageable pageable) {
         log.info("Buscando tareas del proyecto con id: {} (paginado)", proyectoId);
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+        Proyecto proyecto = proyectosRepository.findById(proyectoId)
+                .orElseThrow(() -> new TareaCreateException("Proyecto con id " + proyectoId + " no encontrado"));
+        validarOrgProyecto(caller, proyecto);
         return tareasRepository.findByProyectoId(proyectoId, pageable).map(tareasMapper::toTareaResponseDto);
+    }
+
+    private void validarOrgProyecto(Usuario caller, Proyecto proyecto) {
+        if (caller.getOrganizacion() == null || proyecto.getOrganizacion() == null
+                || !proyecto.getOrganizacion().getId().equals(caller.getOrganizacion().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes acceso a este proyecto");
+        }
     }
 
     @Override
