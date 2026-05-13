@@ -40,7 +40,7 @@ const UsuariosList: React.FC = () => {
 
   const callerLevel    = ROLE_LEVEL[userRole?.toUpperCase() ?? ''] ?? 0;
   const isOrgAdmin     = !!orgAdmin && username === orgAdmin;
-  const canManageRoles = callerLevel >= 2;
+  const canManageRoles = userRole?.toUpperCase() === 'DIRECTOR';
   const canRemove      = userRole?.toUpperCase() === 'DIRECTOR';
   const rolesAsignables = isOrgAdmin
     ? ['DIRECTOR', 'LIDER', 'DESARROLLADOR']
@@ -49,7 +49,7 @@ const UsuariosList: React.FC = () => {
   const canChangeRoleOf = (m: Usuario) => {
     if (m.username === username) return false;
     if (isOrgAdmin) return true;
-    return (ROLE_LEVEL[m.rol?.toUpperCase() ?? ''] ?? 0) < callerLevel;
+    return canManageRoles && (ROLE_LEVEL[m.rol?.toUpperCase() ?? ''] ?? 0) < callerLevel;
   };
 
   const canRemoveOf = (m: Usuario) => {

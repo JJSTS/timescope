@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 public class UsuarioEmailServiceImpl implements UsuarioEmailService {
     private final EmailService emailService;
 
-    @Value("${rutaFront:https://timescope-app.vercel.app}")
+    @Value("${rutaFront:https://timescope-jjsts-projects.vercel.app}")
     private String url;
 
     @Override

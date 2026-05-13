@@ -530,6 +530,18 @@ const UserProfile: React.FC = () => {
                 </div>
                 <div className="member-modal-body">
                   <div className="member-modal-row">
+                    <span className="member-modal-label">Nombre</span>
+                    <span className="member-modal-value">{selectedMember.nombres}</span>
+                  </div>
+                  <div className="member-modal-row">
+                    <span className="member-modal-label">Apellido</span>
+                    <span className="member-modal-value">{selectedMember.apellidos}</span>
+                  </div>
+                  <div className="member-modal-row">
+                    <span className="member-modal-label">Usuario</span>
+                    <span className="member-modal-value">@{selectedMember.username}</span>
+                  </div>
+                  <div className="member-modal-row">
                     <span className="member-modal-label">Email</span>
                     <span className="member-modal-value">{selectedMember.email}</span>
                   </div>

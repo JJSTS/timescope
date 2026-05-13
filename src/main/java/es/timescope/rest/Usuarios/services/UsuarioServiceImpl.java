@@ -165,13 +165,6 @@ public class UsuarioServiceImpl implements UsuariosService {
 
     private void validarRolAsignable(Roles rolObjetivo) {
         if (authUtils.callerHasRole(Roles.DIRECTOR)) return;
-        if (authUtils.callerHasRole(Roles.LIDER)) {
-            if (rolObjetivo != Roles.LIDER && rolObjetivo != Roles.DESARROLLADOR) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                        "Un LIDER solo puede asignar los roles LIDER o DESARROLLADOR");
-            }
-            return;
-        }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permisos para asignar roles");
     }
 }
