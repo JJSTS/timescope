@@ -248,7 +248,7 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
         boolean esDirectorEnOrg = usuarioOrgRolRepository
                 .existsByUsuarioIdAndOrganizacionIdAndRol(caller.getId(), orgId, Roles.DIRECTOR);
         if (!esDirectorEnOrg && !org.getAdmin().getId().equals(caller.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo un director puede eliminar miembros");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo un CEO puede eliminar miembros");
         }
 
         if (org.getAdmin() != null && org.getAdmin().getId().equals(usuarioId)) {

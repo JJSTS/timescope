@@ -132,12 +132,18 @@ public class UsuarioServiceImpl implements UsuariosService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes cambiar tu propio rol");
         }
 
-        // El caller debe tener un nivel jerárquico superior al del objetivo
-        int callerLevel  = callerMaxLevel();
-        int objetivoLevel = objetivoMaxLevel(objetivo);
-        if (objetivoLevel >= callerLevel) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "No puedes cambiar el rol de un usuario con igual o mayor jerarquía que la tuya");
+        // El CEO (admin de la org) puede cambiar el rol de cualquier miembro, incluidos otros DIRECTOREs
+        boolean callerIsOrgAdmin = caller.getOrganizacion() != null
+                && caller.getOrganizacion().getAdmin() != null
+                && caller.getOrganizacion().getAdmin().getId().equals(caller.getId());
+
+        if (!callerIsOrgAdmin) {
+            int callerLevel   = callerMaxLevel();
+            int objetivoLevel = objetivoMaxLevel(objetivo);
+            if (objetivoLevel >= callerLevel) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "No puedes cambiar el rol de un usuario con igual o mayor jerarquía que la tuya");
+            }
         }
 
         // El rol a asignar debe estar dentro de lo permitido para el caller

@@ -58,6 +58,7 @@ const UserProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [orgNombre, setOrgNombre] = useState<string | null>(null);
+  const [orgAdmin, setOrgAdmin] = useState<string | null>(null);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [selectedMember, setSelectedMember] = useState<MemberDetail | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -122,8 +123,9 @@ const UserProfile: React.FC = () => {
           if (teamResponse.ok) setTeamMembers(await teamResponse.json());
           if (orgResponse.ok) {
             const orgData = await orgResponse.json();
-            const nombre = orgData?.content?.[0]?.nombre;
-            if (nombre) setOrgNombre(nombre);
+            const org = orgData?.content?.[0];
+            if (org?.nombre) setOrgNombre(org.nombre);
+            if (org?.userAdmin) setOrgAdmin(org.userAdmin);
           }
         }
       } catch (err) {
@@ -271,6 +273,9 @@ const UserProfile: React.FC = () => {
                   {user?.rol
                     ? <span className={`role-badge role-${user.rol.toLowerCase()}`}>{user.rol.toUpperCase()}</span>
                     : <span className="role-badge role-miembro">MIEMBRO</span>}
+                  {orgAdmin && username === orgAdmin && (
+                    <span className="ceo-badge">CEO</span>
+                  )}
                 </div>
               </div>
             </div>
