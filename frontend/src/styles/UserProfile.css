@@ -252,6 +252,13 @@
   border: 1px solid rgba(55, 65, 81, 0.15);
 }
 
+.team-role-pills {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
 .ceo-badge {
   display: inline-flex;
   align-items: center;

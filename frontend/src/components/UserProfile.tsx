@@ -480,9 +480,14 @@ const UserProfile: React.FC = () => {
                           <span className="team-member-name">{member.nombres} {member.apellidos}</span>
                           <span className="team-member-username">@{member.username}</span>
                         </div>
-                        <span className={`team-role-pill role-pill--${member.rol?.toLowerCase() || 'miembro'}`}>
-                          {member.rol || 'MIEMBRO'}
-                        </span>
+                        <div className="team-role-pills">
+                          <span className={`team-role-pill role-pill--${member.rol?.toLowerCase() || 'miembro'}`}>
+                            {member.rol || 'MIEMBRO'}
+                          </span>
+                          {orgAdmin && member.username === orgAdmin && (
+                            <span className="ceo-badge">CEO</span>
+                          )}
+                        </div>
                       </div>
                     ))
                 )}
