@@ -11,6 +11,8 @@ import es.timescope.rest.Proyectos.models.Estado;
 import es.timescope.rest.Proyectos.models.Proyecto;
 import es.timescope.rest.Proyectos.repositories.ProyectosRepository;
 import es.timescope.rest.Proyectos.exceptions.ProyectoNotFoundException;
+import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
+import es.timescope.rest.Usuarios.mappers.UsuariosMapper;
 import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.rest.Tareas.repositories.TareasRepository;
@@ -41,6 +43,7 @@ public class ProyectoServicesImpl implements ProyectoServices {
     private final UsuariosRepository usuariosRepository;
     private final TareasRepository tareasRepository;
     private final ProyectosMapper proyectoMapper;
+    private final UsuariosMapper usuariosMapper;
     private final NotificacionService notificacionService;
     private final AuthUtils authUtils;
 
@@ -277,6 +280,23 @@ public class ProyectoServicesImpl implements ProyectoServices {
         // Borrar las tareas del usuario en este proyecto
         tareasRepository.findByProyectoIdAndUsuarioId(proyectoId, usuarioId)
                 .forEach(t -> tareasRepository.deleteById(t.getId()));
+    }
+
+    @Override
+    public List<UsuarioResponseDto> getMiembros(Long id) {
+        log.info("Obteniendo miembros del proyecto con id: {}", id);
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+        Proyecto proyecto = proyectosRepository.findById(id)
+                .orElseThrow(() -> new ProyectoNotFoundException(id));
+
+        if (caller.getOrganizacion() == null || proyecto.getOrganizacion() == null
+                || !proyecto.getOrganizacion().getId().equals(caller.getOrganizacion().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes acceso a este proyecto");
+        }
+
+        return proyecto.getUsuarios().stream()
+                .map(usuariosMapper::toUsuarioResponseDto)
+                .toList();
     }
 
     private List<Usuario> checkUsuarios(List<Long> usuariosIds) {

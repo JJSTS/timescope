@@ -31,6 +31,7 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
   const [usuarioUsername, setUsuarioUsername] = useState('');
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);
   const [miembros, setMiembros] = useState<Miembro[]>([]);
+  const [miembrosLoading, setMiembrosLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,20 +41,31 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
   useEffect(() => {
     if (!organizacionId) return;
     const token = localStorage.getItem('token');
-    const headers = { Authorization: `Bearer ${token}` };
-
-    fetch(`${BASE}/organizaciones/${organizacionId}/proyectos`, { headers })
+    fetch(`${BASE}/organizaciones/${organizacionId}/proyectos`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then(r => r.ok ? r.json() : [])
       .then(data => setProyectos(Array.isArray(data) ? data : []))
       .catch(() => setProyectos([]));
+  }, [organizacionId]);
 
-    if (canAssign) {
-      fetch(`${BASE}/organizaciones/${organizacionId}/miembros`, { headers })
-        .then(r => r.ok ? r.json() : [])
-        .then(data => setMiembros(Array.isArray(data) ? data : []))
-        .catch(() => setMiembros([]));
+  useEffect(() => {
+    if (!canAssign || !proyectoId) {
+      setMiembros([]);
+      setUsuarioUsername('');
+      return;
     }
-  }, [organizacionId, canAssign]);
+    const token = localStorage.getItem('token');
+    setMiembrosLoading(true);
+    fetch(`${BASE}/proyectos/${proyectoId}/miembros`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setMiembros(Array.isArray(data) ? data : []))
+      .catch(() => setMiembros([]))
+      .finally(() => setMiembrosLoading(false));
+    setUsuarioUsername('');
+  }, [proyectoId, canAssign]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -202,9 +214,11 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
                 className="tcm-input"
                 value={usuarioUsername}
                 onChange={(e) => setUsuarioUsername(e.target.value)}
-                disabled={loading || miembros.length === 0}
+                disabled={loading || miembrosLoading || !proyectoId}
               >
-                <option value="">Sin asignar</option>
+                <option value="">
+                  {!proyectoId ? 'Selecciona un proyecto primero' : miembrosLoading ? 'Cargando…' : 'Sin asignar'}
+                </option>
                 {miembros.map(m => (
                   <option key={m.id} value={m.username}>
                     @{m.username} — {m.nombres} {m.apellidos}

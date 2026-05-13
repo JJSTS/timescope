@@ -3,6 +3,7 @@ package es.timescope.rest.Proyectos.controllers;
 import es.timescope.rest.Proyectos.dto.*;
 import es.timescope.rest.Proyectos.models.Estado;
 import es.timescope.rest.Proyectos.services.ProyectoServices;
+import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 import es.timescope.utils.pagination.PageResponse;
 import es.timescope.utils.pagination.PaginationLinksUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -56,6 +58,12 @@ public class ProyectosRestController {
     public ResponseEntity<ProyectoResponseDto> findById(@PathVariable Long id) {
         log.info("Buscando proyecto por id: {}", id);
         return ResponseEntity.ok(proyectoServices.findById(id));
+    }
+
+    @GetMapping("/{id}/miembros")
+    public ResponseEntity<List<UsuarioResponseDto>> getMiembros(@PathVariable Long id) {
+        log.info("Obteniendo miembros del proyecto con id: {}", id);
+        return ResponseEntity.ok(proyectoServices.getMiembros(id));
     }
 
     @GetMapping("/estado/{estado}")
