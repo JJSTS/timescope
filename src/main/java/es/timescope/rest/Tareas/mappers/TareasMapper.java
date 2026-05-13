@@ -64,6 +64,7 @@ public class TareasMapper {
                 .fechaInicio(tarea.getFechaInicio())
                 .fechaFin(tarea.getFechaFin())
                 .usuario(usuario != null ? usuario : tarea.getUsuario())
+                .creador(tarea.getCreador())
                 .proyecto(tarea.getProyecto())
                 .build();
     }
@@ -80,6 +81,7 @@ public class TareasMapper {
                 .fechaInicio(tarea.getFechaInicio())
                 .fechaFin(tarea.getFechaFin())
                 .usuario(tarea.getUsuario() != null ? tarea.getUsuario().getUsername() : null)
+                .creador(tarea.getCreador() != null ? tarea.getCreador().getUsername() : null)
                 .proyectoId(tarea.getProyecto() != null ? tarea.getProyecto().getId() : null)
                 .proyectoNombre(tarea.getProyecto() != null ? tarea.getProyecto().getNombre() : null)
                 .build();

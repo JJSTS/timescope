@@ -148,6 +148,7 @@ public class TareasServicesImpl implements TareasServices {
     public TareaResponseDto createTarea(TareaCreateDto tareaCreateDto){
         log.info("Creando tarea: {}", tareaCreateDto);
         try {
+            Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
             Tarea tarea;
             if (tareaCreateDto.getProyectoId() != null) {
                 Proyecto proyecto = proyectosRepository.findById(tareaCreateDto.getProyectoId())
@@ -156,6 +157,7 @@ public class TareasServicesImpl implements TareasServices {
             } else {
                 tarea = tareasMapper.toTarea(tareaCreateDto);
             }
+            tarea.setCreador(caller);
             return tareasMapper.toTareaResponseDto(tareasRepository.save(tarea));
         } catch (TareaCreateException e) {
             throw e;
@@ -244,7 +246,12 @@ public class TareasServicesImpl implements TareasServices {
         
         Tarea tarea = tareasRepository.findById(tareaAddDto.getTareaId())
                 .orElseThrow(() -> new TareaNotFound(tareaAddDto.getTareaId()));
-        
+
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+        if (caller.getUsername().equals(tareaAddDto.getUsername())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes asignarte una tarea a ti mismo");
+        }
+
         Usuario usuario = usuariosRepository.findByUsername(tareaAddDto.getUsername())
                 .orElseThrow(() -> new UsuarioNotFound("Usuario con username '" + tareaAddDto.getUsername() + "' no encontrado"));
         

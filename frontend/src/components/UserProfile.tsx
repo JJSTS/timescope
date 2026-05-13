@@ -16,6 +16,7 @@ interface Task {
   fechaInicio?: string;
   fechaFin?: string;
   usuario?: string;
+  creador?: string;
   proyectoNombre?: string;
 }
 

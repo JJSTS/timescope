@@ -22,7 +22,7 @@ interface Props {
 }
 
 const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId }) => {
-  const { userRole } = useAuth();
+  const { userRole, username } = useAuth();
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [fechaLimite, setFechaLimite] = useState('');
@@ -73,6 +73,11 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
 
     if (!proyectoId) {
       setError('Debes seleccionar un proyecto');
+      return;
+    }
+
+    if (canAssign && !usuarioUsername) {
+      setError('Debes asignar la tarea a un usuario');
       return;
     }
 
@@ -209,28 +214,27 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
 
           {canAssign && (
             <div className="tcm-field">
-              <label className="tcm-label">Asignar a</label>
+              <label className="tcm-label">Asignar a <span className="tcm-required">*</span></label>
               <select
                 className="tcm-input"
                 value={usuarioUsername}
                 onChange={(e) => setUsuarioUsername(e.target.value)}
                 disabled={loading || miembrosLoading || !proyectoId}
+                required
               >
                 <option value="">
-                  {!proyectoId ? 'Selecciona un proyecto primero' : miembrosLoading ? 'Cargando…' : 'Sin asignar'}
+                  {!proyectoId ? 'Selecciona un proyecto primero' : miembrosLoading ? 'Cargando…' : 'Selecciona un usuario'}
                 </option>
-                {miembros.map(m => (
+                {miembros.filter(m => m.username !== username).map(m => (
                   <option key={m.id} value={m.username}>
                     @{m.username} — {m.nombres} {m.apellidos}
                     {m.rol ? ` (${m.rol})` : ''}
                   </option>
                 ))}
               </select>
-              {usuarioUsername && (
-                <p className="tcm-assign-hint">
-                  La tarea quedará en estado <strong>ABIERTO</strong> al asignarse.
-                </p>
-              )}
+              <p className="tcm-assign-hint">
+                La tarea quedará en estado <strong>ABIERTO</strong> al asignarse.
+              </p>
             </div>
           )}
 

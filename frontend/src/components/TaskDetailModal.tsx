@@ -14,6 +14,7 @@ interface Task {
   fechaInicio?: string;
   fechaFin?: string;
   usuario?: string;
+  creador?: string;
 }
 
 interface Props {
@@ -205,6 +206,12 @@ const TaskDetailModal: React.FC<Props> = ({ task, onClose, onUpdated }) => {
                 <div className="task-modal-row">
                   <span className="task-modal-label">Asignado a</span>
                   <span className="task-modal-value">@{task.usuario}</span>
+                </div>
+              )}
+              {task.creador && (
+                <div className="task-modal-row">
+                  <span className="task-modal-label">Creado por</span>
+                  <span className="task-modal-value">@{task.creador}</span>
                 </div>
               )}
               {task.proyectoNombre && (

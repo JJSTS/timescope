@@ -22,6 +22,7 @@ public class TareaResponseDto {
     private LocalDateTime fechaInicio;
     private LocalDateTime fechaFin;
     private String usuario;
+    private String creador;
     private Long proyectoId;
     private String proyectoNombre;
 
