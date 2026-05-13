@@ -519,7 +519,12 @@ const UserProfile: React.FC = () => {
                     <h3 className="member-modal-name">{selectedMember.nombres} {selectedMember.apellidos}</h3>
                     <span className="member-modal-username">@{selectedMember.username}</span>
                     <div className="member-modal-roles">
-                      {selectedMember.rol && <span className={`role-badge role-${selectedMember.rol.toLowerCase()}`}>{selectedMember.rol}</span>}
+                      {selectedMember.rol && (
+                        <span className={`role-badge role-${selectedMember.rol.toLowerCase()}`}>{selectedMember.rol}</span>
+                      )}
+                      {orgAdmin && selectedMember.username === orgAdmin && (
+                        <span className="ceo-badge">CEO</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -528,22 +533,30 @@ const UserProfile: React.FC = () => {
                     <span className="member-modal-label">Email</span>
                     <span className="member-modal-value">{selectedMember.email}</span>
                   </div>
-                  {selectedMember.proyectos?.length && (
-                    <div className="member-modal-row">
-                      <span className="member-modal-label">Proyectos ({selectedMember.proyectos.length})</span>
+                  <div className="member-modal-row">
+                    <span className="member-modal-label">Proyectos ({selectedMember.proyectos?.length ?? 0})</span>
+                    {(selectedMember.proyectos?.length ?? 0) > 0 ? (
                       <div className="member-modal-tags">
-                        {selectedMember.proyectos.map(p => <span key={p} className="member-modal-tag member-modal-tag--proyecto">{p}</span>)}
+                        {selectedMember.proyectos!.map(p => (
+                          <span key={p} className="member-modal-tag member-modal-tag--proyecto">{p}</span>
+                        ))}
                       </div>
-                    </div>
-                  )}
-                  {selectedMember.tareas?.length && (
-                    <div className="member-modal-row">
-                      <span className="member-modal-label">Tareas ({selectedMember.tareas.length})</span>
+                    ) : (
+                      <span className="member-modal-empty">Sin proyectos asignados</span>
+                    )}
+                  </div>
+                  <div className="member-modal-row">
+                    <span className="member-modal-label">Tareas ({selectedMember.tareas?.length ?? 0})</span>
+                    {(selectedMember.tareas?.length ?? 0) > 0 ? (
                       <div className="member-modal-tags">
-                        {selectedMember.tareas.map(t => <span key={t} className="member-modal-tag member-modal-tag--tarea">{t}</span>)}
+                        {selectedMember.tareas!.map(t => (
+                          <span key={t} className="member-modal-tag member-modal-tag--tarea">{t}</span>
+                        ))}
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <span className="member-modal-empty">Sin tareas asignadas</span>
+                    )}
+                  </div>
                 </div>
               </>
             )}
