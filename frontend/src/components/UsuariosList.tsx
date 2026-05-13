@@ -190,9 +190,14 @@ const UsuariosList: React.FC = () => {
                   <div className={`ul-avatar ul-avatar--${roleKey}`}>
                     {m.nombres?.charAt(0)}{m.apellidos?.charAt(0)}
                   </div>
-                  <span className={`ul-role-pill ${PILL[roleKey] || 'pill--miembro'}`}>
-                    {m.rol || 'MIEMBRO'}
-                  </span>
+                  <div className="ul-card-top-right">
+                    <span className={`ul-role-pill ${PILL[roleKey] || 'pill--miembro'}`}>
+                      {m.rol || 'MIEMBRO'}
+                    </span>
+                    {m.username === orgAdmin && (
+                      <span className="ul-ceo-badge">CEO</span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="ul-card-name">{m.nombres} {m.apellidos}</div>

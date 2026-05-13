@@ -143,6 +143,29 @@
 .pill--desarrollador { background: #ede9fe; color: #5b21b6; }
 .pill--miembro       { background: #f3f4f6; color: #6b7280; }
 
+/* ── CARD TOP RIGHT (pill + ceo badge) ── */
+.ul-card-top-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+}
+
+.ul-ceo-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
 /* ── CARD NAME ── */
 .ul-card-name {
   font-size: 0.975rem;

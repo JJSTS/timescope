@@ -48,6 +48,10 @@ public class ProyectoServicesImpl implements ProyectoServices {
         return authUtils.callerHasRole(Roles.DIRECTOR);
     }
 
+    private boolean puedeVerTodosLosProyectos() {
+        return authUtils.callerHasRole(Roles.DIRECTOR) || authUtils.callerHasRole(Roles.LIDER);
+    }
+
     private Specification<Proyecto> specOrganizacion(Usuario caller) {
         return (root, query, cb) -> {
             if (caller.getOrganizacion() == null) return cb.disjunction();
@@ -77,11 +81,9 @@ public class ProyectoServicesImpl implements ProyectoServices {
             return cb.equal(join.get("id"), caller.getId());
         };
 
-        Specification<Proyecto> criterio = Specification.where(specIdProyecto)
-                .and(specNombreProyecto)
-                .and(specIsDeleted)
-                .and(specUsuario)
-                .and(specOrganizacion(caller));
+        Specification<Proyecto> criterio = puedeVerTodosLosProyectos()
+                ? Specification.where(specIdProyecto).and(specNombreProyecto).and(specIsDeleted).and(specOrganizacion(caller))
+                : Specification.where(specIdProyecto).and(specNombreProyecto).and(specIsDeleted).and(specUsuario).and(specOrganizacion(caller));
 
         return proyectosRepository.findAll(criterio, pageable).map(proyectoMapper::toProyectoResponseDto);
     }
@@ -98,10 +100,12 @@ public class ProyectoServicesImpl implements ProyectoServices {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes acceso a este proyecto");
         }
 
-        boolean esMiembro = proyecto.getUsuarios().stream()
-                .anyMatch(u -> u.getId().equals(caller.getId()));
-        if (!esMiembro) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes acceso a este proyecto");
+        if (!puedeVerTodosLosProyectos()) {
+            boolean esMiembro = proyecto.getUsuarios().stream()
+                    .anyMatch(u -> u.getId().equals(caller.getId()));
+            if (!esMiembro) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes acceso a este proyecto");
+            }
         }
 
         return proyectoMapper.toProyectoResponseDto(proyecto);
@@ -115,12 +119,14 @@ public class ProyectoServicesImpl implements ProyectoServices {
         Specification<Proyecto> specEstado = (root, query, cb) ->
                 cb.equal(root.get("estado"), estado);
 
-        Specification<Proyecto> specUsuario = (root, query, cb) -> {
-            Join<Proyecto, Usuario> join = root.join("usuarios");
-            return cb.equal(join.get("id"), caller.getId());
-        };
+        Specification<Proyecto> criterio = puedeVerTodosLosProyectos()
+                ? specEstado.and(specOrganizacion(caller))
+                : specEstado.and((root, query, cb) -> {
+                    Join<Proyecto, Usuario> join = root.join("usuarios");
+                    return cb.equal(join.get("id"), caller.getId());
+                }).and(specOrganizacion(caller));
 
-        return proyectosRepository.findAll(specEstado.and(specUsuario).and(specOrganizacion(caller)), pageable)
+        return proyectosRepository.findAll(criterio, pageable)
                 .map(proyectoMapper::toProyectoResponseDto);
     }
 
