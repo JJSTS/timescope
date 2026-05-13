@@ -141,7 +141,7 @@ const TaskDetailModal: React.FC<Props> = ({ task, onClose, onUpdated }) => {
   };
 
   const renderActions = () => {
-    if (isAssigned && !isLeader) {
+    if (isAssigned) {
       if (task.estado === 'ABIERTO') {
         return (
           <button className="task-action-btn task-action-btn--iniciar" onClick={() => handleChangeEstado('ACTIVO')} disabled={saving}>
