@@ -1,23 +1,28 @@
-package es.timescope.rest.Emails.Impl;
+        package es.timescope.rest.Emails.Impl;
 
 import es.timescope.rest.Emails.services.EmailService;
 import es.timescope.rest.Emails.exceptions.EmailEmptyOrNull;
 import es.timescope.rest.Emails.exceptions.EmailNotSent;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailException;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
+
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
-    private final JavaMailSender mailSender;
 
-    @Value("${app.mail.from:pruebapruebasdaw2026@gmail.com}")
+    @Value("${mailtrap.api.token}")
+    private String apiToken;
+
+    @Value("${mailtrap.inbox.id}")
+    private String inboxId;
+
+    @Value("${app.mail.from:info@timescope.org}")
     private String fromEmail;
 
     @Override
@@ -26,18 +31,28 @@ public class EmailServiceImpl implements EmailService {
             throw new EmailEmptyOrNull();
         }
         try {
-            log.info("Enviando email simple a: {}", to);
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(to);
-            message.setSubject(subject);
-            message.setText(body);
-            message.setFrom(fromEmail);
+            log.info("Enviando email a: {}", to);
 
-            mailSender.send(message);
-            log.info("Email simple enviado correctamente a: {}", to);
-        } catch (MailException e) {
+            Map<String, Object> payload = Map.of(
+                "from", Map.of("email", fromEmail),
+                "to", List.of(Map.of("email", to)),
+                "subject", subject,
+                "text", body
+            );
+
+            RestClient.create()
+                .post()
+                .uri("https://sandbox.api.mailtrap.io/api/send/" + inboxId)
+                .header("Authorization", "Bearer " + apiToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(payload)
+                .retrieve()
+                .toBodilessEntity();
+
+            log.info("Email enviado correctamente a: {}", to);
+        } catch (Exception e) {
             log.error("Error al enviar email a {}: {}", to, e.getMessage());
-            throw new EmailNotSent("Error al enviar email simple: " + e.getMessage());
+            throw new EmailNotSent("Error al enviar email: " + e.getMessage());
         }
     }
 }

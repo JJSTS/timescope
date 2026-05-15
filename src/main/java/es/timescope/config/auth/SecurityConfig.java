@@ -2,7 +2,6 @@ package es.timescope.config.auth;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.security.autoconfigure.web.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -10,7 +9,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -40,11 +38,14 @@ public class SecurityConfig {
   @Value("${api.version}")
   private String apiVersion;
 
+  @Value("${cors.allowed-origins:http://localhost:3000,https://timescope-app.loca.lt,https://timescope-api.loca.lt}")
+  private String allowedOriginsRaw;
+
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3001"));
-    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+    configuration.setAllowedOriginPatterns(Arrays.asList(allowedOriginsRaw.split(",")));
+    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Total-Count", "Link"));
     configuration.setAllowCredentials(true);
@@ -91,6 +92,7 @@ public class SecurityConfig {
     http
       .authorizeHttpRequests(auth -> auth
               .requestMatchers("/error/**").permitAll()
+              .requestMatchers("/ws/**").permitAll()
               .requestMatchers("/public/**","/", "/auth/**", "/webjars/**", "/css/**", "/images/**").permitAll()
               .anyRequest().authenticated())
             .formLogin(form -> form

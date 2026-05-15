@@ -1,9 +1,12 @@
 package es.timescope.rest.auth.controllers;
 
+import es.timescope.rest.auth.dto.ChangePasswordDto;
 import es.timescope.rest.auth.dto.JwtAuthResponse;
+import es.timescope.rest.auth.dto.ResetPasswordDto;
 import es.timescope.rest.auth.dto.UserSignInRequest;
 import es.timescope.rest.auth.dto.UserSignUpRequest;
 import es.timescope.rest.auth.services.authentication.AuthenticationService;
+import es.timescope.rest.auth.services.authentication.PasswordResetService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +27,7 @@ import java.util.Map;
 @RequestMapping("api/${api.version}/auth")
 public class AuthenticationRestController {
   private final AuthenticationService authenticationService;
+  private final PasswordResetService passwordResetService;
 
   @PostMapping("/signup")
   public ResponseEntity<JwtAuthResponse> signUp(@Valid @RequestBody UserSignUpRequest request) {
@@ -35,6 +39,24 @@ public class AuthenticationRestController {
   public ResponseEntity<JwtAuthResponse> signIn(@Valid @RequestBody UserSignInRequest request) {
     log.info("Iniciando sesión de usuario: {}", request);
     return ResponseEntity.ok(authenticationService.signIn(request));
+  }
+
+  @PatchMapping("/password")
+  public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordDto changePasswordDto) {
+    authenticationService.cambiarPassword(changePasswordDto);
+    return ResponseEntity.ok().build();
+  }
+
+  @PostMapping("/forgot-password")
+  public ResponseEntity<Void> forgotPassword(@RequestBody Map<String, String> body) {
+    passwordResetService.enviarCodigo(body.get("username"));
+    return ResponseEntity.ok().build();
+  }
+
+  @PostMapping("/reset-password")
+  public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordDto dto) {
+    passwordResetService.resetPassword(dto.getUsername(), dto.getCode(), dto.getNewPassword(), dto.getPasswordConfirm());
+    return ResponseEntity.ok().build();
   }
 
   @ResponseStatus(HttpStatus.BAD_REQUEST)

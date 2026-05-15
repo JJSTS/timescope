@@ -1,0 +1,55 @@
+### Usuario autenticado envía solicitud a TechCorpSolutions
+POST http://localhost:8080/api/v1/solicitud/enviar/SecureNetSecurity
+Authorization: Bearer {{auth_token}}
+
+### POST - Enviar solicitud a InnovatechDigital
+POST http://localhost:8080/api/v1/solicitud/enviar/WebMasterAgency
+Authorization: Bearer {{auth_token}}
+
+### GET - Obtener solicitudes pendientes de una organización
+GET http://localhost:8080/api/v1/solicitud/pendientes/2
+Authorization: Bearer {{auth_token}}
+
+### GET - Obtener solicitudes pendientes de Innovatech
+GET http://localhost:8080/api/v1/solicitud/pendientes/2
+Authorization: Bearer {{auth_token}}
+
+### GET - Obtener solicitudes pendientes de Innovatech
+GET http://localhost:8080/api/v1/solicitud/mis-pendientes
+Authorization: Bearer {{auth_token}}
+
+### 3️⃣ PUT - Aceptar solicitud (Administrador/Coordinador)
+PUT http://localhost:8080/api/v1/solicitud/1/aceptar
+Authorization: Bearer {{auth_token}}
+
+### PUT - Aceptar otra solicitud
+PUT http://localhost:8080/api/v1/solicitud/2/aceptar
+Authorization: Bearer {{auth_token}}
+
+### PUT - Aceptar tercera solicitud
+PUT http://localhost:8080/api/v1/solicitud/3/aceptar
+Authorization: Bearer {{auth_token}}
+
+### 4️⃣ PUT - Rechazar solicitud (Administrador/Coordinador)
+PUT http://localhost:8080/api/v1/solicitud/4/rechazar
+Authorization: Bearer {{auth_token}}
+
+### PUT - Rechazar otra solicitud
+PUT http://localhost:8080/api/v1/solicitud/5/rechazar
+Authorization: Bearer {{auth_token}}
+
+### PUT - Rechazar tercera solicitud
+PUT http://localhost:8080/api/v1/solicitud/6/rechazar
+Authorization: Bearer {{auth_token}}
+
+### 5️⃣ DELETE - Cancelar solicitud (Usuario solicitante)
+DELETE http://localhost:8080/api/v1/solicitud/1/cancelar
+Authorization: Bearer {{auth_token}}
+
+### DELETE - Cancelar otra solicitud
+DELETE http://localhost:8080/api/v1/solicitud/2/cancelar
+Authorization: Bearer {{auth_token}}
+
+### DELETE - Cancelar tercera solicitud
+DELETE http://localhost:8080/api/v1/solicitud/3/cancelar
+Authorization: Bearer {{auth_token}}

@@ -1,6 +1,6 @@
 package es.timescope.rest.Usuarios.services;
 
-import es.timescope.rest.Emails.Impl.UsuarioEmailServiceImpl;
+import es.timescope.config.auth.AuthUtils;
 import es.timescope.rest.Emails.services.UsuarioEmailService;
 import es.timescope.rest.Usuarios.dto.UsuarioCreateDto;
 import es.timescope.rest.Usuarios.dto.UsuarioInfoResponse;
@@ -21,20 +21,21 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @Slf4j
 @CacheConfig(cacheNames = {"usuarios"})
 @RequiredArgsConstructor
 public class UsuarioServiceImpl implements UsuariosService {
-    private final UsuarioEmailService usuarioEmailService;
     private final UsuariosRepository usuariosRepository;
     private final UsuariosMapper usuarioMapper;
+    private final AuthUtils authUtils;
 
     @Override
     public Page<UsuarioResponseDto> findAll(Optional<String> username, Optional<String> email, Optional<Boolean> isDeleted, Pageable pageable) {
@@ -66,26 +67,10 @@ public class UsuarioServiceImpl implements UsuariosService {
         log.info("Buscando el usuario con id: {}", id);
 
         var usuario = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
-        var proyectos =  usuariosRepository.findProyectoByUsuarioId(id).stream().map(p -> p.getNombre()).toList();
+        var proyectos = usuariosRepository.findProyectoByUsuarioId(id).stream().map(p -> p.getNombre()).toList();
         var tareas = usuariosRepository.findTareaByUsuarioId(id).stream().map(p -> p.getNombre()).toList();
 
-        return  usuarioMapper.toUsuarioInfoResponse(usuario, proyectos, tareas);
-    }
-
-    @Override
-    @CachePut(key = "#result.id")
-    public UsuarioResponseDto save(UsuarioCreateDto usuarioCreateDto) {
-        log.info("Guardando usuario: {}", usuarioCreateDto);
-        Usuario usuario = usuarioMapper.toUsuario(usuarioCreateDto);
-        usuario.setRoles(Set.of(Roles.DESARROLLADOR));
-        usuario.setIsDeleted(false);
-
-        usuariosRepository.findByUsernameEqualsIgnoreCaseOrEmailEqualsIgnoreCase(usuarioCreateDto.getUsername(), usuarioCreateDto.getEmail())
-                .ifPresent(u -> {
-                    throw new UsuarioNombreOrEmailExists("Ya existe un usuario con ese username o email");
-                });
-        usuarioEmailService.enviarConfirmacionCreacion(usuario);
-        return usuarioMapper.toUsuarioResponseDto(usuariosRepository.save(usuario));
+        return usuarioMapper.toUsuarioInfoResponse(usuario, proyectos, tareas);
     }
 
     @Override
@@ -95,7 +80,6 @@ public class UsuarioServiceImpl implements UsuariosService {
         usuariosRepository.findByUsernameEqualsIgnoreCaseOrEmailEqualsIgnoreCase(userRequest.getUsername(), userRequest.getEmail())
                 .ifPresent(u -> {
                     if (!u.getId().equals(id)) {
-                        System.out.println("usuario encontrado: " + u.getId() + " Mi id: " + id);
                         throw new UsuarioNombreOrEmailExists("Ya existe un usuario con ese username o email");
                     }
                 });
@@ -108,7 +92,6 @@ public class UsuarioServiceImpl implements UsuariosService {
         log.info("Actualizando parcialmente el usuario con id: {}", id);
         Usuario usuario = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
 
-        // Validar que username o email no existan (si se están actualizando)
         if ((userRequest.getUsername() != null && !userRequest.getUsername().isBlank()) ||
             (userRequest.getEmail() != null && !userRequest.getEmail().isBlank())) {
             usuariosRepository.findByUsernameEqualsIgnoreCaseOrEmailEqualsIgnoreCase(
@@ -121,48 +104,67 @@ public class UsuarioServiceImpl implements UsuariosService {
                     });
         }
 
-        // Actualizar solo los campos que no sean null
         usuarioMapper.updateUsuarioFromDto(userRequest, usuario);
         return usuarioMapper.toUsuarioResponseDto(usuariosRepository.save(usuario));
     }
 
     @Override
+    public UsuarioResponseDto getMe() {
+        Usuario usuario = authUtils.getUsuarioAuthentication(usuariosRepository);
+        return usuarioMapper.toUsuarioResponseDto(usuario, authUtils.getCallerRole());
+    }
+
+    private static final Map<Roles, Integer> ROLE_LEVEL = Map.of(
+            Roles.DIRECTOR,     3,
+            Roles.LIDER,        2,
+            Roles.DESARROLLADOR,1
+    );
+
+    @Override
     @Transactional
     public void asignarRol(Long id, Roles role) {
         log.info("Asignando un rol al usuario con id: {}", id);
-        Usuario usuario = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
-        usuario.getRoles().clear();
-        usuario.getRoles().add(role);
-        usuariosRepository.save(usuario);
-    }
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+        Usuario objetivo = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
 
-    @Override
-    @Transactional
-    public void deleteById(Long id) {
-        log.info("Borrando usuario por id: {}", id);
-        Usuario user = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
-        if (usuariosRepository.existsProyectosByUsuarioId(id) && usuariosRepository.existsTareasByUsuarioId(id)) {
-            log.info("Borrado lógico de usuario por id: {}", id);
-            usuariosRepository.updateIsDeletedToTrueById(id);
-        } else {
-            log.info("Borrado físico de usuario por id: {}", id);
-            usuariosRepository.delete(user);
+        // Un usuario no puede cambiar su propio rol
+        if (caller.getId().equals(objetivo.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes cambiar tu propio rol");
         }
+
+        // El CEO (admin de la org) puede cambiar el rol de cualquier miembro, incluidos otros DIRECTOREs
+        boolean callerIsOrgAdmin = caller.getOrganizacion() != null
+                && caller.getOrganizacion().getAdmin() != null
+                && caller.getOrganizacion().getAdmin().getId().equals(caller.getId());
+
+        if (!callerIsOrgAdmin) {
+            int callerLevel   = callerMaxLevel();
+            int objetivoLevel = objetivoMaxLevel(objetivo);
+            if (objetivoLevel >= callerLevel) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "No puedes cambiar el rol de un usuario con igual o mayor jerarquía que la tuya");
+            }
+        }
+
+        // El rol a asignar debe estar dentro de lo permitido para el caller
+        validarRolAsignable(role);
+
+        objetivo.setRol(role);
+        usuariosRepository.save(objetivo);
     }
 
-    @Override
-    public List<Usuario> findAllActiveUsuarios() {
-        log.info("Buscando todos los usuarios activos");
-        return usuariosRepository.findAllByIsDeletedFalse();
+    private int callerMaxLevel() {
+        if (authUtils.callerHasRole(Roles.DIRECTOR))     return ROLE_LEVEL.get(Roles.DIRECTOR);
+        if (authUtils.callerHasRole(Roles.LIDER))        return ROLE_LEVEL.get(Roles.LIDER);
+        return ROLE_LEVEL.get(Roles.DESARROLLADOR);
     }
 
-    @Override
-    public Optional<Usuario> findByUsuarioname(String username) {
-        return usuariosRepository.findByUsername(username);
+    private int objetivoMaxLevel(Usuario objetivo) {
+        return ROLE_LEVEL.getOrDefault(objetivo.getRol(), 0);
     }
 
-    @Override
-    public void save(Usuario user) {
-        usuariosRepository.save(user);
+    private void validarRolAsignable(Roles rolObjetivo) {
+        if (authUtils.callerHasRole(Roles.DIRECTOR)) return;
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permisos para asignar roles");
     }
 }

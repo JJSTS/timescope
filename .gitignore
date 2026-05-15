@@ -38,6 +38,10 @@ frontend/node_modules/
 package-lock.json
 frontend/package-lock.json
 
+### Documentación local Claude Code ###
+CLAUDE.md
+ANALISIS_REQUISITOS.md
+
 ### Documentation (generated files) ###
 BIENVENIDA_FRONTEND.md
 CHECKLIST_TROUBLESHOOTING.md
@@ -49,3 +53,5 @@ RESUMEN_FINAL.md
 STATUS.md
 frontend/INICIAR_FRONTEND.bat
 frontend/README.md
+/.claude/worktrees/keen-mahavira-4a9ece/
+/.claude/settings.local.json

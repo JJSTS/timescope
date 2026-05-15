@@ -5,6 +5,43 @@
   overflow: hidden;
 }
 
+:root {
+  /* Brand palette derived from the Favicon (hourglass + task bars) */
+  --ts-navy: #2d4a6b;          /* hourglass slate navy — primary brand */
+  --ts-navy-dark: #1e3450;     /* deeper navy for hover/active */
+  --ts-navy-light: #3d5f88;    /* softer navy for secondary */
+  --ts-blue: #2a8dcb;          /* logo middle bar */
+  --ts-blue-dark: #1f6fa3;
+  --ts-blue-soft: #e6f2fa;
+  --ts-green: #7db23e;         /* logo flag / sand */
+  --ts-green-dark: #5f9024;
+  --ts-green-soft: #ecf5dc;
+  --ts-orange: #e58a3f;        /* logo top bar */
+  --ts-orange-dark: #c8702a;
+  --ts-orange-soft: #fdf0e2;
+  --ts-danger: #c93e3e;
+  --ts-danger-soft: #fdecec;
+
+  /* Surface tokens */
+  --ts-bg: #f5f7fa;
+  --ts-surface: #ffffff;
+  --ts-surface-soft: #f1f5f9;
+  --ts-border: #e2e8f0;
+  --ts-border-soft: #eef2f6;
+  --ts-text: #1e293b;
+  --ts-muted: #64748b;
+  --ts-muted-2: #94a3b8;
+
+  /* Brand-aware aliases (so existing CSS picks up the new palette) */
+  --ts-accent: var(--ts-navy);
+  --ts-accent-2: var(--ts-blue);
+  --ts-accent-soft: rgba(45, 74, 107, 0.08);
+  --ts-shadow: 0 2px 8px rgba(45, 74, 107, 0.08);
+  --ts-shadow-lg: 0 10px 25px rgba(15, 23, 42, 0.08);
+  --ts-shadow-brand: 0 8px 24px rgba(45, 74, 107, 0.18);
+  --ts-radius: 8px;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -15,4 +52,6 @@ body {
   font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--ts-bg);
+  color: var(--ts-text);
 }

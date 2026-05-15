@@ -1,6 +1,8 @@
 package es.timescope.rest.Usuarios.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import es.timescope.rest.Organizaciones.models.Organizacion;
 import es.timescope.rest.Proyectos.models.Proyecto;
 import es.timescope.rest.Tareas.models.Tarea;
 import jakarta.persistence.*;
@@ -11,11 +13,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Builder
 @Entity
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
@@ -42,14 +43,9 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
-    @CollectionTable(
-            name = "USUARIO_ROLES",
-            joinColumns = @JoinColumn(name = "user_id")
-    )
-    @Column(name = "roles")
-    private Set<Roles> roles;
+    @Column(nullable = false)
+    private Roles rol;
 
     @Column(columnDefinition = "boolean default false")
     @Builder.Default
@@ -57,9 +53,7 @@ public class Usuario implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
-                .collect(Collectors.toSet());
+        return List.of(new SimpleGrantedAuthority("ROLE_" + rol.name()));
     }
 
     @OneToMany(mappedBy = "usuario")
@@ -72,11 +66,19 @@ public class Usuario implements UserDetails {
     @ToString.Exclude
     private List<Proyecto> proyectos;
 
-//    Spring Security
+    @ManyToOne
+    @JoinColumn(name = "organizacion_id")
+    @JsonIgnore
+    @ToString.Exclude
+    private Organizacion organizacion;
+
     @Override
     public String getUsername() {
-        return username;
+        return this.username;
     }
+
+    @Override
+    public String getPassword() { return this.password; }
 
     @Override
     public boolean isAccountNonExpired() {

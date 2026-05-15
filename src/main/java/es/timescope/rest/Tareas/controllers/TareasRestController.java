@@ -1,10 +1,14 @@
 package es.timescope.rest.Tareas.controllers;
 
+import es.timescope.rest.Tareas.dto.TareaAddDto;
 import es.timescope.rest.Tareas.dto.TareaCreateDto;
 import es.timescope.rest.Tareas.dto.TareaResponseDto;
 import es.timescope.rest.Tareas.dto.TareaUpdateDto;
+import es.timescope.rest.Tareas.mappers.TareasMapper;
+import es.timescope.rest.Tareas.models.Estado;
 import es.timescope.rest.Tareas.models.Tarea;
 import es.timescope.rest.Tareas.services.TareasServices;
+import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.utils.pagination.PageResponse;
 import es.timescope.utils.pagination.PaginationLinksUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,8 +27,14 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -41,9 +51,9 @@ public class TareasRestController {
             @RequestParam(required = false) Optional<String> usuario,
             @RequestParam(required = false) Optional<String> estado,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String direction,
+            @RequestParam(defaultValue = "desc") String direction,
             HttpServletRequest request
     ) {
         log.info("Buscando todos los titulares con usuario={} estado={}", usuario, estado);
@@ -57,13 +67,65 @@ public class TareasRestController {
 
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<List<TareaResponseDto>> getTasksByUser(@AuthenticationPrincipal Usuario usuario){
+        log.info("Obteniendo tareas del usuario: {}", usuario.getUsername());
+        List<TareaResponseDto> tareasMapeadas = tareasServices.findByUsuarioId(usuario.getId());
+        return ResponseEntity.ok(tareasMapeadas);
+    }
+
+    @GetMapping("/me/activo")
+    public ResponseEntity<List<TareaResponseDto>> getTasksByUserActivo(){
+        try {
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            
+            if (!(principal instanceof Usuario)) {
+                log.error("Principal no es una instancia de Usuario");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(List.of());
+            }
+            
+            Usuario usuario = (Usuario) principal;
+            log.info("Obteniendo tareas activas y abiertas del usuario: {}", usuario.getUsername());
+            
+            List<TareaResponseDto> tareas = new ArrayList<>();
+            tareas.addAll(tareasServices.findByUsuarioIdAndEstado(usuario.getId(), Estado.ACTIVO));
+            tareas.addAll(tareasServices.findByUsuarioIdAndEstado(usuario.getId(), Estado.ABIERTO));
+            
+            log.info("Total de tareas obtenidas: {}", tareas.size());
+            return ResponseEntity.ok(tareas);
+        } catch (Exception e) {
+            log.error("Error al obtener tareas activas y abiertas", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(List.of());
+        }
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<TareaResponseDto> getById(@PathVariable Long id) {
         log.info("Buscando el id de tarea con id: {}", id);
         return ResponseEntity.ok(tareasServices.findById(id));
     }
 
+    @GetMapping("/proyecto/{proyectoId}")
+    public ResponseEntity<PageResponse<TareaResponseDto>> getByProyecto(
+            @PathVariable Long proyectoId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction,
+            HttpServletRequest request
+    ) {
+        log.info("Buscando tareas del proyecto con id: {}", proyectoId);
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(request.getRequestURL().toString());
+        Page<TareaResponseDto> pageResult = tareasServices.findByProyectoId(proyectoId, pageable);
+        return ResponseEntity.ok()
+                .header("link", paginationLinksUtils.createLinkHeader(pageResult, uriBuilder))
+                .body(PageResponse.of(pageResult, sortBy, direction));
+    }
+
     @PostMapping()
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
     public ResponseEntity<TareaResponseDto> createTarea(
             @Valid @RequestBody TareaCreateDto tareaCreateDto){
         log.info("Creando tarea: {}", tareaCreateDto);
@@ -74,6 +136,21 @@ public class TareasRestController {
     public ResponseEntity<TareaResponseDto> updateTarea(@PathVariable Long id, @Valid @RequestBody TareaUpdateDto tareaUpdateDto) {
         log.info("Actualizando tarea con id: {}, datos: {}", id, tareaUpdateDto);
         return ResponseEntity.ok(tareasServices.updateTarea(id, tareaUpdateDto));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
+    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+        log.info("Eliminando tarea con id: {}", id);
+        tareasServices.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/addTarea")
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
+    public ResponseEntity<TareaResponseDto> addTarea(@Valid @RequestBody TareaAddDto tareaAddDto) {
+        log.info("Asignando tarea id: {} al usuario: {}", tareaAddDto.getTareaId(), tareaAddDto.getUsername());
+        return ResponseEntity.status(HttpStatus.OK).body(tareasServices.addTarea(tareaAddDto));
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

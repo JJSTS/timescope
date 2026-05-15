@@ -20,8 +20,6 @@ GET http://localhost:8080/api/v1/usuarios
     &size=10
 Authorization: Bearer {{auth_token}}
 
-###
-
 ### GET ALL - Filtrar por isDeleted
 GET http://localhost:8080/api/v1/usuarios
     ?isDeleted=false
@@ -39,19 +37,10 @@ GET http://localhost:8080/api/v1/usuarios
     &direction=desc
 Authorization: Bearer {{auth_token}}
 
-### PATCH - Asignar rol a un usuario - requiere rol: DIRECTOR y COORDINADOR
-
-PATCH http://localhost:8080/api/v1/usuarios/1/asingRol?role=COORDINADOR
+### GET - Obtener mi propio perfil (isAuthenticated)
+GET http://localhost:8080/api/v1/usuarios/me
 Authorization: Bearer {{auth_token}}
 
-### POST - Crear Usuarios
-POST http://localhost:8080/api/v1/usuarios
-Content-Type: application/json
-
-{
- "nombres": "Juan Jesus Sebastian",
- "apellidos": "Trejo Salinas",
- "email": "juanjesustrejosalinas06@gmail.com",
- "username": "jjsts06",
-  "password": "kknero"
-}
+### PATCH - Asignar rol (DIRECTOR → cualquier rol; LIDER → solo LIDER)
+PATCH http://localhost:8080/api/v1/usuarios/1/asingRol?role=LIDER
+Authorization: Bearer {{auth_token}}

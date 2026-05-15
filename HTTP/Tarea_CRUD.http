@@ -37,7 +37,7 @@ Authorization: Bearer {{auth_token}}
 GET http://localhost:8080/api/v1/tareas/3
 Authorization: Bearer {{auth_token}}
 
-### POST
+### POST - Crear tarea sin proyecto
 POST http://localhost:8080/api/v1/tareas
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
@@ -46,6 +46,25 @@ Authorization: Bearer {{auth_token}}
   "nombre": "Pruebas",
   "descripcion": "Tarea de pruebas"
 }
+
+### POST - Crear tarea asociada a un proyecto
+POST http://localhost:8080/api/v1/tareas
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "nombre": "Implementar login",
+  "descripcion": "Crear formulario de autenticación",
+  "proyectoId": 1
+}
+
+### GET - Obtener tareas de un proyecto (paginado)
+GET http://localhost:8080/api/v1/tareas/proyecto/1
+    ?page=0
+    &size=10
+    &sortBy=id
+    &direction=asc
+Authorization: Bearer {{auth_token}}
 
 ### PUT - Actualizar tarea con ID 1
 PUT http://localhost:8080/api/v1/tareas/update/1
@@ -58,3 +77,42 @@ Authorization: Bearer {{auth_token}}
   "estado": "SUSPENDIDO",
   "usuario": "María"
 }
+
+### POST ADD - Asignar tarea ID 1 al usuario admin
+POST http://localhost:8080/api/v1/tareas/add
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "tareaId": 2,
+  "username": "mmartinez"
+}
+
+### POST ADD - Asignar tarea ID 3 al usuario cgarcia
+POST http://localhost:8080/api/v1/tareas/add
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "tareaId": 3,
+  "username": "cgarcia"
+}
+
+### POST ADD - Asignar tarea ID 5 al usuario mmartinez
+POST http://localhost:8080/api/v1/tareas/add
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "tareaId": 5,
+  "username": "mmartinez"
+}
+
+### GET MY TASKS - Obtener todas mis tareas (usuario autenticado)
+GET http://localhost:8080/api/v1/tareas/me
+Authorization: Bearer {{auth_token}}
+
+
+### GET MY TASKS - Obtener todas las tareas activas (usuario autenticado)
+GET http://localhost:8080/api/v1/tareas/me/activo
+Authorization: Bearer {{auth_token}}

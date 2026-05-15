@@ -2,12 +2,16 @@ package es.timescope.rest.Proyectos.services;
 
 import es.timescope.rest.Proyectos.dto.*;
 import es.timescope.rest.Proyectos.models.*;
+import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import java.util.List;
 import java.util.Optional;
 
 public interface ProyectoServices {
     Page<ProyectoResponseDto> findAll(Optional<Long> id, Optional<String> nombre, Optional<Boolean> isDeleted, Pageable pageable);
+
+    ProyectoResponseDto findById(Long id);
 
     Page<ProyectoResponseDto> findByEstado(Estado estado, Pageable pageable);
 
@@ -17,7 +21,13 @@ public interface ProyectoServices {
 
     ProyectoResponseDto addUsuario(Long id, String username);
 
+    void removeUsuario(Long proyectoId, Long usuarioId);
+
 //    Proyecto update(Long id, ProyectoUpdateDto proyectoUpdateDto);
 
     void deleteById(Long id);
+
+    ProyectoResponseDto cambiarEstado(Long id, Estado estado);
+
+    List<UsuarioResponseDto> getMiembros(Long id);
 }
