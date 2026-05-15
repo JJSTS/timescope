@@ -38,6 +38,13 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
   const BASE = process.env.REACT_APP_API_URL;
   const canAssign = ['DIRECTOR', 'LIDER'].includes(userRole?.toUpperCase() ?? '');
 
+  const minFechaLimite = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 2);
+    d.setSeconds(0, 0);
+    return d.toISOString().slice(0, 16);
+  })();
+
   useEffect(() => {
     if (!organizacionId) return;
     const token = localStorage.getItem('token');
@@ -78,6 +85,11 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
 
     if (canAssign && !usuarioUsername) {
       setError('Debes asignar la tarea a un usuario');
+      return;
+    }
+
+    if (fechaLimite && fechaLimite < minFechaLimite) {
+      setError('La fecha límite debe ser al menos 2 días después de hoy');
       return;
     }
 
@@ -175,6 +187,7 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
               type="datetime-local"
               value={fechaLimite}
               onChange={(e) => setFechaLimite(e.target.value)}
+              min={minFechaLimite}
               required
               disabled={loading}
             />
