@@ -79,17 +79,17 @@ Las peticiones al backend se redirigen automáticamente a `localhost:8080` graci
 
 Crea un archivo `src/main/resources/application-prod.properties` o define estas variables en el entorno:
 
-| Variable | Descripción | Ejemplo |
-|---|---|---|
-| `PORT` | Puerto del servidor | `8080` |
-| `JDBC_URL` | URL de conexión PostgreSQL | `jdbc:postgresql://host:5432/timescope` |
-| `DB_USERNAME` | Usuario de base de datos | `postgres` |
-| `DB_PASSWORD` | Contraseña de base de datos | `secret` |
-| `JWT_SECRET` | Clave para firmar los tokens JWT | Cadena larga y aleatoria |
-| `MAIL_USERNAME` | Usuario SMTP (Mailtrap) | `5f57559dcaa97d` |
-| `MAIL_PASSWORD` | Contraseña SMTP (Mailtrap) | `45c18abbc6a72d` |
-| `MAIL_FROM` | Dirección remitente | `info@timescope.org` |
-| `URL` | URL del frontend (para emails y CORS) | `https://timescope.vercel.app` |
+| Variable | Descripción |
+|---|---|
+| `PORT` | Puerto del servidor (por defecto `8080`) |
+| `JDBC_URL` | URL de conexión PostgreSQL en formato `jdbc:postgresql://host:5432/db` |
+| `DB_USERNAME` | Usuario de base de datos |
+| `DB_PASSWORD` | Contraseña de base de datos |
+| `JWT_SECRET` | Clave para firmar los tokens JWT (cadena larga y aleatoria) |
+| `MAIL_USERNAME` | Usuario SMTP de tu proveedor de correo |
+| `MAIL_PASSWORD` | Contraseña SMTP |
+| `MAIL_FROM` | Dirección remitente (ej: `info@timescope.org`) |
+| `URL` | URL del frontend (para emails y CORS) |
 
 ### Frontend
 
