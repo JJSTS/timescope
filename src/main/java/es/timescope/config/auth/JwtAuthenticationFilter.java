@@ -88,7 +88,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         Collection<? extends GrantedAuthority> authorities;
 
         if (orgId != null && userDetails instanceof Usuario usuario) {
-          // Roles acotados a la organización activa
           List<UsuarioOrgRol> orgRoles = usuarioOrgRolRepository
               .findByUsuarioIdAndOrganizacionId(usuario.getId(), orgId);
           if (!orgRoles.isEmpty()) {
@@ -97,12 +96,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .collect(Collectors.toList());
             log.info("Roles de org {}: {}", orgId, authorities);
           } else {
-            // Sin roles org-scoped: usa el rol global del usuario
             authorities = userDetails.getAuthorities();
             log.info("Sin roles org-scoped para org {}, usando roles globales: {}", orgId, authorities);
           }
         } else {
-          // Sin orgId en el token: usa los roles globales del usuario
           authorities = userDetails.getAuthorities();
           log.info("Roles globales: {}", authorities);
         }

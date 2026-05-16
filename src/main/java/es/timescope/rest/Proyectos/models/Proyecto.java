@@ -39,7 +39,7 @@ public class Proyecto {
         joinColumns = @JoinColumn(name = "proyecto_id"),
         inverseJoinColumns = @JoinColumn(name = "usuario_id")
     )
-    @JsonIgnoreProperties("proyectos") // Solo si se va a pasar a json si no, quitar
+    @JsonIgnoreProperties("proyectos")
     @ToString.Exclude
     private List<Usuario> usuarios;
 

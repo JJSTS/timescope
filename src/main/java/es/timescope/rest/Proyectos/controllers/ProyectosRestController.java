@@ -28,9 +28,7 @@ public class ProyectosRestController {
     private final ProyectoServices  proyectoServices;
     private final PaginationLinksUtils paginationLinksUtils;
 
-    // Incluye las búsquedas por id, nombre e isDeleted
     @GetMapping
-//    @PreAuthorize("hasAnyRole('DIRECTOR', 'COORDINADOR')")
     public ResponseEntity<PageResponse<ProyectoResponseDto>> findAll(
             @RequestParam(required = false) Optional<Long> id,
             @RequestParam(required = false)Optional<String> nombre,

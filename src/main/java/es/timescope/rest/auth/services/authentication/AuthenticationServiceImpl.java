@@ -64,7 +64,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var userStored = authUsersRepository.save(user);
         Long orgIdCreada = null;
 
-        // Si el usuario quiere crear una organización
         if (request.getOrganizacion() != null && request.getOrganizacion().getNombre() != null &&
             !request.getOrganizacion().getNombre().isBlank()) {
           log.info("Creando organización: {}", request.getOrganizacion().getNombre());
@@ -80,7 +79,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           userStored.setRol(Roles.DIRECTOR);
           authUsersRepository.save(userStored);
 
-          // Rol DIRECTOR acotado a esta organización
           usuarioOrgRolRepository.save(UsuarioOrgRol.builder()
               .usuario(userStored)
               .organizacion(orgCreated)

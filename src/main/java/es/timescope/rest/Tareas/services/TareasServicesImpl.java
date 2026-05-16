@@ -61,7 +61,6 @@ public class TareasServicesImpl implements TareasServices {
         log.info("Buscando tareas por usuario: {}, estado: {}", usuario, estado);
         Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
 
-        // DESARROLLADOR solo puede ver sus propias tareas
         boolean esDesarrollador = !authUtils.callerHasRole(Roles.DIRECTOR)
                 && !authUtils.callerHasRole(Roles.LIDER);
         if (esDesarrollador) {
@@ -174,7 +173,6 @@ public class TareasServicesImpl implements TareasServices {
         Tarea tareaOpt = tareasRepository.findById(id)
                 .orElseThrow(() -> new TareaNotFound(id));
 
-        // DESARROLLADOR solo puede editar sus propias tareas
         boolean soloDesarrollador = !authUtils.callerHasRole(Roles.DIRECTOR)
                 && !authUtils.callerHasRole(Roles.LIDER);
         if (soloDesarrollador) {
@@ -191,11 +189,9 @@ public class TareasServicesImpl implements TareasServices {
 
         if (tareaUpdateDto.getEstado() == Estado.ACTIVO) {
             if (tareaOpt.getEstado() == Estado.REVISION) {
-                // Reactivación desde REVISION: reinicia el contador
                 tarea.setFechaInicio(java.time.LocalDateTime.now());
                 tarea.setFechaFin(null);
             } else if (tareaOpt.getFechaInicio() == null) {
-                // Primera activación desde ABIERTO
                 tarea.setFechaInicio(java.time.LocalDateTime.now());
             }
         }

@@ -127,12 +127,10 @@ public class UsuarioServiceImpl implements UsuariosService {
         Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
         Usuario objetivo = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
 
-        // Un usuario no puede cambiar su propio rol
         if (caller.getId().equals(objetivo.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes cambiar tu propio rol");
         }
 
-        // El CEO (admin de la org) puede cambiar el rol de cualquier miembro, incluidos otros DIRECTOREs
         boolean callerIsOrgAdmin = caller.getOrganizacion() != null
                 && caller.getOrganizacion().getAdmin() != null
                 && caller.getOrganizacion().getAdmin().getId().equals(caller.getId());
@@ -146,7 +144,6 @@ public class UsuarioServiceImpl implements UsuariosService {
             }
         }
 
-        // El rol a asignar debe estar dentro de lo permitido para el caller
         validarRolAsignable(role);
 
         objetivo.setRol(role);

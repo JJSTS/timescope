@@ -36,7 +36,5 @@ public class UserSignUpRequest {
   @Length(min = 5, message = "Password de comprobación debe tener al menos 5 caracteres")
   private String passwordComprobacion;
 
-  // Campo opcional para crear/unirse a organización
-  // Usa OrganizacionCreateDto en lugar de una clase interna duplicada
   private OrganizacionCreateDto organizacion;
 }

@@ -28,7 +28,6 @@ public class UsuariosRestController {
     private final UsuariosService usuariosService;
     private final PaginationLinksUtils paginationLinksUtils;
 
-    // Cualquier usuario autenticado puede ver sus propios datos
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UsuarioResponseDto> getMe() {

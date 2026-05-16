@@ -23,8 +23,6 @@ public interface ProyectoServices {
 
     void removeUsuario(Long proyectoId, Long usuarioId);
 
-//    Proyecto update(Long id, ProyectoUpdateDto proyectoUpdateDto);
-
     void deleteById(Long id);
 
     ProyectoResponseDto cambiarEstado(Long id, Estado estado);

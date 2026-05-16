@@ -168,7 +168,6 @@ public class ProyectoServicesImpl implements ProyectoServices {
         Proyecto proyecto = proyectosRepository.findById(id)
                 .orElseThrow(() -> new ProyectoNotFoundException(id));
 
-        // LIDER solo puede añadir usuarios a proyectos donde él está asignado
         if (!tieneAccesoTotal()) {
             boolean estaEnProyecto = proyecto.getUsuarios().stream()
                     .anyMatch(u -> u.getId().equals(caller.getId()));
@@ -181,7 +180,6 @@ public class ProyectoServicesImpl implements ProyectoServices {
         Usuario usuario = usuariosRepository.findByUsername(username)
                 .orElseThrow(() -> new ProyectoBadRequestException("Usuario con username: " + username + " no encontrado"));
 
-        // El usuario debe pertenecer a la misma organización que el caller
         Long callerOrgId = authUtils.getCallerOrgId();
         if (callerOrgId == null && caller.getOrganizacion() != null) {
             callerOrgId = caller.getOrganizacion().getId();
@@ -213,7 +211,6 @@ public class ProyectoServicesImpl implements ProyectoServices {
         Proyecto proyecto = proyectosRepository.findById(id)
                 .orElseThrow(() -> new ProyectoNotFoundException(id));
 
-        // LIDER solo puede cambiar estado de proyectos donde está asignado
         if (!tieneAccesoTotal()) {
             boolean estaEnProyecto = proyecto.getUsuarios().stream()
                     .anyMatch(u -> u.getId().equals(caller.getId()));
@@ -277,7 +274,6 @@ public class ProyectoServicesImpl implements ProyectoServices {
         proyecto.getUsuarios().remove(usuario);
         proyectosRepository.save(proyecto);
 
-        // Borrar las tareas del usuario en este proyecto
         tareasRepository.findByProyectoIdAndUsuarioId(proyectoId, usuarioId)
                 .forEach(t -> tareasRepository.deleteById(t.getId()));
     }

@@ -32,7 +32,7 @@ public class Tarea {
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private Estado estado = Estado.ACTIVO;
+    private Estado estado = Estado.ABIERTO;
 
     @Column(precision = 5, scale = 2)
     private BigDecimal horasEstimadas;
