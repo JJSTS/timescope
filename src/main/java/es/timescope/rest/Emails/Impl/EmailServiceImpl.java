@@ -1,4 +1,4 @@
-        package es.timescope.rest.Emails.Impl;
+package es.timescope.rest.Emails.Impl;
 
 import es.timescope.rest.Emails.services.EmailService;
 import es.timescope.rest.Emails.exceptions.EmailEmptyOrNull;

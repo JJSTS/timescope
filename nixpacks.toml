@@ -1,8 +1,0 @@
-[phases.setup]
-nixPkgs = ["jdk21"]
-
-[phases.build]
-cmds = ["./mvnw clean package -DskipTests --no-transfer-progress"]
-
-[start]
-cmd = "java -jar target/*.jar"
