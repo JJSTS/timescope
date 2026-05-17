@@ -28,4 +28,7 @@ public interface TareasRepository extends JpaRepository<Tarea, Long>, JpaSpecifi
 
     @Query("SELECT t FROM Tarea t WHERE t.proyecto.id = :proyectoId")
     Page<Tarea> findByProyectoId(Long proyectoId, Pageable pageable);
+
+    @Query("SELECT t FROM Tarea t WHERE t.proyecto.id = :proyectoId AND t.usuario.id = :usuarioId")
+    List<Tarea> findByProyectoIdAndUsuarioId(Long proyectoId, Long usuarioId);
 }

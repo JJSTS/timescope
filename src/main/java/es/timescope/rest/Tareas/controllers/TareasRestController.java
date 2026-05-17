@@ -125,6 +125,7 @@ public class TareasRestController {
     }
 
     @PostMapping()
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
     public ResponseEntity<TareaResponseDto> createTarea(
             @Valid @RequestBody TareaCreateDto tareaCreateDto){
         log.info("Creando tarea: {}", tareaCreateDto);
@@ -135,6 +136,14 @@ public class TareasRestController {
     public ResponseEntity<TareaResponseDto> updateTarea(@PathVariable Long id, @Valid @RequestBody TareaUpdateDto tareaUpdateDto) {
         log.info("Actualizando tarea con id: {}, datos: {}", id, tareaUpdateDto);
         return ResponseEntity.ok(tareasServices.updateTarea(id, tareaUpdateDto));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
+    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+        log.info("Eliminando tarea con id: {}", id);
+        tareasServices.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/addTarea")

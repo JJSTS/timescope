@@ -1,5 +1,4 @@
 package es.timescope.rest.Proyectos.dto;
-// Quizá no es necesario
 
 import es.timescope.rest.Proyectos.models.Estado;
 import jakarta.validation.constraints.*;

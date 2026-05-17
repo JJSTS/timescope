@@ -103,8 +103,8 @@ const ProyectosList: React.FC = () => {
     setError(null);
     try {
       const url = filtroEstado !== 'Todos'
-        ? `http://localhost:8080/api/v1/proyectos/estado/${filtroEstado}?page=${page}&size=9`
-        : `http://localhost:8080/api/v1/proyectos?page=${page}&size=9`;
+        ? `${process.env.REACT_APP_API_URL}/proyectos/estado/${filtroEstado}?page=${page}&size=9`
+        : `${process.env.REACT_APP_API_URL}/proyectos?page=${page}&size=9`;
       const response = await axios.get<PageResponse>(
         url,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -259,7 +259,11 @@ const ProyectosList: React.FC = () => {
       {showCreateModal && (
         <ProyectoCreateModal
           onClose={() => setShowCreateModal(false)}
-          onCreated={() => fetchProyectos(currentPage)}
+          onCreated={() => {
+            setFiltroEstado('Todos');
+            setCurrentPage(0);
+            fetchProyectos(0);
+          }}
         />
       )}
     </>

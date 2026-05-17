@@ -6,12 +6,9 @@ interface Props {
   onCreated: () => void;
 }
 
-const ESTADOS = ['ACTIVO', 'COMPLETADO', 'SUSPENDIDO'] as const;
-
 const ProyectoCreateModal: React.FC<Props> = ({ onClose, onCreated }) => {
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [estado, setEstado] = useState<string>('ACTIVO');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,13 +19,13 @@ const ProyectoCreateModal: React.FC<Props> = ({ onClose, onCreated }) => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:8080/api/v1/proyectos', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/proyectos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ nombre, descripcion, estado }),
+        body: JSON.stringify({ nombre, descripcion, estado: 'ACTIVO' }),
       });
 
       if (!res.ok) {
@@ -81,21 +78,6 @@ const ProyectoCreateModal: React.FC<Props> = ({ onClose, onCreated }) => {
               disabled={loading}
             />
             <span className="pcm-char-count">{descripcion.length}/300</span>
-          </div>
-
-          <div className="pcm-field">
-            <label className="pcm-label">Estado <span className="pcm-required">*</span></label>
-            <select
-              className="pcm-select"
-              value={estado}
-              onChange={(e) => setEstado(e.target.value)}
-              required
-              disabled={loading}
-            >
-              {ESTADOS.map((e) => (
-                <option key={e} value={e}>{e.charAt(0) + e.slice(1).toLowerCase()}</option>
-              ))}
-            </select>
           </div>
 
           {error && <p className="pcm-error">{error}</p>}

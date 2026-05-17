@@ -64,7 +64,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var userStored = authUsersRepository.save(user);
         Long orgIdCreada = null;
 
-        // Si el usuario quiere crear una organización
         if (request.getOrganizacion() != null && request.getOrganizacion().getNombre() != null &&
             !request.getOrganizacion().getNombre().isBlank()) {
           log.info("Creando organización: {}", request.getOrganizacion().getNombre());
@@ -80,7 +79,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           userStored.setRol(Roles.DIRECTOR);
           authUsersRepository.save(userStored);
 
-          // Rol DIRECTOR acotado a esta organización
           usuarioOrgRolRepository.save(UsuarioOrgRol.builder()
               .usuario(userStored)
               .organizacion(orgCreated)
@@ -91,7 +89,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           log.info("Organización creada con ID: {}, admin: {}", orgIdCreada, userStored.getUsername());
         }
 
-        usuarioEmailService.enviarConfirmacionCreacion(request);
+        try {
+          usuarioEmailService.enviarConfirmacionCreacion(request);
+        } catch (Exception e) {
+          log.warn("No se pudo enviar email de bienvenida a {}: {}", request.getEmail(), e.getMessage());
+        }
         String token = orgIdCreada != null
             ? jwtService.generateToken(userStored, orgIdCreada)
             : jwtService.generateToken(userStored);
@@ -150,7 +152,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     usuario.setPassword(passwordEncoder.encode(changePasswordDto.getNewPassword()));
     authUsersRepository.save(usuario);
-    usuarioEmailService.enviarCambioContrasenia(usuario);
+    try {
+      usuarioEmailService.enviarCambioContrasenia(usuario);
+    } catch (Exception e) {
+      log.warn("No se pudo enviar email de cambio de contraseña a {}: {}", usuario.getEmail(), e.getMessage());
+    }
     log.info("Contraseña cambiada para el usuario: {}", usuario.getUsername());
   }
 }

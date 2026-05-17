@@ -28,7 +28,6 @@ public class UsuariosRestController {
     private final UsuariosService usuariosService;
     private final PaginationLinksUtils paginationLinksUtils;
 
-    // Cualquier usuario autenticado puede ver sus propios datos
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UsuarioResponseDto> getMe() {
@@ -67,7 +66,7 @@ public class UsuariosRestController {
     }
 
     @PatchMapping("/{id}/asingRol")
-    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
+    @PreAuthorize("hasRole('DIRECTOR')")
     public ResponseEntity<?> assingRol(@PathVariable Long id, @RequestParam Roles role) {
         log.info("Asignado un Rol al usuario {}", id);
         usuariosService.asignarRol(id, role);

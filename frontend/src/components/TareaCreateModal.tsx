@@ -22,7 +22,7 @@ interface Props {
 }
 
 const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId }) => {
-  const { userRole } = useAuth();
+  const { userRole, username } = useAuth();
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [fechaLimite, setFechaLimite] = useState('');
@@ -31,32 +31,56 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
   const [usuarioUsername, setUsuarioUsername] = useState('');
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);
   const [miembros, setMiembros] = useState<Miembro[]>([]);
+  const [miembrosLoading, setMiembrosLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const BASE = process.env.REACT_APP_API_URL;
   const canAssign = ['DIRECTOR', 'LIDER'].includes(userRole?.toUpperCase() ?? '');
 
   useEffect(() => {
     if (!organizacionId) return;
     const token = localStorage.getItem('token');
-    const headers = { Authorization: `Bearer ${token}` };
-
-    fetch(`http://localhost:8080/api/v1/organizaciones/${organizacionId}/proyectos`, { headers })
+    fetch(`${BASE}/organizaciones/${organizacionId}/proyectos`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then(r => r.ok ? r.json() : [])
       .then(data => setProyectos(Array.isArray(data) ? data : []))
       .catch(() => setProyectos([]));
+  }, [organizacionId]);
 
-    if (canAssign) {
-      fetch(`http://localhost:8080/api/v1/organizaciones/${organizacionId}/miembros`, { headers })
-        .then(r => r.ok ? r.json() : [])
-        .then(data => setMiembros(Array.isArray(data) ? data : []))
-        .catch(() => setMiembros([]));
+  useEffect(() => {
+    if (!canAssign || !proyectoId) {
+      setMiembros([]);
+      setUsuarioUsername('');
+      return;
     }
-  }, [organizacionId, canAssign]);
+    const token = localStorage.getItem('token');
+    setMiembrosLoading(true);
+    fetch(`${BASE}/proyectos/${proyectoId}/miembros`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setMiembros(Array.isArray(data) ? data : []))
+      .catch(() => setMiembros([]))
+      .finally(() => setMiembrosLoading(false));
+    setUsuarioUsername('');
+  }, [proyectoId, canAssign]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!proyectoId) {
+      setError('Debes seleccionar un proyecto');
+      return;
+    }
+
+    if (canAssign && !usuarioUsername) {
+      setError('Debes asignar la tarea a un usuario');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -74,7 +98,7 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
       if (horasEstimadas) body.horasEstimadas = parseFloat(horasEstimadas);
       if (proyectoId) body.proyectoId = parseInt(proyectoId, 10);
 
-      const createRes = await fetch('http://localhost:8080/api/v1/tareas', {
+      const createRes = await fetch(`${BASE}/tareas`, {
         method: 'POST',
         headers,
         body: JSON.stringify(body),
@@ -88,7 +112,7 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
       const tareaCreada = await createRes.json();
 
       if (canAssign && usuarioUsername) {
-        const assignRes = await fetch('http://localhost:8080/api/v1/tareas/addTarea', {
+        const assignRes = await fetch(`${BASE}/tareas/addTarea`, {
           method: 'POST',
           headers,
           body: JSON.stringify({ tareaId: tareaCreada.id, username: usuarioUsername }),
@@ -190,26 +214,27 @@ const TareaCreateModal: React.FC<Props> = ({ onClose, onCreated, organizacionId 
 
           {canAssign && (
             <div className="tcm-field">
-              <label className="tcm-label">Asignar a</label>
+              <label className="tcm-label">Asignar a <span className="tcm-required">*</span></label>
               <select
                 className="tcm-input"
                 value={usuarioUsername}
                 onChange={(e) => setUsuarioUsername(e.target.value)}
-                disabled={loading || miembros.length === 0}
+                disabled={loading || miembrosLoading || !proyectoId}
+                required
               >
-                <option value="">Sin asignar</option>
-                {miembros.map(m => (
+                <option value="">
+                  {!proyectoId ? 'Selecciona un proyecto primero' : miembrosLoading ? 'Cargando…' : 'Selecciona un usuario'}
+                </option>
+                {miembros.filter(m => m.username !== username).map(m => (
                   <option key={m.id} value={m.username}>
                     @{m.username} — {m.nombres} {m.apellidos}
                     {m.rol ? ` (${m.rol})` : ''}
                   </option>
                 ))}
               </select>
-              {usuarioUsername && (
-                <p className="tcm-assign-hint">
-                  La tarea quedará en estado <strong>ABIERTO</strong> al asignarse.
-                </p>
-              )}
+              <p className="tcm-assign-hint">
+                La tarea quedará en estado <strong>ABIERTO</strong> al asignarse.
+              </p>
             </div>
           )}
 

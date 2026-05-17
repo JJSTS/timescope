@@ -19,6 +19,5 @@ public class UserSignInRequest {
   @Length(min = 5, message = "Password debe tener al menos 5 caracteres")
   private String password;
 
-  /** Nombre de la organización activa. Si se provee, el JWT incluirá roles acotados a esa org. */
   private String orgNombre;
 }

@@ -3,6 +3,7 @@ package es.timescope.rest.Proyectos.controllers;
 import es.timescope.rest.Proyectos.dto.*;
 import es.timescope.rest.Proyectos.models.Estado;
 import es.timescope.rest.Proyectos.services.ProyectoServices;
+import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 import es.timescope.utils.pagination.PageResponse;
 import es.timescope.utils.pagination.PaginationLinksUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -26,9 +28,7 @@ public class ProyectosRestController {
     private final ProyectoServices  proyectoServices;
     private final PaginationLinksUtils paginationLinksUtils;
 
-    // Incluye las búsquedas por id, nombre e isDeleted
     @GetMapping
-//    @PreAuthorize("hasAnyRole('DIRECTOR', 'COORDINADOR')")
     public ResponseEntity<PageResponse<ProyectoResponseDto>> findAll(
             @RequestParam(required = false) Optional<Long> id,
             @RequestParam(required = false)Optional<String> nombre,
@@ -56,6 +56,12 @@ public class ProyectosRestController {
     public ResponseEntity<ProyectoResponseDto> findById(@PathVariable Long id) {
         log.info("Buscando proyecto por id: {}", id);
         return ResponseEntity.ok(proyectoServices.findById(id));
+    }
+
+    @GetMapping("/{id}/miembros")
+    public ResponseEntity<List<UsuarioResponseDto>> getMiembros(@PathVariable Long id) {
+        log.info("Obteniendo miembros del proyecto con id: {}", id);
+        return ResponseEntity.ok(proyectoServices.getMiembros(id));
     }
 
     @GetMapping("/estado/{estado}")
@@ -95,7 +101,7 @@ public class ProyectosRestController {
 
 
     @PutMapping("/usuario/{id}")
-    @PreAuthorize("hasRole('DIRECTOR')")
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
     public ResponseEntity<ProyectoResponseDto> addUsuario(
             @PathVariable Long id,
             @RequestParam String username
@@ -140,8 +146,18 @@ public class ProyectosRestController {
         return ResponseEntity.ok(proyectoServices.cambiarEstado(id, estado));
     }
 
+    @DeleteMapping("/{id}/usuario/{usuarioId}")
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
+    public ResponseEntity<Void> removeUsuario(
+            @PathVariable Long id,
+            @PathVariable Long usuarioId) {
+        log.info("Eliminando usuario {} del proyecto {}", usuarioId, id);
+        proyectoServices.removeUsuario(id, usuarioId);
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('DIRECTOR')")
+    @PreAuthorize("hasAnyRole('DIRECTOR','LIDER')")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
         log.info("Eliminando proyecto con id: {}", id);
 

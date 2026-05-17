@@ -6,7 +6,6 @@ import es.timescope.rest.Tareas.dto.TareaResponseDto;
 import es.timescope.rest.Tareas.dto.TareaUpdateDto;
 import es.timescope.rest.Tareas.models.Tarea;
 import es.timescope.rest.Usuarios.models.Usuario;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -14,20 +13,6 @@ import java.util.List;
 
 @Component
 public class TareasMapper {
-
-    // este
-    public Tarea toTarea(TareaCreateDto tareaCreateDto, Usuario usuario) {
-        return Tarea.builder()
-                .id(null)
-                .nombre(tareaCreateDto.getNombre())
-                .descripcion(tareaCreateDto.getDescripcion())
-                .horasEstimadas(tareaCreateDto.getHorasEstimadas())
-                .fechaLimite(tareaCreateDto.getFechaLimite())
-                .fechaCreacion(LocalDateTime.now())
-                .usuario(usuario)
-                .build();
-
-    }
 
     public Tarea toTarea(TareaCreateDto tareaCreateDto) {
         return Tarea.builder()
@@ -64,6 +49,7 @@ public class TareasMapper {
                 .fechaInicio(tarea.getFechaInicio())
                 .fechaFin(tarea.getFechaFin())
                 .usuario(usuario != null ? usuario : tarea.getUsuario())
+                .creador(tarea.getCreador())
                 .proyecto(tarea.getProyecto())
                 .build();
     }
@@ -80,6 +66,7 @@ public class TareasMapper {
                 .fechaInicio(tarea.getFechaInicio())
                 .fechaFin(tarea.getFechaFin())
                 .usuario(tarea.getUsuario() != null ? tarea.getUsuario().getUsername() : null)
+                .creador(tarea.getCreador() != null ? tarea.getCreador().getUsername() : null)
                 .proyectoId(tarea.getProyecto() != null ? tarea.getProyecto().getId() : null)
                 .proyectoNombre(tarea.getProyecto() != null ? tarea.getProyecto().getNombre() : null)
                 .build();
@@ -89,10 +76,6 @@ public class TareasMapper {
         return tarea.stream()
                 .map(this::toTareaResponseDto)
                 .toList();
-    }
-
-    public Page<TareaResponseDto> toResponseDtoPage(Page<Tarea> tareas) {
-        return tareas.map(this::toTareaResponseDto);
     }
 
 }

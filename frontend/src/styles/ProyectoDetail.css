@@ -42,10 +42,7 @@
 .pd-logo-text {
   font-size: 1.15rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #0f172a;
 }
 
 .pd-back-btn {
@@ -125,6 +122,49 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
+
+.pd-hero-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+.pd-estado-change {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.pd-estado-select {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8rem;
+  color: #374151;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.pd-estado-select:focus { border-color: #667eea; }
+
+.pd-estado-btn {
+  background: #667eea;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.pd-estado-btn:hover:not(:disabled) { background: #5a67d8; }
+.pd-estado-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ---- Métricas rápidas ---- */
 .pd-metrics {
@@ -323,6 +363,96 @@
 
 .pd-add-error   { margin: 0; font-size: 0.82rem; color: #dc2626; }
 .pd-add-success { margin: 0; font-size: 0.82rem; color: #059669; }
+
+/* ---- Eliminar proyecto ---- */
+.pd-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid #fecaca;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.pd-delete-btn:hover:not(:disabled) { background: #fecaca; }
+.pd-delete-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.pd-delete-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+}
+
+.pd-delete-confirm-text {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #991b1b;
+  flex: 1;
+  min-width: 120px;
+}
+
+.pd-delete-cancel-btn {
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #374151;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.pd-delete-cancel-btn:hover:not(:disabled) { background: #e5e7eb; }
+.pd-delete-cancel-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ---- Quitar usuario del proyecto ---- */
+.pd-remove-user-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid #fecaca;
+  background: #fff5f5;
+  color: #991b1b;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.pd-remove-user-btn:hover { background: #fee2e2; }
+
+.pd-remove-user-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+}
+
+.pd-remove-user-text {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #991b1b;
+  flex: 1;
+  min-width: 100px;
+}
 
 /* ---- Grid de usuarios ---- */
 .pd-usuarios-grid {

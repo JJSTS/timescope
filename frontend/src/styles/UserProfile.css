@@ -252,6 +252,34 @@
   border: 1px solid rgba(55, 65, 81, 0.15);
 }
 
+.team-role-pills {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.ceo-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.6rem;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  transition: all 0.2s ease;
+}
+
+.ceo-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 .role-lider {
   background: #fef9c3;
   color: #854d0e;
@@ -1242,6 +1270,12 @@
   color: #2d4a6b;
 }
 
+.member-modal-empty {
+  font-size: 0.82rem;
+  color: #9ca3af;
+  font-style: italic;
+}
+
 .member-modal-tag--tarea {
   background: rgba(59, 130, 246, 0.1);
   color: #3b82f6;
@@ -1349,6 +1383,44 @@
   padding: 2rem 1.5rem;
   margin: 0;
 }
+
+.team-role-assign {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.team-role-select {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.75rem;
+  color: #374151;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+}
+.team-role-select:focus { border-color: #667eea; }
+
+.team-role-btn {
+  background: #667eea;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.team-role-btn:hover:not(:disabled) { background: #5a67d8; }
+.team-role-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.team-role-ok  { font-size: 0.72rem; color: #065f46; }
+.team-role-err { font-size: 0.72rem; color: #991b1b; }
 
 /* ============================================
    RESPONSIVE DESIGN

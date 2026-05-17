@@ -32,7 +32,7 @@ public class Tarea {
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private Estado estado = Estado.ACTIVO;
+    private Estado estado = Estado.ABIERTO;
 
     @Column(precision = 5, scale = 2)
     private BigDecimal horasEstimadas;
@@ -51,6 +51,10 @@ public class Tarea {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "creador_id", updatable = false)
+    private Usuario creador;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "proyecto_id")

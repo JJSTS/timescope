@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Optional;
 
 
-//Pongo todos los CONTROLLERS por si les encontramos algún uso, si no los quito antes de entregar
 @RestController
 @RequestMapping("api/${api.version}/organizaciones")
 @RequiredArgsConstructor
@@ -79,25 +78,21 @@ public class OrganizacionesRestController {
         return ResponseEntity.ok(service.cederAdmin(id, username));
     }
 
-    // 🔹 Filiales
     @GetMapping("/{id}/filiales")
     public ResponseEntity<?> getFiliales(@PathVariable Long id) {
         return ResponseEntity.ok(service.getFiliales(id));
     }
 
-    // 🔹 Empresa matriz
     @GetMapping("/{id}/matriz")
     public ResponseEntity<?> getMatriz(@PathVariable Long id) {
         return ResponseEntity.ok(service.getEmpresaMatriz(id));
     }
 
-    // 🔹 Proyectos de una organización
     @GetMapping("/{id}/proyectos")
     public ResponseEntity<?> getProyectos(@PathVariable Long id) {
         return ResponseEntity.ok(service.getProyectos(id));
     }
 
-    // 🔹 Añadir proyecto
     @PostMapping("/{id}/proyectos/{proyectoId}")
     public ResponseEntity<OrganizacionResponseDto> addProyecto(
             @PathVariable Long id,
@@ -105,7 +100,6 @@ public class OrganizacionesRestController {
         return ResponseEntity.ok(service.addProyecto(id, proyectoId));
     }
 
-    // 🔹 Añadir usuario
     @PostMapping("/{id}/usuarios/{usuarioId}")
     public ResponseEntity<OrganizacionResponseDto> addUsuario(
             @PathVariable Long id,
@@ -120,6 +114,16 @@ public class OrganizacionesRestController {
             @PathVariable Long usuarioId) {
         log.info("Añadiendo director {} a org {}", usuarioId, id);
         return ResponseEntity.ok(service.addDirector(id, usuarioId));
+    }
+
+    @DeleteMapping("/{id}/usuarios/{usuarioId}")
+    @PreAuthorize("hasRole('DIRECTOR')")
+    public ResponseEntity<Void> removeUsuario(
+            @PathVariable Long id,
+            @PathVariable Long usuarioId) {
+        log.info("Eliminando usuario {} de la organización {}", usuarioId, id);
+        service.removeUsuario(id, usuarioId);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}/directores/{usuarioId}")

@@ -2,7 +2,6 @@ package es.timescope.rest.Usuarios.services;
 
 import es.timescope.config.auth.AuthUtils;
 import es.timescope.rest.Emails.services.UsuarioEmailService;
-import es.timescope.rest.Usuarios.dto.UsuarioCreateDto;
 import es.timescope.rest.Usuarios.dto.UsuarioInfoResponse;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 import es.timescope.rest.Usuarios.dto.UsuarioUpdateDto;
@@ -74,19 +73,6 @@ public class UsuarioServiceImpl implements UsuariosService {
     }
 
     @Override
-    public UsuarioResponseDto update(Long id, UsuarioCreateDto userRequest) {
-        log.info("Buscando el usuario con id: {}", id);
-        usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
-        usuariosRepository.findByUsernameEqualsIgnoreCaseOrEmailEqualsIgnoreCase(userRequest.getUsername(), userRequest.getEmail())
-                .ifPresent(u -> {
-                    if (!u.getId().equals(id)) {
-                        throw new UsuarioNombreOrEmailExists("Ya existe un usuario con ese username o email");
-                    }
-                });
-        return usuarioMapper.toUsuarioResponseDto(usuariosRepository.save(usuarioMapper.toUsuario(userRequest, id)));
-    }
-
-    @Override
     @CachePut(key = "#id")
     public UsuarioResponseDto updatePartial(Long id, UsuarioUpdateDto userRequest) {
         log.info("Actualizando parcialmente el usuario con id: {}", id);
@@ -127,20 +113,23 @@ public class UsuarioServiceImpl implements UsuariosService {
         Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
         Usuario objetivo = usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
 
-        // Un usuario no puede cambiar su propio rol
         if (caller.getId().equals(objetivo.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes cambiar tu propio rol");
         }
 
-        // El caller debe tener un nivel jerárquico superior al del objetivo
-        int callerLevel  = callerMaxLevel();
-        int objetivoLevel = objetivoMaxLevel(objetivo);
-        if (objetivoLevel >= callerLevel) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "No puedes cambiar el rol de un usuario con igual o mayor jerarquía que la tuya");
+        boolean callerIsOrgAdmin = caller.getOrganizacion() != null
+                && caller.getOrganizacion().getAdmin() != null
+                && caller.getOrganizacion().getAdmin().getId().equals(caller.getId());
+
+        if (!callerIsOrgAdmin) {
+            int callerLevel   = callerMaxLevel();
+            int objetivoLevel = objetivoMaxLevel(objetivo);
+            if (objetivoLevel >= callerLevel) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "No puedes cambiar el rol de un usuario con igual o mayor jerarquía que la tuya");
+            }
         }
 
-        // El rol a asignar debe estar dentro de lo permitido para el caller
         validarRolAsignable(role);
 
         objetivo.setRol(role);
@@ -159,13 +148,6 @@ public class UsuarioServiceImpl implements UsuariosService {
 
     private void validarRolAsignable(Roles rolObjetivo) {
         if (authUtils.callerHasRole(Roles.DIRECTOR)) return;
-        if (authUtils.callerHasRole(Roles.LIDER)) {
-            if (rolObjetivo != Roles.LIDER && rolObjetivo != Roles.DESARROLLADOR) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                        "Un LIDER solo puede asignar los roles LIDER o DESARROLLADOR");
-            }
-            return;
-        }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permisos para asignar roles");
     }
 }

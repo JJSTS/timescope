@@ -6,4 +6,5 @@ import es.timescope.rest.auth.dto.UserSignUpRequest;
 public interface UsuarioEmailService {
     void enviarConfirmacionCreacion(UserSignUpRequest usuario);
     void enviarCambioContrasenia(Usuario usuario);
+    void enviarCodigoRecuperacion(String email, String nombre, String code);
 }

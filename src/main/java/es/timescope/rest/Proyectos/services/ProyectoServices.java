@@ -2,8 +2,10 @@ package es.timescope.rest.Proyectos.services;
 
 import es.timescope.rest.Proyectos.dto.*;
 import es.timescope.rest.Proyectos.models.*;
+import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import java.util.List;
 import java.util.Optional;
 
 public interface ProyectoServices {
@@ -19,9 +21,11 @@ public interface ProyectoServices {
 
     ProyectoResponseDto addUsuario(Long id, String username);
 
-//    Proyecto update(Long id, ProyectoUpdateDto proyectoUpdateDto);
+    void removeUsuario(Long proyectoId, Long usuarioId);
 
     void deleteById(Long id);
 
     ProyectoResponseDto cambiarEstado(Long id, Estado estado);
+
+    List<UsuarioResponseDto> getMiembros(Long id);
 }

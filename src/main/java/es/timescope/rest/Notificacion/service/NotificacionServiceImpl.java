@@ -27,10 +27,13 @@ public class NotificacionServiceImpl implements NotificacionService {
 
     @Override
     public void enviarNotificacion(String username, String mensaje, Tipo tipo) {
+        enviarNotificacion(username, mensaje, tipo, null);
+    }
 
-
+    @Override
+    public void enviarNotificacion(String username, String mensaje, Tipo tipo, Long solicitudId) {
         Usuario usuario = repositorioUsuarios.findByUsername(username).orElseThrow(() -> new UsuarioNotFound(username));
-        Notificacion notificacion = notificacionMapper.toNotificacion(usuario, mensaje, tipo);
+        Notificacion notificacion = notificacionMapper.toNotificacion(usuario, mensaje, tipo, solicitudId);
 
         notificacionRepository.save(notificacion);
 

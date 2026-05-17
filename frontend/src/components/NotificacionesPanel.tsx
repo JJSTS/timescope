@@ -16,16 +16,17 @@ const TIPO_LABELS: Record<TipoNotificacion, string> = {
   EQUIPO_UNIDO: 'Equipo unido',
 };
 
-const TIPO_ICONS: Record<TipoNotificacion, string> = {
-  SOLICITUD_RECIBIDA: '📩',
-  SOLICITUD_ACEPTADA: '✅',
-  SOLICITUD_RECHAZADA: '❌',
-  TAREA_ASIGNADA: '📋',
-  EQUIPO_UNIDO: '👥',
+const TIPO_ICON_CLASS: Record<TipoNotificacion, string> = {
+  SOLICITUD_RECIBIDA:  'bi bi-envelope-arrow-down-fill',
+  SOLICITUD_ACEPTADA:  'bi bi-check-circle-fill',
+  SOLICITUD_RECHAZADA: 'bi bi-x-circle-fill',
+  TAREA_ASIGNADA:      'bi bi-clipboard2-check-fill',
+  EQUIPO_UNIDO:        'bi bi-people-fill',
 };
 
 function formatFecha(fechaStr: string): string {
-  const fecha = new Date(fechaStr);
+  const fechaUtc = fechaStr.endsWith('Z') || fechaStr.includes('+') ? fechaStr : fechaStr + 'Z';
+  const fecha = new Date(fechaUtc);
   const ahora = new Date();
   const diffMin = Math.floor((ahora.getTime() - fecha.getTime()) / 60000);
   const diffH = Math.floor(diffMin / 60);
@@ -140,11 +141,8 @@ const NotificacionesPanel: React.FC<Props> = ({ onClose, onPendientesChange }) =
 
   // Para emparejar la i-ésima notificación SOLICITUD_RECIBIDA con la i-ésima solicitud pendiente
   const getSolicitudParaNotif = (notif: NotificacionDto): SolicitudDto | null => {
-    if (notif.tipo !== 'SOLICITUD_RECIBIDA') return null;
-    const idx = pendientes
-      .filter(n => n.tipo === 'SOLICITUD_RECIBIDA')
-      .indexOf(notif);
-    return solicitudes[idx] ?? null;
+    if (notif.tipo !== 'SOLICITUD_RECIBIDA' || !notif.solicitudId) return null;
+    return solicitudes.find(s => s.id === notif.solicitudId) ?? null;
   };
 
   const lista = tab === 'pendientes' ? pendientes : historial;
@@ -194,7 +192,7 @@ const NotificacionesPanel: React.FC<Props> = ({ onClose, onPendientesChange }) =
           return (
             <div key={notif.id} className="notif-item">
               <div className="notif-item-icon" aria-hidden="true">
-                {TIPO_ICONS[notif.tipo]}
+                <i className={TIPO_ICON_CLASS[notif.tipo]} />
               </div>
 
               <div className="notif-item-body">

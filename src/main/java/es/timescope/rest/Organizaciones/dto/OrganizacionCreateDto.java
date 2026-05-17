@@ -13,7 +13,4 @@ import lombok.NoArgsConstructor;
 public class OrganizacionCreateDto {
     @NotBlank(message = "Nombre de la organización no puede estar vacío")
     private String nombre;
-    
-    // El ID se autogenera en la BD
-    // El admin se asigna desde el request o desde el usuario autenticado
 }

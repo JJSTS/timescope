@@ -16,6 +16,7 @@ interface Task {
   fechaInicio?: string;
   fechaFin?: string;
   usuario?: string;
+  creador?: string;
   proyectoNombre?: string;
 }
 
@@ -48,14 +49,17 @@ interface MemberDetail {
   tareas?: string[];
 }
 
+const ROLE_LEVEL: Record<string, number> = { DIRECTOR: 3, LIDER: 2, COORDINADOR: 1, DESARROLLADOR: 1 };
+
 const UserProfile: React.FC = () => {
-  const { username } = useAuth();
+  const { username, userRole } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [orgNombre, setOrgNombre] = useState<string | null>(null);
+  const [orgAdmin, setOrgAdmin] = useState<string | null>(null);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [selectedMember, setSelectedMember] = useState<MemberDetail | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -79,8 +83,8 @@ const UserProfile: React.FC = () => {
     if (!token) return;
     const isLeader = ['DIRECTOR', 'LIDER'].includes(rol?.toUpperCase() ?? '');
     const url = isLeader
-      ? 'http://localhost:8080/api/v1/tareas?size=100'
-      : 'http://localhost:8080/api/v1/tareas/me?size=100';
+      ? `${process.env.REACT_APP_API_URL}/tareas?size=100`
+      : `${process.env.REACT_APP_API_URL}/tareas/me?size=100`;
     const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     if (res.ok) {
       const data = await res.json();
@@ -100,25 +104,29 @@ const UserProfile: React.FC = () => {
           return;
         }
 
-        const userResponse = await fetch('http://localhost:8080/api/v1/usuarios/me', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const headers = { Authorization: `Bearer ${token}` };
+        const BASE = `${process.env.REACT_APP_API_URL}`;
+
+        // Usuario autenticado
+        const userResponse = await fetch(`${BASE}/usuarios/me`, { headers });
         if (!userResponse.ok) throw new Error('No fue posible cargar el perfil de usuario');
-        const userData = await userResponse.json();
+        const userData: User = await userResponse.json();
         setUser(userData);
 
-        await reloadTasks(userData.rol);
+        await reloadTasks(userData.rol ?? '');
 
+        // Miembros del equipo y nombre de org (si tiene org)
         if (userData.organizacionId) {
           const [teamResponse, orgResponse] = await Promise.all([
-            fetch(`http://localhost:8080/api/v1/organizaciones/${userData.organizacionId}/miembros`, { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`http://localhost:8080/api/v1/organizaciones?id=${userData.organizacionId}&size=1`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`${BASE}/organizaciones/${userData.organizacionId}/miembros`, { headers }),
+            fetch(`${BASE}/organizaciones?id=${userData.organizacionId}&size=1`, { headers }),
           ]);
           if (teamResponse.ok) setTeamMembers(await teamResponse.json());
           if (orgResponse.ok) {
             const orgData = await orgResponse.json();
-            const nombre = orgData?.content?.[0]?.nombre;
-            if (nombre) setOrgNombre(nombre);
+            const org = orgData?.content?.[0];
+            if (org?.nombre) setOrgNombre(org.nombre);
+            if (org?.userAdmin) setOrgAdmin(org.userAdmin);
           }
         }
       } catch (err) {
@@ -160,7 +168,7 @@ const UserProfile: React.FC = () => {
     const token = localStorage.getItem('token');
     setMemberLoading(true);
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/usuarios/${memberId}`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/usuarios/${memberId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setSelectedMember(await res.json());
@@ -266,6 +274,9 @@ const UserProfile: React.FC = () => {
                   {user?.rol
                     ? <span className={`role-badge role-${user.rol.toLowerCase()}`}>{user.rol.toUpperCase()}</span>
                     : <span className="role-badge role-miembro">MIEMBRO</span>}
+                  {orgAdmin && username === orgAdmin && (
+                    <span className="ceo-badge">CEO</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -383,7 +394,7 @@ const UserProfile: React.FC = () => {
                       </div>
                     ))}
                   </div>
-                  
+
                   {totalPages > 1 && (
                     <div className="tasks-pagination">
                       <button
@@ -447,38 +458,39 @@ const UserProfile: React.FC = () => {
                   <h3 className="team-card-title">Equipo</h3>
                   {orgNombre && <p className="team-card-org">{orgNombre}</p>}
                 </div>
-                <span className="team-count-badge">
-                  {teamMembers.filter(m => m.rol === 'DIRECTOR' || m.rol === 'LIDER').length}
-                </span>
+                <span className="team-count-badge">{teamMembers.length}</span>
               </div>
               <div className="team-members-list">
-                {(() => {
-                  const ROLE_ORDER: Record<string, number> = { DIRECTOR: 0, LIDER: 1 };
-                  const lideres = teamMembers
-                    .filter(m => m.rol === 'DIRECTOR' || m.rol === 'LIDER')
-                    .sort((a, b) => (ROLE_ORDER[a.rol ?? ''] ?? 9) - (ROLE_ORDER[b.rol ?? ''] ?? 9));
-                  return lideres.length === 0 ? (
-                    <p className="team-empty">Sin líderes registrados</p>
-                  ) : lideres.map(member => (
-                  <div
-                    key={member.id}
-                    className="team-member-row"
-                    onClick={() => handleMemberClick(member.id)}
-                    title={`Ver perfil de ${member.nombres}`}
-                  >
-                    <div className={`team-member-avatar role-${member.rol?.toLowerCase() || 'miembro'}`}>
-                      {member.nombres?.charAt(0)}{member.apellidos?.charAt(0)}
-                    </div>
-                    <div className="team-member-info">
-                      <span className="team-member-name">{member.nombres} {member.apellidos}</span>
-                      <span className="team-member-username">@{member.username}</span>
-                    </div>
-                    <span className={`team-role-pill role-pill--${member.rol?.toLowerCase() || 'miembro'}`}>
-                      {member.rol || 'MIEMBRO'}
-                    </span>
-                  </div>
-                  ));
-                })()}
+                {teamMembers.length === 0 ? (
+                  <p className="team-empty">Sin miembros registrados</p>
+                ) : (
+                  [...teamMembers]
+                    .sort((a, b) => (ROLE_LEVEL[b.rol?.toUpperCase() ?? ''] ?? 0) - (ROLE_LEVEL[a.rol?.toUpperCase() ?? ''] ?? 0))
+                    .map(member => (
+                      <div key={member.id} className="team-member-row">
+                        <div
+                          className={`team-member-avatar role-${member.rol?.toLowerCase() || 'miembro'}`}
+                          onClick={() => handleMemberClick(member.id)}
+                          title={`Ver perfil de ${member.nombres}`}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {member.nombres?.charAt(0)}{member.apellidos?.charAt(0)}
+                        </div>
+                        <div className="team-member-info">
+                          <span className="team-member-name">{member.nombres} {member.apellidos}</span>
+                          <span className="team-member-username">@{member.username}</span>
+                        </div>
+                        <div className="team-role-pills">
+                          <span className={`team-role-pill role-pill--${member.rol?.toLowerCase() || 'miembro'}`}>
+                            {member.rol || 'MIEMBRO'}
+                          </span>
+                          {orgAdmin && member.username === orgAdmin && (
+                            <span className="ceo-badge">CEO</span>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                )}
               </div>
             </div>
           </aside>
@@ -507,31 +519,56 @@ const UserProfile: React.FC = () => {
                     <h3 className="member-modal-name">{selectedMember.nombres} {selectedMember.apellidos}</h3>
                     <span className="member-modal-username">@{selectedMember.username}</span>
                     <div className="member-modal-roles">
-                      {selectedMember.rol && <span className={`role-badge role-${selectedMember.rol.toLowerCase()}`}>{selectedMember.rol}</span>}
+                      {selectedMember.rol && (
+                        <span className={`role-badge role-${selectedMember.rol.toLowerCase()}`}>{selectedMember.rol}</span>
+                      )}
+                      {orgAdmin && selectedMember.username === orgAdmin && (
+                        <span className="ceo-badge">CEO</span>
+                      )}
                     </div>
                   </div>
                 </div>
                 <div className="member-modal-body">
                   <div className="member-modal-row">
+                    <span className="member-modal-label">Nombre</span>
+                    <span className="member-modal-value">{selectedMember.nombres}</span>
+                  </div>
+                  <div className="member-modal-row">
+                    <span className="member-modal-label">Apellido</span>
+                    <span className="member-modal-value">{selectedMember.apellidos}</span>
+                  </div>
+                  <div className="member-modal-row">
+                    <span className="member-modal-label">Usuario</span>
+                    <span className="member-modal-value">@{selectedMember.username}</span>
+                  </div>
+                  <div className="member-modal-row">
                     <span className="member-modal-label">Email</span>
                     <span className="member-modal-value">{selectedMember.email}</span>
                   </div>
-                  {selectedMember.proyectos?.length && (
-                    <div className="member-modal-row">
-                      <span className="member-modal-label">Proyectos ({selectedMember.proyectos.length})</span>
+                  <div className="member-modal-row">
+                    <span className="member-modal-label">Proyectos ({selectedMember.proyectos?.length ?? 0})</span>
+                    {(selectedMember.proyectos?.length ?? 0) > 0 ? (
                       <div className="member-modal-tags">
-                        {selectedMember.proyectos.map(p => <span key={p} className="member-modal-tag member-modal-tag--proyecto">{p}</span>)}
+                        {selectedMember.proyectos!.map(p => (
+                          <span key={p} className="member-modal-tag member-modal-tag--proyecto">{p}</span>
+                        ))}
                       </div>
-                    </div>
-                  )}
-                  {selectedMember.tareas?.length && (
-                    <div className="member-modal-row">
-                      <span className="member-modal-label">Tareas ({selectedMember.tareas.length})</span>
+                    ) : (
+                      <span className="member-modal-empty">Sin proyectos asignados</span>
+                    )}
+                  </div>
+                  <div className="member-modal-row">
+                    <span className="member-modal-label">Tareas ({selectedMember.tareas?.length ?? 0})</span>
+                    {(selectedMember.tareas?.length ?? 0) > 0 ? (
                       <div className="member-modal-tags">
-                        {selectedMember.tareas.map(t => <span key={t} className="member-modal-tag member-modal-tag--tarea">{t}</span>)}
+                        {selectedMember.tareas!.map(t => (
+                          <span key={t} className="member-modal-tag member-modal-tag--tarea">{t}</span>
+                        ))}
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <span className="member-modal-empty">Sin tareas asignadas</span>
+                    )}
+                  </div>
                 </div>
               </>
             )}
@@ -543,3 +580,4 @@ const UserProfile: React.FC = () => {
 };
 
 export default UserProfile;
+

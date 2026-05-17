@@ -92,6 +92,9 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
 
         Organizacion saved = repository.save(org);
 
+        admin.setOrganizacion(saved);
+        usuariosRepository.save(admin);
+
         usuarioOrgRolRepository.save(UsuarioOrgRol.builder()
                 .usuario(admin)
                 .organizacion(saved)
@@ -166,12 +169,22 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
     }
 
     @Override
+    @Transactional
     public OrganizacionResponseDto addUsuario(Long orgId, Long usuarioId) {
         var org = getEntity(orgId);
         var usuario = usuariosRepository.findById(usuarioId).orElseThrow();
 
         usuario.setOrganizacion(org);
+        usuario.setRol(Roles.DESARROLLADOR);
         org.getUsuarios().add(usuario);
+        usuariosRepository.save(usuario);
+
+        usuarioOrgRolRepository.deleteByUsuarioIdAndOrganizacionId(usuarioId, orgId);
+        usuarioOrgRolRepository.save(UsuarioOrgRol.builder()
+                .usuario(usuario)
+                .organizacion(org)
+                .rol(Roles.DESARROLLADOR)
+                .build());
 
         return OrganizacionesMapper.toDto(repository.save(org));
     }
@@ -224,6 +237,40 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
                 .build());
 
         log.info("Rol {} asignado al usuario {} en org {}", rol, usuarioId, orgId);
+    }
+
+    @Override
+    @Transactional
+    public void removeUsuario(Long orgId, Long usuarioId) {
+        Organizacion org = getEntity(orgId);
+        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
+
+        boolean esDirectorEnOrg = usuarioOrgRolRepository
+                .existsByUsuarioIdAndOrganizacionIdAndRol(caller.getId(), orgId, Roles.DIRECTOR);
+        if (!esDirectorEnOrg && !org.getAdmin().getId().equals(caller.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo un CEO puede eliminar miembros");
+        }
+
+        if (org.getAdmin() != null && org.getAdmin().getId().equals(usuarioId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes eliminar al administrador de la organización");
+        }
+
+        if (caller.getId().equals(usuarioId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes eliminarte a ti mismo de la organización");
+        }
+
+        Usuario usuario = usuariosRepository.findById(usuarioId)
+                .orElseThrow(() -> new UsuarioNotFound(usuarioId.toString()));
+
+        usuario.setOrganizacion(null);
+        usuario.setRol(Roles.DESARROLLADOR);
+        usuariosRepository.save(usuario);
+
+        org.getUsuarios().removeIf(u -> u.getId().equals(usuarioId));
+        repository.save(org);
+
+        usuarioOrgRolRepository.deleteByUsuarioIdAndOrganizacionId(usuarioId, orgId);
+        log.info("Usuario {} eliminado de la organización {}", usuarioId, orgId);
     }
 
     @Override

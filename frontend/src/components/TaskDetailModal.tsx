@@ -14,6 +14,7 @@ interface Task {
   fechaInicio?: string;
   fechaFin?: string;
   usuario?: string;
+  creador?: string;
 }
 
 interface Props {
@@ -45,6 +46,8 @@ const TaskDetailModal: React.FC<Props> = ({ task, onClose, onUpdated }) => {
 
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Edit mode
   const [editing, setEditing] = useState(false);
@@ -56,11 +59,34 @@ const TaskDetailModal: React.FC<Props> = ({ task, onClose, onUpdated }) => {
   if (!task) return null;
 
   const isLeader = ['DIRECTOR', 'LIDER'].includes(userRole?.toUpperCase() ?? '');
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    setSaveError(null);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/tareas/${task.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || 'Error al eliminar la tarea');
+      }
+      onUpdated?.();
+      onClose();
+    } catch (e: any) {
+      setSaveError(e.message);
+      setConfirmDelete(false);
+    } finally {
+      setDeleting(false);
+    }
+  };
   const isAssigned = username === task.usuario;
 
   const putRequest = async (body: Record<string, unknown>) => {
     const token = localStorage.getItem('token');
-    const res = await fetch(`http://localhost:8080/api/v1/tareas/update/${task.id}`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/tareas/update/${task.id}`, {
       method: 'PUT',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -115,7 +141,7 @@ const TaskDetailModal: React.FC<Props> = ({ task, onClose, onUpdated }) => {
   };
 
   const renderActions = () => {
-    if (isAssigned && !isLeader) {
+    if (isAssigned) {
       if (task.estado === 'ABIERTO') {
         return (
           <button className="task-action-btn task-action-btn--iniciar" onClick={() => handleChangeEstado('ACTIVO')} disabled={saving}>
@@ -182,6 +208,12 @@ const TaskDetailModal: React.FC<Props> = ({ task, onClose, onUpdated }) => {
                   <span className="task-modal-value">@{task.usuario}</span>
                 </div>
               )}
+              {task.creador && (
+                <div className="task-modal-row">
+                  <span className="task-modal-label">Creado por</span>
+                  <span className="task-modal-value">@{task.creador}</span>
+                </div>
+              )}
               {task.proyectoNombre && (
                 <div className="task-modal-row">
                   <span className="task-modal-label">Proyecto</span>
@@ -227,6 +259,34 @@ const TaskDetailModal: React.FC<Props> = ({ task, onClose, onUpdated }) => {
                 </button>
               )}
               {actions}
+              {isLeader && !confirmDelete && (
+                <button
+                  className="task-action-btn task-action-btn--eliminar"
+                  onClick={() => setConfirmDelete(true)}
+                  disabled={saving || deleting}
+                >
+                  <i className="bi bi-trash3" /> Eliminar
+                </button>
+              )}
+              {isLeader && confirmDelete && (
+                <div className="task-delete-confirm">
+                  <span className="task-delete-confirm-text">¿Eliminar esta tarea?</span>
+                  <button
+                    className="task-action-btn task-action-btn--eliminar"
+                    onClick={handleDelete}
+                    disabled={deleting}
+                  >
+                    {deleting ? 'Eliminando…' : 'Sí, eliminar'}
+                  </button>
+                  <button
+                    className="task-action-btn task-action-btn--cancelar-edit"
+                    onClick={() => setConfirmDelete(false)}
+                    disabled={deleting}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              )}
               {saveError && <p className="task-estado-error">{saveError}</p>}
             </div>
           </>

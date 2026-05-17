@@ -34,6 +34,9 @@ public class Notificacion {
     @Builder.Default()
     private Boolean leido = false;
 
+    @Column
+    private Long solicitudId;
+
     @Builder.Default
     @Column(updatable = false, nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime fechaCreada = LocalDateTime.now();

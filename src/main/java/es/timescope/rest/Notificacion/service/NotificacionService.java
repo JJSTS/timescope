@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface NotificacionService {
     void enviarNotificacion(String username, String mensaje, Tipo tipo);
+    void enviarNotificacion(String username, String mensaje, Tipo tipo, Long solicitudId);
     void marcarLeido(Long id);
     List<NotificacionResponseDto> noticiacionesPendientes(Long usuarioId);
     List<NotificacionResponseDto> todasNotificaciones(Long usuarioId);

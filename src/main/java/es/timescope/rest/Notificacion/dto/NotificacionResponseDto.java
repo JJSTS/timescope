@@ -19,4 +19,5 @@ public class NotificacionResponseDto {
     private Tipo tipo;
     private String mensaje;
     private LocalDateTime fecha;
+    private Long solicitudId;
 }

@@ -143,6 +143,29 @@
 .pill--desarrollador { background: #ede9fe; color: #5b21b6; }
 .pill--miembro       { background: #f3f4f6; color: #6b7280; }
 
+/* ── CARD TOP RIGHT (pill + ceo badge) ── */
+.ul-card-top-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+}
+
+.ul-ceo-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
 /* ── CARD NAME ── */
 .ul-card-name {
   font-size: 0.975rem;
@@ -184,6 +207,150 @@
   word-break: break-all;
   font-size: 0.82rem;
   color: #6b7280;
+}
+
+/* ── ROLE ASSIGN ── */
+.ul-role-assign {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  border-top: 1px solid #f3f4f6;
+  padding-top: 0.9rem;
+}
+
+.ul-role-select {
+  flex: 1;
+  min-width: 0;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #374151;
+  background: #f9fafb;
+  cursor: pointer;
+}
+
+.ul-role-select:focus {
+  outline: none;
+  border-color: var(--ts-navy, #2d4a6b);
+}
+
+.ul-role-btn {
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  border: none;
+  background: var(--ts-navy, #2d4a6b);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+
+.ul-role-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ul-role-btn:not(:disabled):hover {
+  opacity: 0.85;
+}
+
+.ul-role-ok,
+.ul-role-err {
+  width: 100%;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.2rem 0;
+}
+
+.ul-role-ok  { color: #15803d; }
+.ul-role-err { color: #dc2626; }
+
+/* ── REMOVE MEMBER ── */
+.ul-remove-zone {
+  border-top: 1px solid #f3f4f6;
+  padding-top: 0.9rem;
+}
+
+.ul-remove-btn {
+  width: 100%;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  background: #fff;
+  color: #dc2626;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ul-remove-btn:hover {
+  background: #fee2e2;
+}
+
+.ul-remove-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ul-remove-text {
+  font-size: 0.8rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+.ul-remove-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.ul-remove-confirm-btn {
+  flex: 1;
+  padding: 0.35rem 0.5rem;
+  border: none;
+  border-radius: 6px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.ul-remove-confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ul-remove-confirm-btn:not(:disabled):hover {
+  opacity: 0.85;
+}
+
+.ul-remove-cancel-btn {
+  flex: 1;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #f9fafb;
+  color: #374151;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ul-remove-cancel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ul-remove-cancel-btn:not(:disabled):hover {
+  background: #f3f4f6;
 }
 
 /* ── STATES ── */

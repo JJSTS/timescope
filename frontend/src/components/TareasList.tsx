@@ -45,7 +45,7 @@ const TareasList: React.FC = () => {
 
   useEffect(() => {
     if (!token) return;
-    fetch('http://localhost:8080/api/v1/usuarios/me', {
+    fetch(`${process.env.REACT_APP_API_URL}/usuarios/me`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(r => r.ok ? r.json() : null)
@@ -53,7 +53,7 @@ const TareasList: React.FC = () => {
       .catch(() => {});
   }, [token]);
 
-  const canCreate = ['DIRECTOR', 'COORDINADOR', 'LIDER'].includes(userRole?.toUpperCase() ?? '');
+  const canCreate = ['DIRECTOR', 'LIDER'].includes(userRole?.toUpperCase() ?? '');
 
   useEffect(() => {
     if (userRole) {
@@ -65,7 +65,10 @@ const TareasList: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    const endpoint = `http://localhost:8080/api/v1/tareas?page=${page}&size=10`;
+    const isDeveloper = userRole?.toLowerCase() === 'desarrollador';
+    const endpoint = isDeveloper
+      ? `${process.env.REACT_APP_API_URL}/tareas/me?page=${page}&size=10`
+      : `${process.env.REACT_APP_API_URL}/tareas?page=${page}&size=10`;
 
     try {
       const response = await axios.get<PageResponse>(endpoint, {
@@ -86,9 +89,7 @@ const TareasList: React.FC = () => {
         setTotalPages(response.data.totalPages);
       }
 
-      if (tareasData.length > 0) {
-        console.log('Estructura de la primera tarea recibida:', tareasData[0]);
-      }
+
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || error.message || 'Error al cargar tareas';
       setError(errorMsg);
@@ -110,17 +111,6 @@ const TareasList: React.FC = () => {
     }
   };
 
-  if (loading) return (
-    <div className="tl-state">
-      <span className="tl-state__dot tl-state__dot--loading" />
-      Cargando tareas…
-    </div>
-  );
-  if (error) return <div className="tl-state tl-state--error">{error}</div>;
-  if (tareas.length === 0) return (
-    <div className="tl-state">Sin tareas disponibles</div>
-  );
-
   return (
     <>
       <div className="tl-shell">
@@ -140,6 +130,20 @@ const TareasList: React.FC = () => {
             )}
           </div>
         </header>
+
+        {loading && (
+          <div className="tl-state">
+            <span className="tl-state__dot tl-state__dot--loading" />
+            Cargando tareas…
+          </div>
+        )}
+        {!loading && error && <div className="tl-state tl-state--error">{error}</div>}
+        {!loading && !error && tareas.length === 0 && (
+          <div className="tl-state">Sin tareas disponibles</div>
+        )}
+
+        {/* TABLA — solo si hay datos */}
+        {!loading && !error && tareas.length > 0 && <>
 
         {/* COLUMNAS */}
         <div className="tl-cols-label">
@@ -203,6 +207,8 @@ const TareasList: React.FC = () => {
             Siguiente <i className="bi bi-arrow-right" />
           </button>
         </footer>
+
+        </>}
 
       </div>
 

@@ -32,4 +32,6 @@ public interface TareasServices {
     List<TareaResponseDto> findByProyectoId(Long proyectoId);
 
     Page<TareaResponseDto> findByProyectoId(Long proyectoId, Pageable pageable);
+
+    void deleteById(Long id);
 }

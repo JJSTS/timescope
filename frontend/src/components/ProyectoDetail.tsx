@@ -84,11 +84,26 @@ const ProyectoDetail: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'equipo' | 'tareas'>('info');
 
+  // cambiar estado state
+  const [nuevoEstado, setNuevoEstado] = useState('');
+  const [estadoLoading, setEstadoLoading] = useState(false);
+  const [estadoError, setEstadoError] = useState<string | null>(null);
+
+  // eliminar proyecto state
+  const [confirmDeleteProy, setConfirmDeleteProy] = useState(false);
+  const [deletingProy, setDeletingProy] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   // addUsuario state
   const [addUsername, setAddUsername] = useState('');
   const [addLoading, setAddLoading] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
   const [addSuccess, setAddSuccess] = useState<string | null>(null);
+
+  // eliminar usuario state
+  const [confirmRemoveUser, setConfirmRemoveUser] = useState<number | null>(null);
+  const [removingUser, setRemovingUser] = useState(false);
+  const [removeUserError, setRemoveUserError] = useState<string | null>(null);
 
   // asignarRol state
   const [roleSelections, setRoleSelections] = useState<Record<number, string>>({});
@@ -130,7 +145,7 @@ const ProyectoDetail: React.FC = () => {
     setError(null);
     try {
       const { data: proy } = await axios.get<Proyecto>(
-        `http://localhost:8080/api/v1/proyectos/${id}`,
+        `${process.env.REACT_APP_API_URL}/proyectos/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setProyecto(proy);
@@ -138,7 +153,7 @@ const ProyectoDetail: React.FC = () => {
       if (proy.usuarios && proy.usuarios.length > 0) {
         try {
           const { data: usersPage } = await axios.get(
-            `http://localhost:8080/api/v1/usuarios?page=0&size=100`,
+            `${process.env.REACT_APP_API_URL}/usuarios?page=0&size=100`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           const todos: Usuario[] = Array.isArray(usersPage) ? usersPage : usersPage.content ?? [];
@@ -160,7 +175,7 @@ const ProyectoDetail: React.FC = () => {
     setTareasLoading(true);
     try {
       const { data } = await axios.get(
-        `http://localhost:8080/api/v1/tareas/proyecto/${id}?page=0&size=100`,
+        `${process.env.REACT_APP_API_URL}/tareas/proyecto/${id}?page=0&size=100`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setTareas(Array.isArray(data) ? data : data.content ?? []);
@@ -171,19 +186,39 @@ const ProyectoDetail: React.FC = () => {
     }
   };
 
+  const handleCambiarEstado = async () => {
+    if (!nuevoEstado) return;
+    setEstadoLoading(true);
+    setEstadoError(null);
+    try {
+      await axios.patch(
+        `${process.env.REACT_APP_API_URL}/proyectos/${id}/estado?estado=${nuevoEstado}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setProyecto(prev => prev ? { ...prev, estado: nuevoEstado } : prev);
+      setNuevoEstado('');
+    } catch (err: any) {
+      setEstadoError(err.response?.data?.message || 'No se pudo cambiar el estado.');
+    } finally {
+      setEstadoLoading(false);
+    }
+  };
+
   const handleAddUsuario = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!addUsername.trim()) return;
+    const usernameNorm = addUsername.trim().toLowerCase();
+    if (!usernameNorm) return;
     setAddLoading(true);
     setAddError(null);
     setAddSuccess(null);
     try {
       await axios.put(
-        `http://localhost:8080/api/v1/proyectos/usuario/${id}?username=${encodeURIComponent(addUsername.trim())}`,
+        `${process.env.REACT_APP_API_URL}/proyectos/usuario/${id}?username=${encodeURIComponent(usernameNorm)}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setAddSuccess(`Usuario "${addUsername.trim()}" añadido correctamente.`);
+      setAddSuccess(`Usuario "${usernameNorm}" añadido correctamente.`);
       setAddUsername('');
       fetchProyecto();
     } catch (err: any) {
@@ -200,7 +235,7 @@ const ProyectoDetail: React.FC = () => {
     setRoleFeedback(prev => ({ ...prev, [usuarioId]: { ok: false, msg: '' } }));
     try {
       await axios.patch(
-        `http://localhost:8080/api/v1/usuarios/${usuarioId}/asingRol?role=${role}`,
+        `${process.env.REACT_APP_API_URL}/usuarios/${usuarioId}/asingRol?role=${role}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -213,6 +248,42 @@ const ProyectoDetail: React.FC = () => {
       }));
     } finally {
       setRoleLoading(prev => ({ ...prev, [usuarioId]: false }));
+    }
+  };
+
+  const handleRemoveUsuario = async (usuarioId: number) => {
+    setRemovingUser(true);
+    setRemoveUserError(null);
+    try {
+      await axios.delete(
+        `${process.env.REACT_APP_API_URL}/proyectos/${id}/usuario/${usuarioId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setConfirmRemoveUser(null);
+      fetchProyecto();
+      fetchTareas();
+    } catch (err: any) {
+      setRemoveUserError(err.response?.data?.message || 'No se pudo eliminar al usuario.');
+      setConfirmRemoveUser(null);
+    } finally {
+      setRemovingUser(false);
+    }
+  };
+
+  const handleDeleteProyecto = async () => {
+    setDeletingProy(true);
+    setDeleteError(null);
+    try {
+      await axios.delete(
+        `${process.env.REACT_APP_API_URL}/proyectos/${id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      navigate('/dashboard');
+    } catch (err: any) {
+      setDeleteError(err.response?.data?.message || 'No se pudo eliminar el proyecto.');
+      setConfirmDeleteProy(false);
+    } finally {
+      setDeletingProy(false);
     }
   };
 
@@ -273,12 +344,64 @@ const ProyectoDetail: React.FC = () => {
               <span className="pd-hero-lider">Líder: {proyecto.liderNombre}</span>
             )}
           </div>
-          <span
-            className="pd-hero-badge"
-            style={{ background: meta?.bg ?? '#f3f4f6', color: meta?.color ?? '#6b7280' }}
-          >
-            {meta?.label ?? proyecto.estado ?? '—'}
-          </span>
+          <div className="pd-hero-right">
+            <span
+              className="pd-hero-badge"
+              style={{ background: meta?.bg ?? '#f3f4f6', color: meta?.color ?? '#6b7280' }}
+            >
+              {meta?.label ?? proyecto.estado ?? '—'}
+            </span>
+            {(isDirector || isLider) && (
+              <div className="pd-estado-change">
+                <select
+                  className="pd-estado-select"
+                  value={nuevoEstado}
+                  onChange={e => { setNuevoEstado(e.target.value); setEstadoError(null); }}
+                  disabled={estadoLoading}
+                >
+                  <option value="">Cambiar estado…</option>
+                  {['ACTIVO', 'COMPLETADO', 'SUSPENDIDO']
+                    .filter(e => e !== proyecto.estado)
+                    .map(e => (
+                      <option key={e} value={e}>
+                        {e.charAt(0) + e.slice(1).toLowerCase()}
+                      </option>
+                    ))}
+                </select>
+                <button
+                  className="pd-estado-btn"
+                  onClick={handleCambiarEstado}
+                  disabled={estadoLoading || !nuevoEstado}
+                >
+                  {estadoLoading ? '…' : 'Aplicar'}
+                </button>
+                {estadoError && <p className="pd-add-error">{estadoError}</p>}
+              </div>
+            )}
+
+            {/* Eliminar proyecto */}
+            {(isDirector || isLider) && !confirmDeleteProy && (
+              <button
+                className="pd-delete-btn"
+                onClick={() => setConfirmDeleteProy(true)}
+                disabled={deletingProy}
+              >
+                <i className="bi bi-trash3" /> Eliminar proyecto
+              </button>
+            )}
+            {(isDirector || isLider) && confirmDeleteProy && (
+              <div className="pd-delete-confirm">
+                <span className="pd-delete-confirm-text">¿Eliminar este proyecto?</span>
+                <button className="pd-delete-btn" onClick={handleDeleteProyecto} disabled={deletingProy}>
+                  {deletingProy ? 'Eliminando…' : 'Sí, eliminar'}
+                </button>
+                <button className="pd-delete-cancel-btn" onClick={() => setConfirmDeleteProy(false)} disabled={deletingProy}>
+                  Cancelar
+                </button>
+              </div>
+            )}
+            {deleteError && <p className="pd-add-error">{deleteError}</p>}
+          </div>
         </div>
 
         {/* Métricas rápidas */}
@@ -458,6 +581,39 @@ const ProyectoDetail: React.FC = () => {
                           <p className={roleFeedback[u.id].ok ? 'pd-add-success' : 'pd-add-error'}>
                             {roleFeedback[u.id].msg}
                           </p>
+                        )}
+
+                        {/* Eliminar usuario del proyecto */}
+                        {(isDirector || isLider) && u.username !== currentUsername && (
+                          confirmRemoveUser === u.id ? (
+                            <div className="pd-remove-user-confirm">
+                              <span className="pd-remove-user-text">¿Quitar y borrar sus tareas?</span>
+                              <button
+                                className="pd-delete-btn"
+                                onClick={() => handleRemoveUsuario(u.id)}
+                                disabled={removingUser}
+                              >
+                                {removingUser ? 'Quitando…' : 'Sí, quitar'}
+                              </button>
+                              <button
+                                className="pd-delete-cancel-btn"
+                                onClick={() => { setConfirmRemoveUser(null); setRemoveUserError(null); }}
+                                disabled={removingUser}
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              className="pd-remove-user-btn"
+                              onClick={() => setConfirmRemoveUser(u.id)}
+                            >
+                              <i className="bi bi-person-dash" /> Quitar del proyecto
+                            </button>
+                          )
+                        )}
+                        {removeUserError && confirmRemoveUser === null && (
+                          <p className="pd-add-error">{removeUserError}</p>
                         )}
                       </div>
                     </div>
