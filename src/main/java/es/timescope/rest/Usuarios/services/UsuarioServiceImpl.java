@@ -2,7 +2,6 @@ package es.timescope.rest.Usuarios.services;
 
 import es.timescope.config.auth.AuthUtils;
 import es.timescope.rest.Emails.services.UsuarioEmailService;
-import es.timescope.rest.Usuarios.dto.UsuarioCreateDto;
 import es.timescope.rest.Usuarios.dto.UsuarioInfoResponse;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 import es.timescope.rest.Usuarios.dto.UsuarioUpdateDto;
@@ -71,19 +70,6 @@ public class UsuarioServiceImpl implements UsuariosService {
         var tareas = usuariosRepository.findTareaByUsuarioId(id).stream().map(p -> p.getNombre()).toList();
 
         return usuarioMapper.toUsuarioInfoResponse(usuario, proyectos, tareas);
-    }
-
-    @Override
-    public UsuarioResponseDto update(Long id, UsuarioCreateDto userRequest) {
-        log.info("Buscando el usuario con id: {}", id);
-        usuariosRepository.findById(id).orElseThrow(() -> new UsuarioNotFound(id));
-        usuariosRepository.findByUsernameEqualsIgnoreCaseOrEmailEqualsIgnoreCase(userRequest.getUsername(), userRequest.getEmail())
-                .ifPresent(u -> {
-                    if (!u.getId().equals(id)) {
-                        throw new UsuarioNombreOrEmailExists("Ya existe un usuario con ese username o email");
-                    }
-                });
-        return usuarioMapper.toUsuarioResponseDto(usuariosRepository.save(usuarioMapper.toUsuario(userRequest, id)));
     }
 
     @Override

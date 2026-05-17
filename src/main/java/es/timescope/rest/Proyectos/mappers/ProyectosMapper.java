@@ -4,7 +4,6 @@ import es.timescope.rest.Proyectos.dto.*;
 import es.timescope.rest.Proyectos.models.Proyecto;
 import es.timescope.rest.Usuarios.models.Roles;
 import es.timescope.rest.Usuarios.models.Usuario;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import java.util.List;
 
@@ -45,11 +44,4 @@ public class ProyectosMapper {
                 .build();
     }
 
-    public List<ProyectoResponseDto> toResponseDtoList(List<Proyecto> proyectos) {
-        return proyectos.stream().map(this::toProyectoResponseDto).toList();
-    }
-
-    public Page<ProyectoResponseDto> toResponseDtoPage(Page<Proyecto> proyectos) {
-        return proyectos.map(this::toProyectoResponseDto);
-    }
 }
