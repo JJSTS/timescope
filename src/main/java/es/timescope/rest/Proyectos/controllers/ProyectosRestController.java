@@ -163,6 +163,6 @@ public class ProyectosRestController {
 
         proyectoServices.deleteById(id);
 
-        return ResponseEntity.noContent().build(); // 204
+        return ResponseEntity.noContent().build();
     }
 }

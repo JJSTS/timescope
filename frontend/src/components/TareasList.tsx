@@ -84,7 +84,6 @@ const TareasList: React.FC = () => {
 
       setTareas(tareasData);
 
-      // Guardar total de páginas
       if (!Array.isArray(response.data)) {
         setTotalPages(response.data.totalPages);
       }
@@ -98,7 +97,6 @@ const TareasList: React.FC = () => {
     }
   };
 
-  // Paginación
   const nextPage = () => {
     if (currentPage < totalPages - 1) {
       setCurrentPage(currentPage + 1);
@@ -115,7 +113,6 @@ const TareasList: React.FC = () => {
     <>
       <div className="tl-shell">
 
-        {/* CABECERA */}
         <header className="tl-header">
           <div className="tl-header__left">
             <p className="tl-header__eyebrow">Gestión</p>
@@ -142,10 +139,8 @@ const TareasList: React.FC = () => {
           <div className="tl-state">Sin tareas disponibles</div>
         )}
 
-        {/* TABLA — solo si hay datos */}
         {!loading && !error && tareas.length > 0 && <>
 
-        {/* COLUMNAS */}
         <div className="tl-cols-label">
           <span>Tarea</span>
           <span>Asignado a</span>
@@ -155,7 +150,6 @@ const TareasList: React.FC = () => {
           <span>Estado</span>
         </div>
 
-        {/* FILAS */}
         <ul className="tl-list">
           {tareas.map((tarea) => (
             <li
@@ -195,7 +189,6 @@ const TareasList: React.FC = () => {
           ))}
         </ul>
 
-        {/* PAGINACIÓN */}
         <footer className="tl-pagination">
           <button className="tl-page-btn" onClick={previousPage} disabled={currentPage === 0}>
             <i className="bi bi-arrow-left" /> Anterior

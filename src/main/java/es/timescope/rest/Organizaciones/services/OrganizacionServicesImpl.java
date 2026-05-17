@@ -275,7 +275,7 @@ public class OrganizacionServicesImpl implements OrganizacionServices {
 
     @Override
     public List<UsuarioResponseDto> getMiembros(Long orgId) {
-        getEntity(orgId); // verifica que la org existe
+        getEntity(orgId);
         return usuariosRepository.findByOrganizacionId(orgId)
                 .stream()
                 .map(usuariosMapper::toUsuarioResponseDto)

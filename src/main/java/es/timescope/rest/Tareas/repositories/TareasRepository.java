@@ -14,12 +14,6 @@ import java.util.List;
 @Repository
 public interface TareasRepository extends JpaRepository<Tarea, Long>, JpaSpecificationExecutor<Tarea> {
 
-    @Query("SELECT t FROM Tarea t WHERE t.usuario.id = :usuarioId")
-    List<Tarea> findByUsuarioId(Long usuarioId);
-
-    @Query("SELECT t FROM Tarea t WHERE t.usuario.id = :usuarioId")
-    Page<Tarea> findByUsuarioId(Long usuarioId, Pageable pageable);
-    
     @Query("SELECT t FROM Tarea t WHERE t.usuario.id = :usuarioId AND t.estado = :estado")
     List<Tarea> findByUsuarioIdAndEstado(Long usuarioId, Estado estado);
 

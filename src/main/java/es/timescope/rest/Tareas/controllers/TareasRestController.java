@@ -4,9 +4,7 @@ import es.timescope.rest.Tareas.dto.TareaAddDto;
 import es.timescope.rest.Tareas.dto.TareaCreateDto;
 import es.timescope.rest.Tareas.dto.TareaResponseDto;
 import es.timescope.rest.Tareas.dto.TareaUpdateDto;
-import es.timescope.rest.Tareas.mappers.TareasMapper;
 import es.timescope.rest.Tareas.models.Estado;
-import es.timescope.rest.Tareas.models.Tarea;
 import es.timescope.rest.Tareas.services.TareasServices;
 import es.timescope.rest.Usuarios.models.Usuario;
 import es.timescope.utils.pagination.PageResponse;
@@ -31,7 +29,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

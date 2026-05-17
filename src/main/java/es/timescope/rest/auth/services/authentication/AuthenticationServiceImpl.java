@@ -1,7 +1,6 @@
 package es.timescope.rest.auth.services.authentication;
 
 import es.timescope.config.auth.AuthUtils;
-import es.timescope.rest.Emails.services.EmailService;
 import es.timescope.rest.Emails.services.UsuarioEmailService;
 import es.timescope.rest.Organizaciones.models.Organizacion;
 import es.timescope.rest.Organizaciones.repositories.OrganizacionesRepository;
@@ -29,7 +28,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.security.authentication.BadCredentialsException;
 

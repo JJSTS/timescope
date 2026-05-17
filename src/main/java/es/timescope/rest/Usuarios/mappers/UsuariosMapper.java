@@ -1,6 +1,5 @@
 package es.timescope.rest.Usuarios.mappers;
 
-import es.timescope.rest.Usuarios.dto.UsuarioCreateDto;
 import es.timescope.rest.Usuarios.dto.UsuarioInfoResponse;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 import es.timescope.rest.Usuarios.dto.UsuarioUpdateDto;
@@ -12,19 +11,6 @@ import java.util.List;
 
 @Component
 public class UsuariosMapper {
-    
-    public Usuario toUsuario(UsuarioCreateDto usuario, Long id) {
-        return Usuario.builder()
-                .id(id)
-                .nombres(usuario.getNombres())
-                .apellidos(usuario.getApellidos())
-                .email(usuario.getEmail())
-                .password(usuario.getPassword())
-                .username(usuario.getUsername())
-                .rol(usuario.getRol())
-                .isDeleted(usuario.getIsDeleted())
-                .build();
-    }
 
     public UsuarioResponseDto toUsuarioResponseDto(Usuario usuario) {
         return toUsuarioResponseDto(usuario, usuario.getRol());

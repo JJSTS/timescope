@@ -1,7 +1,6 @@
 package es.timescope.rest.Usuarios.services;
 
 import es.timescope.config.auth.AuthUtils;
-import es.timescope.rest.Emails.services.UsuarioEmailService;
 import es.timescope.rest.Usuarios.dto.UsuarioInfoResponse;
 import es.timescope.rest.Usuarios.dto.UsuarioResponseDto;
 import es.timescope.rest.Usuarios.dto.UsuarioUpdateDto;

@@ -49,7 +49,6 @@ const TaskDetailModal: React.FC<Props> = ({ task, onClose, onUpdated }) => {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  // Edit mode
   const [editing, setEditing] = useState(false);
   const [editNombre, setEditNombre] = useState(task.nombre);
   const [editDescripcion, setEditDescripcion] = useState(task.descripcion);
@@ -185,7 +184,6 @@ const TaskDetailModal: React.FC<Props> = ({ task, onClose, onUpdated }) => {
       >
         <button className="task-modal-close" onClick={onClose}><i className="bi bi-x-lg" /></button>
 
-        {/* ── MODO VISTA ── */}
         {!editing && (
           <>
             <div className="task-modal-header">
@@ -292,7 +290,6 @@ const TaskDetailModal: React.FC<Props> = ({ task, onClose, onUpdated }) => {
           </>
         )}
 
-        {/* ── MODO EDICIÓN ── */}
         {editing && (
           <>
             <div className="task-modal-header">

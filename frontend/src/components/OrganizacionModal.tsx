@@ -96,7 +96,6 @@ const OrganizacionModal: React.FC<Props> = ({ orgId, onClose }) => {
 
           {org && !loading && (
             <>
-              {/* Stats */}
               <div className="org-stats">
                 <div className="org-stat-card">
                   <span className="org-stat-number">{org.proyectosIds?.length ?? 0}</span>
@@ -112,7 +111,6 @@ const OrganizacionModal: React.FC<Props> = ({ orgId, onClose }) => {
                 </div>
               </div>
 
-              {/* Details */}
               <div className="org-details">
                 <div className="org-detail-row">
                   <span className="org-detail-label">Administrador</span>
@@ -131,7 +129,6 @@ const OrganizacionModal: React.FC<Props> = ({ orgId, onClose }) => {
                 </div>
               </div>
 
-              {/* Solicitud button */}
               <div className="org-solicitud-area">
                 {solicitudState === 'success' ? (
                   <div className="org-solicitud-success">

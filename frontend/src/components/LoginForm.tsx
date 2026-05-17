@@ -119,7 +119,6 @@ export const Login: React.FC = () => {
   return (
     <>
     <div className="login-container">
-      {/* Left Side - Hero */}
       <div className="login-hero">
         <div className="hero-content">
           <div className="hero-header">
@@ -133,7 +132,6 @@ export const Login: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Side - Auth Card */}
       <div className="login-form-wrapper">
         <div className="login-card">
           <div className="login-logo">
@@ -162,7 +160,6 @@ export const Login: React.FC = () => {
 
           {error && <div className="error-message">{error}</div>}
 
-          {/* Login Form */}
           {isLogin && (
             <form onSubmit={handleLoginSubmit} className="auth-form">
               <div className="form-group">
@@ -212,7 +209,6 @@ export const Login: React.FC = () => {
             </form>
           )}
 
-          {/* Register Form */}
           {!isLogin && (
             <form onSubmit={handleRegisterSubmit} className="auth-form register-mode">
               <div className="form-group">

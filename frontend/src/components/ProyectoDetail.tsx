@@ -84,28 +84,23 @@ const ProyectoDetail: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'equipo' | 'tareas'>('info');
 
-  // cambiar estado state
   const [nuevoEstado, setNuevoEstado] = useState('');
   const [estadoLoading, setEstadoLoading] = useState(false);
   const [estadoError, setEstadoError] = useState<string | null>(null);
 
-  // eliminar proyecto state
   const [confirmDeleteProy, setConfirmDeleteProy] = useState(false);
   const [deletingProy, setDeletingProy] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  // addUsuario state
   const [addUsername, setAddUsername] = useState('');
   const [addLoading, setAddLoading] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
   const [addSuccess, setAddSuccess] = useState<string | null>(null);
 
-  // eliminar usuario state
   const [confirmRemoveUser, setConfirmRemoveUser] = useState<number | null>(null);
   const [removingUser, setRemovingUser] = useState(false);
   const [removeUserError, setRemoveUserError] = useState<string | null>(null);
 
-  // asignarRol state
   const [roleSelections, setRoleSelections] = useState<Record<number, string>>({});
   const [roleLoading, setRoleLoading] = useState<Record<number, boolean>>({});
   const [roleFeedback, setRoleFeedback] = useState<Record<number, { ok: boolean; msg: string }>>({});
@@ -320,7 +315,6 @@ const ProyectoDetail: React.FC = () => {
   return (
     <div className="pd-page">
 
-      {/* Nav */}
       <header className="pd-nav">
         <div className="pd-nav-left">
           <span className="pd-logo-slot">
@@ -335,7 +329,6 @@ const ProyectoDetail: React.FC = () => {
 
       <div className="pd-container">
 
-        {/* Hero del proyecto */}
         <div className="pd-hero">
           <div className="pd-hero-left">
             <span className="pd-hero-id">#{proyecto.id}</span>
@@ -379,7 +372,6 @@ const ProyectoDetail: React.FC = () => {
               </div>
             )}
 
-            {/* Eliminar proyecto */}
             {(isDirector || isLider) && !confirmDeleteProy && (
               <button
                 className="pd-delete-btn"
@@ -404,7 +396,6 @@ const ProyectoDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Métricas rápidas */}
         <div className="pd-metrics">
           <div className="pd-metric">
             <span className="pd-metric-value">{proyecto.membrosCount ?? usuarios.length}</span>
@@ -431,7 +422,6 @@ const ProyectoDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Tabs */}
         <div className="pd-card">
           <div className="pd-tabs">
             <button
@@ -454,7 +444,6 @@ const ProyectoDetail: React.FC = () => {
             </button>
           </div>
 
-          {/* TAB: INFORMACIÓN */}
           {activeTab === 'info' && (
             <div className="pd-tab-content">
               <div className="pd-info-grid">
@@ -497,11 +486,9 @@ const ProyectoDetail: React.FC = () => {
             </div>
           )}
 
-          {/* TAB: EQUIPO */}
           {activeTab === 'equipo' && (
             <div className="pd-tab-content">
 
-              {/* Formulario añadir usuario — solo DIRECTOR */}
               {isDirector && (
                 <form className="pd-add-form" onSubmit={handleAddUsuario}>
                   <span className="pd-add-label">Añadir miembro al proyecto</span>
@@ -523,7 +510,6 @@ const ProyectoDetail: React.FC = () => {
                 </form>
               )}
 
-              {/* Lista de miembros */}
               {usuarios.length === 0 ? (
                 <div className="pd-empty-state">
                   <p>No hay miembros asignados a este proyecto</p>
@@ -554,7 +540,6 @@ const ProyectoDetail: React.FC = () => {
                           ) : null;
                         })()}
 
-                        {/* Asignar rol — solo si tiene permisos y el objetivo es de menor jerarquía */}
                         {canManageRoles && canChangeRoleOf(u) && (
                           <div className="pd-role-assign">
                             <select
@@ -583,7 +568,6 @@ const ProyectoDetail: React.FC = () => {
                           </p>
                         )}
 
-                        {/* Eliminar usuario del proyecto */}
                         {(isDirector || isLider) && u.username !== currentUsername && (
                           confirmRemoveUser === u.id ? (
                             <div className="pd-remove-user-confirm">
@@ -622,7 +606,6 @@ const ProyectoDetail: React.FC = () => {
               )}
             </div>
           )}
-          {/* TAB: TAREAS */}
           {activeTab === 'tareas' && (
             <div className="pd-tab-content">
               {tareasLoading ? (

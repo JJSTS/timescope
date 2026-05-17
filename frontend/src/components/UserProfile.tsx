@@ -65,18 +65,14 @@ const UserProfile: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [memberLoading, setMemberLoading] = useState(false);
 
-  // --- FILTER STATE ---
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterFecha, setFilterFecha] = useState<'asc' | 'desc' | 'none'>('none');
   const [filterEstados, setFilterEstados] = useState<string[]>(['ACTIVO', 'ABIERTO']);
   const [filterUsuario, setFilterUsuario] = useState('');
   const filterPanelRef = useRef<HTMLDivElement>(null);
-  // --------------------
 
-  // --- PAGINATION STATE ---
   const [currentPage, setCurrentPage] = useState(1);
   const tasksPerPage = 5;
-  // ------------------------
 
   const reloadTasks = async (rol: string) => {
     const token = localStorage.getItem('token');
@@ -107,7 +103,6 @@ const UserProfile: React.FC = () => {
         const headers = { Authorization: `Bearer ${token}` };
         const BASE = `${process.env.REACT_APP_API_URL}`;
 
-        // Usuario autenticado
         const userResponse = await fetch(`${BASE}/usuarios/me`, { headers });
         if (!userResponse.ok) throw new Error('No fue posible cargar el perfil de usuario');
         const userData: User = await userResponse.json();
@@ -115,7 +110,6 @@ const UserProfile: React.FC = () => {
 
         await reloadTasks(userData.rol ?? '');
 
-        // Miembros del equipo y nombre de org (si tiene org)
         if (userData.organizacionId) {
           const [teamResponse, orgResponse] = await Promise.all([
             fetch(`${BASE}/organizaciones/${userData.organizacionId}/miembros`, { headers }),
@@ -143,7 +137,6 @@ const UserProfile: React.FC = () => {
     }
   }, [username]);
 
-  // Click-outside to close filter panel
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (filterPanelRef.current && !filterPanelRef.current.contains(e.target as Node)) {
@@ -154,7 +147,6 @@ const UserProfile: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [filterOpen]);
 
-  // Reset page when filters change
   useEffect(() => { setCurrentPage(1); }, [filterEstados, filterFecha, filterUsuario]);
 
   const toggleEstado = (estado: string) => {
@@ -199,16 +191,14 @@ const UserProfile: React.FC = () => {
     return result;
   })();
 
-  // --- PRODUCTIVITY CHART ---
   const now = new Date();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
   const monthName = now.toLocaleString('es-ES', { month: 'long' });
 
-  // Calcular los lunes del mes actual para definir semanas reales (lun–dom)
   const firstDay = new Date(currentYear, currentMonth, 1);
   const firstMonday = new Date(firstDay);
-  const dayOfWeek = firstDay.getDay(); // 0=dom, 1=lun...
+  const dayOfWeek = firstDay.getDay();
   const offsetToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
   firstMonday.setDate(firstDay.getDate() + offsetToMonday);
 
@@ -237,9 +227,7 @@ const UserProfile: React.FC = () => {
   });
 
   const maxTotal = Math.max(...weekData.map(w => w.completadas + w.abiertas), 1);
-  // --------------------------
 
-  // --- PAGINATION LOGIC ---
   const totalPages = Math.ceil(filteredTasks.length / tasksPerPage);
   const indexOfLastTask = currentPage * tasksPerPage;
   const indexOfFirstTask = indexOfLastTask - tasksPerPage;
@@ -256,7 +244,6 @@ const UserProfile: React.FC = () => {
       setCurrentPage(currentPage - 1);
     }
   };
-  // ------------------------
 
   return (
     <>

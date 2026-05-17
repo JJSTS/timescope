@@ -130,7 +130,6 @@ const ProyectosList: React.FC = () => {
     <>
       <div className="pl-wrapper">
 
-        {/* Cabecera */}
         <div className="pl-header">
           <div className="pl-header-left">
             <h1 className="pl-title">Proyectos</h1>
@@ -146,7 +145,6 @@ const ProyectosList: React.FC = () => {
           )}
         </div>
 
-        {/* Filtros */}
         <div className="pl-filters">
           {ESTADOS.map(e => (
             <button
@@ -159,7 +157,6 @@ const ProyectosList: React.FC = () => {
           ))}
         </div>
 
-        {/* Grid de cards */}
         {loading ? (
           <div className="pl-grid">
             {[...Array(6)].map((_, i) => <div key={i} className="pl-card-skeleton" />)}
@@ -175,11 +172,9 @@ const ProyectosList: React.FC = () => {
               const meta = estadoMeta[proyecto.estado ?? ''];
               return (
                 <div key={proyecto.id} className="pl-card pl-card--clickable" onClick={() => navigate(`/proyecto/${proyecto.id}`)}>
-                  {/* Indicador de estado lateral */}
                   <div className={`pl-card-indicator ${meta?.className ?? 'pl-estado--sin-estado'}`} />
 
                   <div className="pl-card-body">
-                    {/* Header del card */}
                     <div className="pl-card-top">
                       <div className="pl-card-title-row">
                         <h3 className="pl-card-title">{proyecto.nombre}</h3>
@@ -188,7 +183,6 @@ const ProyectosList: React.FC = () => {
                         </span>
                       </div>
 
-                      {/* Lider */}
                       {proyecto.liderNombre ? (
                         <div className="pl-card-lider">
                           <IconUser />
@@ -203,7 +197,6 @@ const ProyectosList: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Descripción */}
                     <p className="pl-card-desc">
                       {proyecto.descripcion
                         ? proyecto.descripcion.length > 90
@@ -212,7 +205,6 @@ const ProyectosList: React.FC = () => {
                         : <span className="pl-card-desc--empty">Sin descripción registrada</span>}
                     </p>
 
-                    {/* Footer con métricas */}
                     <div className="pl-card-footer">
                       <div className="pl-card-metric">
                         <IconUsers />
@@ -232,7 +224,6 @@ const ProyectosList: React.FC = () => {
           </div>
         )}
 
-        {/* Paginación */}
         {totalPages > 1 && (
           <div className="pl-pagination">
             <button

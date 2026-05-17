@@ -64,7 +64,6 @@ const Dashboard: React.FC = () => {
     setUserInitials(initials || username.charAt(0).toUpperCase());
   }, [username]);
 
-  // Verificar si el usuario tiene organización
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -107,7 +106,7 @@ const Dashboard: React.FC = () => {
         const nombres: string[] = (data.content ?? []).map((o: any) => o.nombre);
         setOrgSugerencias(nombres);
         setShowOrgDropdown(nombres.length > 0);
-      } catch { /* silencioso */ }
+      } catch {}
     }, 300);
   };
 
@@ -135,7 +134,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Pantalla cuando el usuario no tiene organización
   if (organizacionId === null) {
     return (
       <div className="dashboard-container">
@@ -176,7 +174,6 @@ const Dashboard: React.FC = () => {
             <p className="no-org-subtitle">Aún no perteneces a ninguna organización. Crea la tuya o solicita unirte a una existente.</p>
 
             <div className="no-org-options">
-              {/* Crear organización */}
               <div className="no-org-card">
                 <i className="bi bi-plus-circle no-org-card-icon" />
                 <h3>Crear organización</h3>
@@ -186,7 +183,6 @@ const Dashboard: React.FC = () => {
                 </button>
               </div>
 
-              {/* Solicitar unirse */}
               <div className="no-org-card">
                 <i className="bi bi-send no-org-card-icon" />
                 <h3>Solicitar unirse</h3>

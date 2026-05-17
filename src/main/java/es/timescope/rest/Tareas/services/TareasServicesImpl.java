@@ -86,18 +86,6 @@ public class TareasServicesImpl implements TareasServices {
     }
 
     @Override
-    public Page<TareaResponseDto> findByUsuarioId(Long usuarioId, Pageable pageable) {
-        log.info("Buscando todas las tareas del usuario con id: {}", usuarioId);
-        Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);
-
-        Specification<Tarea> specUsuarioId = (root, query, cb) ->
-                cb.equal(root.get("usuario").get("id"), usuarioId);
-
-        return tareasRepository.findAll(specUsuarioId.and(specOrganizacion(caller)), pageable)
-                .map(tareasMapper::toTareaResponseDto);
-    }
-
-    @Override
     public TareaResponseDto findById(Long id) {
         log.info("Buscando el tarea con id: {}", id);
         Usuario caller = authUtils.getUsuarioAuthentication(usuariosRepository);

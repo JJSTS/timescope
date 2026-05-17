@@ -4,7 +4,7 @@ import axios from 'axios';
 interface AuthContextType {
   isAuthenticated: boolean;
   logout: () => void;
-  login: (username: string, token: string) => Promise<void>; // Devuelve una promesa
+  login: (username: string, token: string) => Promise<void>;
   username?: string;
   userRole?: string;
 }
@@ -15,7 +15,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [username, setUsername] = useState<string | undefined>();
   const [userRole, setUserRole] = useState<string | undefined>();
-  const [loading, setLoading] = useState<boolean>(true); // Estado para la carga inicial
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const checkUserStatus = async () => {
@@ -69,7 +69,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     } catch (error) {
       logout();
-      throw error; // Re-lanza el error para que el formulario de login lo pueda capturar
+      throw error;
     }
   };
 

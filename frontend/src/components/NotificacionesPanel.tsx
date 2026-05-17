@@ -139,7 +139,6 @@ const NotificacionesPanel: React.FC<Props> = ({ onClose, onPendientesChange }) =
     }
   };
 
-  // Para emparejar la i-ésima notificación SOLICITUD_RECIBIDA con la i-ésima solicitud pendiente
   const getSolicitudParaNotif = (notif: NotificacionDto): SolicitudDto | null => {
     if (notif.tipo !== 'SOLICITUD_RECIBIDA' || !notif.solicitudId) return null;
     return solicitudes.find(s => s.id === notif.solicitudId) ?? null;
@@ -200,7 +199,6 @@ const NotificacionesPanel: React.FC<Props> = ({ onClose, onPendientesChange }) =
                 <p className="notif-mensaje">{notif.mensaje}</p>
                 <span className="notif-fecha">{formatFecha(notif.fecha)}</span>
 
-                {/* Botones Aceptar / Rechazar dentro de la tarjeta */}
                 {esSolicitud && (
                   <div className="notif-solicitud-acciones">
                     <button
@@ -221,7 +219,6 @@ const NotificacionesPanel: React.FC<Props> = ({ onClose, onPendientesChange }) =
                 )}
               </div>
 
-              {/* Botón marcar leída solo para notificaciones que NO son solicitudes pendientes */}
               {tab === 'pendientes' && !esSolicitud && (
                 <button
                   className="notif-leer-btn"

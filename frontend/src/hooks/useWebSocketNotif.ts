@@ -6,7 +6,6 @@ export function useWebSocketNotif(
   username: string | undefined,
   onNotificacion: (mensaje: string) => void
 ) {
-  // Ref para que el callback siempre sea el más reciente sin reconectar
   const callbackRef = useRef(onNotificacion);
   callbackRef.current = onNotificacion;
 

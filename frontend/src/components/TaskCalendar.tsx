@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import TaskDetailModal from './TaskDetailModal'; // Importar el nuevo modal
+import TaskDetailModal from './TaskDetailModal';
 import '../styles/TaskCalendar.css';
 
 interface Task {
